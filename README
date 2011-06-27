@@ -1,3 +1,6 @@
+LICENSE
+-------
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -10,3 +13,39 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+ABOUT
+-----
+
+The UC Berkeley Schedule Enhancer (UCBSE) is a User Script for 
+GreaseMonkey which improves the layout making iteasier to read and 
+search for classes.
+
+
+REPORTING BUGS
+--------------
+
+The best way to report bugs is to (1.) tell me the exact phrases you
+entered into the search boxes and (2.) tell me the Course Control 
+Number of where the script went wrong. 
+
+
+CONTRIBUTING
+------------
+
+If you would like to contribute and help improve the UCBSE, feel free
+to make changes on a fork of the repository on github and send me a 
+pull request.
+
+How can you help?
+	- Optimize the regular expressions.
+	- Reduce interaction with the DOM.
+	- Fix bugs!
+	- UI improvements.
+
+GITHUB
+------
+
+The repository is located at: 
+	https://github.com/athk/UC-Berkeley-Schedule-Enhancer/
