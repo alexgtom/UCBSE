@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           UC Berkeley Schedule Enhancer
+// @name           UC Berkeley Schedule Enhancer (UCBSE)
 // @description	   Enhances the look and feel of the UC Berkeley schedule making it easier to read and search for classes.
 // @namespace      http://osoc.berkeley.edu/OSOC/
 // @include        http://osoc.berkeley.edu/OSOC/*
@@ -17,6 +17,10 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//	  Want to make this script better? Fork us on github!
+//	  https://github.com/athk/UCBSE
 //
 
 /*

@@ -19,30 +19,44 @@ ABOUT
 -----
 
 The UC Berkeley Schedule Enhancer (UCBSE) is a User Script for 
-GreaseMonkey which improves the layout making it easier to read and 
+Greasemonkey which improves the layout making it easier to read and 
 search for classes.
 
+INSTALLING
+----------
+
+The first thing you need is the Firefox web browser which can be 
+downloaded at http://www.firefox.com/. After you have installed 
+Firefox, the next thing you need is the Greasemonkey plugin which
+can be downloaded at http://www.greasespot.net/. Next, you need to 
+install our User Script. To install it, go to 
+http://userscripts.org/scripts/show/105611 and click "Install". And
+that's it! Now you can start using UCBSE!
 
 REPORTING BUGS
 --------------
 
-The best way to report bugs is to (1.) tell me the exact phrases you
-entered into the search boxes and (2.) tell me the Course Control 
+If something looks funny or information is missing, please report it
+so we can fix the bug as soon as possible! 
+
+The best way to report bugs is to (1.) tell us the exact phrases you
+entered into the search boxes and (2.) tell us the Course Control 
 Number of where the script went wrong. 
 
+Please report all bugs here: http://userscripts.org/scripts/issues/105611
 
 CONTRIBUTING
 ------------
 
 If you would like to contribute and help improve the UCBSE, feel free
-to make changes on a fork of the repository on github and send me a 
-pull request.
+to make changes by making a fork of the repository on github and sending 
+me a pull request.
 
 How can you help?
 	- Optimize the regular expressions.
 	- Reduce interaction with the DOM.
 	- Fix bugs!
-	- UI improvements.
+	- Improve UI.
 
 GITHUB
 ------
