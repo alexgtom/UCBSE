@@ -28,10 +28,10 @@ INSTALLING
 The first thing you need is the Firefox web browser which can be 
 downloaded at http://www.firefox.com/. After you have installed 
 Firefox, the next thing you need is the Greasemonkey plugin which
-can be downloaded at http://www.greasespot.net/. Next, you need to 
-install our User Script. To install it, go to 
-http://userscripts.org/scripts/show/105611 and click "Install". And
-that's it! Now you can start using UCBSE!
+can be downloaded at http://www.greasespot.net/. After you have 
+installed that, you need to install out User Script. To install it, 
+go to http://userscripts.org/scripts/show/105611 and click "Install". 
+Now you can start using UCBSE!
 
 REPORTING BUGS
 --------------
