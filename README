@@ -40,8 +40,9 @@ If something looks funny or information is missing, please report it
 so we can fix the bug as soon as possible! 
 
 The best way to report bugs is to (1.) tell us the exact phrases you
-entered into the search boxes and (2.) tell us the Course Control 
-Number of where the script went wrong. 
+entered into the search boxes, (2.) tell us the Course Control 
+Number to give us a location of where the script went wrong, or (3.) 
+send us a screenshot.
 
 Please report all bugs here: http://userscripts.org/scripts/issues/105611
 
