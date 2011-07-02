@@ -61,6 +61,9 @@ Course.prototype.availSeats = "";
 Course.prototype.enrollmentLink = "";
 Course.prototype.enrollmentMsg = "";
 Course.prototype.statusLastChanged = "";
+Course.prototype.sessionDates = "";
+Course.prototype.summerFees = "";
+Course.prototype.courseWebsite = "";
 
 /*
  * @return string the link inside the href property
@@ -103,18 +106,42 @@ Course.prototype.tokenize = function(str)
 
 Course.prototype.parseTT = function(table)
 {
-	ttArr = table.querySelectorAll("TT");
+	ttArr = table.querySelectorAll('TT');
+	bArr = table.querySelectorAll('TD[ALIGN="right"] FONT[size="1"] B');
 
-	this.title 						= strip(ttArr[0].innerHTML);
-	this.locn 						= ttArr[1].innerHTML;
-	this.instructor 				= ttArr[2].innerHTML;
-	this.statusLastChanged 			= ttArr[3].innerHTML;
-	this.parseCourseControlNumber(ttArr[4].innerHTML);
-	this.units						= ttArr[5].innerHTML;
-	this.parseFinalExamGroup(ttArr[6].innerHTML);
-	this.restrictions				= ttArr[7].innerHTML;
-	this.parseNote(ttArr[8].innerHTML);
-	this.parseEnrollment(ttArr[9].innerHTML);
+	for(var i = 0; i < bArr.length - 1; i++)
+		console.log( i +" "+ bArr[i+1].innerHTML + " " + ttArr[i].innerHTML);
+
+	for(var i = 0, len = ttArr.length; i < len; i++)
+	{
+		var label = bArr[i+1].innerHTML; // we don't want to parse the "Course:"
+										 // because it's a special case, so we 
+										 // skip it
+		if(label.match("Course Title:"))
+			this.title 						= strip(ttArr[i].innerHTML);
+		else if(label.match("Location:"))
+			this.locn 						= ttArr[i].innerHTML;
+		else if(label.match("Instructor:"))
+			this.instructor 				= ttArr[i].innerHTML;
+		else if(label.match("Status/Last Changed:"))
+			this.statusLastChanged 			= ttArr[i].innerHTML;
+		else if(label.match("Course Control Number:"))
+			this.parseCourseControlNumber(ttArr[i].innerHTML);
+		else if(label.match("Units/Credit:"))
+			this.units						= ttArr[i].innerHTML;
+		else if(label.match("Final Exam Group:"))
+			this.parseFinalExamGroup(ttArr[i].innerHTML);
+		else if(label.match("Restrictions:"))
+			this.restrictions				= ttArr[i].innerHTML;
+		else if(label.match("Note:"))
+			this.parseNote(ttArr[i].innerHTML);
+		else if(label.match("Enrollment on "))
+			this.parseEnrollment(ttArr[i].innerHTML);
+		else if(label.match("Session Dates:"))
+			this.sessionDates 				= ttArr[i].innerHTML;
+		else if(label.match("Summer Fees:"))
+			this.summerFees					= ttArr[i].innerHTML;
+	}
 
 }
 
@@ -122,7 +149,7 @@ Course.prototype.parseCourseControlNumber = function(str)
 {
 	var temp;
 
-	temp = str.match(/[0-9]+(?=\s*<)?/);
+	temp = str.match(/[0-9A-Za-z ]+(?=\s*<)?/);
 	if(temp != null)
 		this.ccn = temp;
 }
@@ -172,22 +199,36 @@ Course.prototype.parseA = function(table)
  */
 Course.prototype.parseCourse = function(table)
 {
-	var course = table.querySelector('TBODY TR TD FONT[size="2"] B');
+	var course = table.querySelector('TBODY TR TD FONT[size="2"] B').innerHTML;
 
-	str = this.tokenize(course.innerHTML);
+	var link = this.extractHref(course);
 
-	var beginCourseIndex = str.length - 4;
-	var courseName = "";
+	if(link)
+	{
+		this.courseWebsite = link;
+		str = course.match(/^[A-Z0-9.,&$#@\s]+/i);
+		str = str[0];
+	}
+	else
+		str = course;	
 
-	for(var i = 0; i < beginCourseIndex; i++)
-		courseName += str[i] + " ";
+	if(str)
+	{
+		str = this.tokenize(str);
 
-	this.department = courseName;					// Course Name
-	this.courseNum = str[beginCourseIndex];			// Course Number
-	this.ps = str[beginCourseIndex + 1];			// P/S (not sure what P or S means)
-	this.secNum = str[beginCourseIndex + 2];		// Section Number
-	this.classType = str[beginCourseIndex + 3];		// Class type (LEC, SEM, LAB, etc.)
-	
+		var beginCourseIndex = str.length - 4;
+		var courseName = "";
+
+		for(var i = 0; i < beginCourseIndex; i++)
+			courseName += str[i] + " ";
+
+		this.department = courseName;					// Course Name
+		this.courseNum = str[beginCourseIndex];			// Course Number
+		this.ps = str[beginCourseIndex + 1];			// P/S (not sure what P or S means)
+		this.secNum = str[beginCourseIndex + 2];		// Section Number
+		this.classType = str[beginCourseIndex + 3];		// Class type (LEC, SEM, LAB, etc.)
+
+	}
 }
 
 /**
@@ -303,7 +344,7 @@ var newStylesheet = (function()
 	css += "#title a:hover { background-color:transparent; text-decoration:underline; }";
 	css += "#rowborder { border-bottom:1px dotted #CCC; }";
 	css += ".enrollmentMsg { background-color:#e7e7e7; }";
-	css += "#note, #restrictions { color:#6e6e6e; }";
+	css += "#note, #restrictions, #summerfees, #sessiondates { color:#6e6e6e; }";
 
 	styleElt.innerHTML = css;
 
@@ -366,7 +407,11 @@ var newTable = (function(courseList)
 			tableRows += '<tr id="coursetoppadding"><td colspan="14"></td></tr>';
 			tableRows += '<tr id="title">';
 			tableRows += '<td align="right" valign="middle" id="titleleftborder">' + crs.courseNum + '</td>';
-			tableRows += '<td colspan="7" valign="middle"><a href="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a></td>';
+			tableRows += '<td colspan="7" valign="middle">';
+			tableRows += '<a href="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a>';
+			if(crs.courseWebsite != "")
+				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
+			tableRows += '</td>';
 			tableRows += '<td id="enrolldata"><small>Limit</small></td>';	
 			tableRows += '<td id="enrolldata"><small>Enrolled</small></td>';	
 			tableRows += '<td id="enrolldata"><small>Waitlist</small></td>';	
@@ -419,8 +464,14 @@ var newTable = (function(courseList)
 		// Course note and restrictions 
 		tableRows += '<td colspan="2" id="rowborder"><span></span>';
 
-		if(crs.note != "" || crs.restrictions != "")
+		if(crs.note != "" || crs.restrictions != "" || crs.summerFees != "" || crs.sessionDates != "")
 		{
+			if(crs.summerFees != "")
+				tableRows += '<p id="summerfees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
+
+			if(crs.sessionDates != "")
+				tableRows += '<p id="sessiondates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
+
 			if(crs.note != "")
 				tableRows += '<p id="note"><small><b>Note:</b> ' + crs.note + '</small></p>';
 
