@@ -352,12 +352,13 @@ var newStylesheet = (function()
 	css += "#courseBody { text-align: center; }";
 	css += "#enrollData { text-align: center; width:10; font-weight:normal; color:#6e96be;}";
 	css += "#courseTopPadding > td { padding-top:1em; }";
+	css += "#courseBottomPadding > td { padding-top:1px; }";
 	css += "#departmentTopPadding > td { padding-top:2em; }";
 	css += "#department { color:#dddddd; background-color:#252c58; font-size:2em; padding-left:.2em;}"; 
-	css += "#title { background-color:#e8f1fa;}" 
-	css += "#title, #title a { color: #336699; font-weight:bold; text-decoration:none;}";
+	css += "#title { background-color:#e8f1fa; }" 
+	css += "#title, #title a { color: #336699; font-weight:bold; text-decoration:none; }";
 	css += "#title td { font-size:1.1em; }";
-	css += "#titleLeftBorder { border-left: 5px solid #336699; border-right:2px solid #FFF; padding: 0 .2em;}";
+	css += "#titleLeftBorder { border-left: 5px solid #336699; border-right:2px solid #FFF; padding: 0 .2em; }";
 	css += "#title a:hover { background-color:transparent; text-decoration:underline; }";
 	css += "#rowBorder { border-bottom:1px dotted #CCC; }";
 	css += ".enrollmentMsg { background-color:#d4d4d4; }";
@@ -436,8 +437,8 @@ var newTable = (function(courseList)
 			tableRows += '<td id="enrollData"><small>Avail Seats</small></td>';	
 			tableRows += '<td colspan="2"></td>';
 			tableRows += '</td>';
-
 			tableRows += '</tr>';
+			tableRows += '<tr id="courseBottomPadding"><td colspan="14"></td></tr>';
 		} 
 		
 		// Course Body
