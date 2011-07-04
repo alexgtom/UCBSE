@@ -119,8 +119,6 @@ Course.prototype.parseTT = function(table)
 	ttArr = table.querySelectorAll('TT');
 	bArr = table.querySelectorAll('TD[ALIGN="right"] FONT[size="1"] B');
 
-	for(var i = 0; i < bArr.length - 1; i++)
-		console.log( i +" "+ bArr[i+1].innerHTML + " " + ttArr[i].innerHTML);
 
 	for(var i = 0, len = ttArr.length; i < len; i++)
 	{
@@ -350,7 +348,7 @@ var newStylesheet = (function()
 	css += "table, tr, td { font-size: 0.9em; } ";
 	css += "#topRow { font-weight: bold; text-align: center; } ";
 	css += "#courseBody { text-align: center; }";
-	css += "#enrollData { text-align: center; width:10; font-weight:normal; color:#6e96be;}";
+	css += "#enrollData { text-align: center; font-weight:normal; color:#6e96be;}";
 	css += "#courseTopPadding > td { padding-top:1em; }";
 	css += "#courseBottomPadding > td { padding-top:1px; }";
 	css += "#departmentTopPadding > td { padding-top:2em; }";
