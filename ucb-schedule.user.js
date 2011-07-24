@@ -22,7 +22,6 @@
 //	  Want to make this script better? Fork us on github!
 //	  https://github.com/athk/UCBSE
 //
-
 /*
  * strips a string of its HTML tags
  *
@@ -341,7 +340,7 @@ var courseList = (function()
 var newStylesheet = (function()
 {
 	var head = document.querySelector("HEAD");
-	styleElt = document.createElement("style");
+	var styleElt = document.createElement("style");
 
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
@@ -386,14 +385,37 @@ var newStylesheet = (function()
 	// Status, restrictions
 	css += "#statusLastChanged, #restrictions { text-align:center; font-family:arial; font-weight:normal; }";
 
-	// Row Highlighing
+	// Row Highlighting
 	css += "tbody#highlight:hover, tbody#lecture:hover { background-color:#f0f0f0; }";
 	css += "tbody#lecture tr:first-child{ font-weight:bold; /*background-color:#fffde0;*/ }";
 
+	// onclick row highlighting
+	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
+	css += "tbody.highlightonclick:hover { background-color:#ffd964; }";
 	// Set CSS
 	styleElt.innerHTML = css;
-
 	head.appendChild(styleElt);
+
+	// Add JS
+	var jsElt = document.createElement("script");
+
+	js = "";
+	js += "function highlightRow(element) {";
+	js += "		if(element.className == '')";
+	js += "		{";
+	js += "			element.className = 'highlightonclick';";
+	js += "			element.id = '';";
+	js += "		}";
+	js += "		else";
+	js += "		{";
+	js += "			element.className = '';";
+	js += "			element.id = 'highlight';";
+	js += "		}";
+	js += "}";
+
+	jsElt.innerHTML = js;
+
+	head.appendChild(jsElt);
 }());
 
 /*
@@ -473,12 +495,19 @@ var newTable = (function(courseList)
 		} 
 		
 		// Course Body
+		
+		tableRows += '<tbody ';
 
 		if(crs.classType == "LEC")
-			tableRows += '<tbody id="lecture">';
+			tableRows += 'id="lecture"';
 		else
-			tableRows += '<tbody id="highlight">';
-		tableRows += '<td></td>'
+			tableRows += 'id="highlight"';
+
+		tableRows += '';
+
+		tableRows += '>';
+
+		tableRows += '<td onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
 		tableRows += '<td NOWRAP><b>' + crs.ccn + '</b></td>';
 		tableRows += '<td>' + crs.classType + '</td>';
 		tableRows += '<td>' + crs.secNum + '</td>';
@@ -517,7 +546,8 @@ var newTable = (function(courseList)
 
 		if(crs.note != "" || crs.summerFees != "" || crs.sessionDates != "")
 		{
-			tableRows += '<td colspan="5"></td>';
+			tableRows += '<td onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
+			tableRows += '<td colspan="4"></td>';
 			// Course note and restrictions 
 			tableRows += '<td colspan="2">';
 				if(crs.summerFees != "")
