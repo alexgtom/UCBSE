@@ -511,12 +511,12 @@ var newTable = (function(courseList)
 
 		tableRows += '<td class="highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
 		tableRows += '<td NOWRAP><b>' + crs.ccn + '</b></td>';
-		tableRows += '<td>' + crs.classType + '</td>';
-		tableRows += '<td>' + crs.secNum + '</td>';
-		tableRows += '<td>' + crs.units + '</td>';
+		tableRows += '<td width="30">' + crs.classType + '</td>';
+		tableRows += '<td width="30">' + crs.secNum + '</td>';
+		tableRows += '<td width="40" align="center">' + crs.units + '</td>';
 		tableRows += '<td align="left">' + crs.instructor + '</td>';
 		tableRows += '<td align="left">' + crs.locn + '</td>';
-		tableRows += '<td>' + crs.finalExamGroup + '</td>';
+		tableRows += '<td width="30">' + crs.finalExamGroup + '</td>';
 
 		if(crs.limit && crs.enrolled && crs.waitlist && crs.availSeats )
 		{
@@ -530,8 +530,8 @@ var newTable = (function(courseList)
 			tableRows += '<td colspan="4" class="enrollmentMsg">' + crs.enrollmentMsg + '</td>';
 		}
 
-		tableRows += '<td id="restrictions"><small>' + crs.restrictions + '</small></td>';
-		tableRows += '<td id="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
+		tableRows += '<td width="100" id="restrictions"><small>' + crs.restrictions + '</small></td>';
+		tableRows += '<td width="110" id="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
 		tableRows += '<td>';
 			if(crs.enrollmentLink != "")
 				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">Enrollment</a>';
