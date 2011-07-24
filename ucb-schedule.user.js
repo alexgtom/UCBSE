@@ -347,23 +347,23 @@ var newStylesheet = (function()
 	css += "table, tr, td { font-size: 0.9em; } ";
 
 	// Top row (Course Number, CCN, Class type, etc.)
-	css += "#topRow { font-weight: bold; text-align: center; } ";
+	css += ".topRow { font-weight: bold; text-align: center; } ";
 
 	// Course title
-	css += "#title { background-color:#e8f1fa; }" 
-	css += "#title, #title a { color: #336699; font-weight:bold; text-decoration:none; }";
-	css += "#title td { font-size:1.1em; }";
-	css += "#titleLeftBorder { border-left: 5px solid #336699; border-right:2px solid #FFF; padding: 0 .2em; }";
-	css += "#title a:hover { background-color:transparent; text-decoration:underline; }";
+	css += ".title { background-color:#e8f1fa; }" 
+	css += ".title, .title a { color: #336699; font-weight:bold; text-decoration:none; }";
+	css += ".title td { font-size:1.1em; }";
+	css += ".titleLeftBorder { border-left: 5px solid #336699; border-right:2px solid #FFF; padding: 0 .2em; }";
+	css += ".title a:hover { background-color:transparent; text-decoration:underline; }";
 
 	// Course Body
-	css += "#courseBody { text-align: center; }";
-	css += "#courseBodyLec > td { text-align: center; font-weight:bold; background-color:#000000;}";
-	css += "#courseTopPadding > td { padding-top:1em; }";
-	css += "#courseBottomPadding > td { padding-top:1px; }";
+	css += ".courseBody { text-align: center; }";
+	css += ".courseBodyLec > td { text-align: center; font-weight:bold; background-color:#000000;}";
+	css += ".courseTopPadding > td { padding-top:1em; }";
+	css += ".courseBottomPadding > td { padding-top:1px; }";
 	
 	// Small label: limit, enrolled, waitlisted, avail seats, etc.
-	css += "#smallLabel { text-align: center; font-weight:normal; color:#6e96be;}";
+	css += ".smallLabel { text-align: center; font-weight:normal; color:#6e96be;}";
 
 	// Enrollment Data 
 	css += ".enrollmentMsg { /*background-color:#d4d4d4;*/ text-align:center; }";
@@ -373,24 +373,24 @@ var newStylesheet = (function()
 	css += ".enrollDataFiller, .enrollmentMsg { border-left:1px dotted #CCC; border-right:1px dotted #CCC; }";
 
 	// Department
-	css += "#departmentTopPadding > td { padding-top:2em; }";
-	css += "#department { color:#dddddd; background-color:#252c58; font-size:2em; padding-left:.2em;}"; 
+	css += ".departmentTopPadding > td { padding-top:2em; }";
+	css += ".department { color:#dddddd; background-color:#252c58; font-size:2em; padding-left:.2em;}"; 
 
 	// Dotted border surrounding the rows
-	css += "#rowBorder { border-bottom:1px dotted #CCC; }";
+	css += ".rowBorder { border-bottom:1px dotted #CCC; }";
 
 	// Note, Summer fees, etc.
-	css += "#note, #summerFees, #sessionDates { color:#6e6e6e; }";
+	css += ".note, .summerFees, .sessionDates { color:#6e6e6e; }";
 
 	// Status, restrictions
-	css += "#statusLastChanged, #restrictions { text-align:center; font-family:arial; font-weight:normal; }";
+	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
 
 	// Advice links (courserank, ninjacourses, etc)
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
 
 	// Row Highlighting
-	css += "tbody#highlight:hover, tbody#lecture:hover { background-color:#f0f0f0; }";
-	css += "tbody#lecture tr:first-child{ font-weight:bold; /*background-color:#fffde0;*/ }";
+	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#f0f0f0; }";
+	css += "tbody.lecture tr:first-child{ font-weight:bold; /*background-color:#fffde0;*/ }";
 
 	// onclick row highlighting
 	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
@@ -450,11 +450,11 @@ var newTable = (function(courseList)
 		{
 			prevDepartment = crs.department;
 
-			tableRows += '<tr id="departmentTopPadding"><td colspan="14"></td></tr>';
+			tableRows += '<tr class="departmentTopPadding"><td colspan="14"></td></tr>';
 			tableRows += '<tr>';
-			tableRows += '<td colspan="16" id="department">' + crs.department + '</td>';
+			tableRows += '<td colspan="16" class="department">' + crs.department + '</td>';
 			tableRows += '</tr>';
-			tableRows += '<tr id="topRow">';
+			tableRows += '<tr class="topRow">';
 			tableRows += '<td width="50" align="right">Course Number</td>';	
 			tableRows += '<td>CCN</td>';	
 			tableRows += '<td width="30">Class Type</td>';	
@@ -479,9 +479,9 @@ var newTable = (function(courseList)
 		{
 			prevCourseNum = crs.courseNum;
 
-			tableRows += '<tr id="courseTopPadding"><td colspan="14"></td></tr>';
-			tableRows += '<tr id="title">';
-			tableRows += '<td align="right" valign="middle" id="titleLeftBorder">' + crs.courseNum + '</td>';
+			tableRows += '<tr class="courseTopPadding"><td colspan="14"></td></tr>';
+			tableRows += '<tr class="title">';
+			tableRows += '<td align="right" valign="middle" class="titleLeftBorder">' + crs.courseNum + '</td>';
 			tableRows += '<td colspan="7" valign="middle">';
 			tableRows += '<span style="float:left;">';
 			tableRows += '<a href="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a>';
@@ -496,16 +496,16 @@ var newTable = (function(courseList)
 			tableRows += '<div style="clear:both"></div>';
 
 			tableRows += '</td>';
-			tableRows += '<td id="smallLabel"><small>Limit</small></td>';	
-			tableRows += '<td id="smallLabel"><small>Enrolled</small></td>';	
-			tableRows += '<td id="smallLabel"><small>Waitlist</small></td>';	
-			tableRows += '<td id="smallLabel"><small>Avail Seats</small></td>';	
-			tableRows += '<td id="smallLabel"><small>Restrictions</small></td>';	
-			tableRows += '<td id="smallLabel"><small>Status</small></td>';	
+			tableRows += '<td class="smallLabel"><small>Limit</small></td>';	
+			tableRows += '<td class="smallLabel"><small>Enrolled</small></td>';	
+			tableRows += '<td class="smallLabel"><small>Waitlist</small></td>';	
+			tableRows += '<td class="smallLabel"><small>Avail Seats</small></td>';	
+			tableRows += '<td class="smallLabel"><small>Restrictions</small></td>';	
+			tableRows += '<td class="smallLabel"><small>Status</small></td>';	
 			tableRows += '<td colspan="2"></td>';
 			tableRows += '</td>';
 			tableRows += '</tr>';
-			tableRows += '<tr id="courseBottomPadding"><td colspan="14"></td></tr>';
+			tableRows += '<tr class="courseBottomPadding"><td colspan="14"></td></tr>';
 		} 
 		
 		// Course Body
@@ -513,9 +513,9 @@ var newTable = (function(courseList)
 		tableRows += '<tbody ';
 
 		if(crs.classType == "LEC")
-			tableRows += 'id="lecture"';
+			tableRows += 'class="lecture"';
 		else
-			tableRows += 'id="highlight"';
+			tableRows += 'class="highlight"';
 
 		tableRows += '';
 
@@ -542,8 +542,8 @@ var newTable = (function(courseList)
 			tableRows += '<td colspan="4" class="enrollmentMsg">' + crs.enrollmentMsg + '</td>';
 		}
 
-		tableRows += '<td width="100" id="restrictions"><small>' + crs.restrictions + '</small></td>';
-		tableRows += '<td width="110" id="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
+		tableRows += '<td width="100" class="restrictions"><small>' + crs.restrictions + '</small></td>';
+		tableRows += '<td width="110" class="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
 		tableRows += '<td>';
 			if(crs.enrollmentLink != "")
 				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">[E]</a>';
@@ -565,13 +565,13 @@ var newTable = (function(courseList)
 			// Course note and restrictions 
 			tableRows += '<td colspan="2">';
 				if(crs.summerFees != "")
-					tableRows += '<p id="summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
+					tableRows += '<p class="summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
 
 				if(crs.sessionDates != "")
-					tableRows += '<p id="sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
+					tableRows += '<p class="sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
 
 				if(crs.note != "")
-					tableRows += '<p id="note"><small><b>Note:</b> ' + crs.note + '</small></p>';
+					tableRows += '<p class="note"><small><b>Note:</b> ' + crs.note + '</small></p>';
 
 
 			tableRows += '</td>';
@@ -586,9 +586,9 @@ var newTable = (function(courseList)
 
 		tableRows += '<tr>'
 		tableRows += '<td colspan="4"></td>';
-		tableRows += '<td id="rowBorder" colspan="4"><span></span></td>';
-		tableRows += '<td id="rowBorder" class="enrollmentMsg" colspan="4"><span></span></td>';
-		tableRows += '<td id="rowBorder" colspan="3"><span></span></td>';
+		tableRows += '<td class="rowBorder" colspan="4"><span></span></td>';
+		tableRows += '<td class="rowBorder" class="enrollmentMsg" colspan="4"><span></span></td>';
+		tableRows += '<td class="rowBorder" colspan="3"><span></span></td>';
 		tableRows += '<td></td>';
 		tableRows += '</tr>'
 
