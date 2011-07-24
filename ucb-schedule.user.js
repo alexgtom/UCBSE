@@ -385,6 +385,9 @@ var newStylesheet = (function()
 	// Status, restrictions
 	css += "#statusLastChanged, #restrictions { text-align:center; font-family:arial; font-weight:normal; }";
 
+	// Advice links (courserank, ninjacourses, etc)
+	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
+
 	// Row Highlighting
 	css += "tbody#highlight:hover, tbody#lecture:hover { background-color:#f0f0f0; }";
 	css += "tbody#lecture tr:first-child{ font-weight:bold; /*background-color:#fffde0;*/ }";
@@ -480,9 +483,18 @@ var newTable = (function(courseList)
 			tableRows += '<tr id="title">';
 			tableRows += '<td align="right" valign="middle" id="titleLeftBorder">' + crs.courseNum + '</td>';
 			tableRows += '<td colspan="7" valign="middle">';
+			tableRows += '<span style="float:left;">';
 			tableRows += '<a href="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a>';
 			if(crs.courseWebsite != "")
 				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
+			tableRows += '</span>';
+			tableRows += '<span style="float:right;" class="adviceLinks">';
+			tableRows += '<a href="http://www.koofers.com/search?q=' + crs.department + ' ' + crs.courseNum + '" target="blank">[K]</a> ';
+			tableRows += '<a href="http://www.myedu.com/search?q=' + crs.department + ' ' + crs.courseNum + '&doctype=all&facets=&search_school=University+of+California%2C+Berkeley" target="blank">[ME]</a> ';
+			tableRows += '<a href="https://www.courserank.com/berkeley/search#query=' + crs.department + ' ' + crs.courseNum + '&filter_term_currentYear=on" target="blank">[CR]</a>';
+			tableRows += '</span>';
+			tableRows += '<div style="clear:both"></div>';
+
 			tableRows += '</td>';
 			tableRows += '<td id="smallLabel"><small>Limit</small></td>';	
 			tableRows += '<td id="smallLabel"><small>Enrolled</small></td>';	
@@ -534,12 +546,12 @@ var newTable = (function(courseList)
 		tableRows += '<td width="110" id="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
 		tableRows += '<td>';
 			if(crs.enrollmentLink != "")
-				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">Enrollment</a>';
+				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">[E]</a>';
 		tableRows += '</td>';
 
 		tableRows += '<td NOWRAP>';
 			if(crs.bookLink != "")
-				tableRows += '<a href="' + crs.bookLink + '" target="_blank">Books</a>';
+				tableRows += '<a href="' + crs.bookLink + '" target="_blank">[B]</a>';
 		tableRows += '</td>';
 		tableRows += '</tr>';
 
