@@ -346,23 +346,42 @@ var newStylesheet = (function()
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
+
+	// Top row (Course Number, CCN, Class type, etc.)
 	css += "#topRow { font-weight: bold; text-align: center; } ";
-	css += "#courseBody { text-align: center; }";
-	css += "#enrollData { text-align: center; font-weight:normal; color:#6e96be;}";
-	css += "#courseTopPadding > td { padding-top:1em; }";
-	css += "#courseBottomPadding > td { padding-top:1px; }";
-	css += "#departmentTopPadding > td { padding-top:2em; }";
-	css += "#department { color:#dddddd; background-color:#252c58; font-size:2em; padding-left:.2em;}"; 
+
+	// Course title
 	css += "#title { background-color:#e8f1fa; }" 
 	css += "#title, #title a { color: #336699; font-weight:bold; text-decoration:none; }";
 	css += "#title td { font-size:1.1em; }";
 	css += "#titleLeftBorder { border-left: 5px solid #336699; border-right:2px solid #FFF; padding: 0 .2em; }";
 	css += "#title a:hover { background-color:transparent; text-decoration:underline; }";
-	css += "#rowBorder { border-bottom:1px dotted #CCC; }";
-	css += ".enrollmentMsg { background-color:#d4d4d4; }";
-	css += "#note, #restrictions, #summerFees, #sessionDates, #statusLastChanged { color:#6e6e6e; }";
-	css += "tbody#highlight:hover { background-color:#f0f0f0; }";
 
+	// Course Body
+	css += "#courseBody { text-align: center; }";
+	css += "#courseBodyLec > td { text-align: center; font-weight:bold; background-color:#000000;}";
+	css += "#courseTopPadding > td { padding-top:1em; }";
+	css += "#courseBottomPadding > td { padding-top:1px; }";
+
+	// Enrollment Data (limit, enrolled, waitlisted, avail seats)
+	css += "#enrollData { text-align: center; font-weight:normal; color:#6e96be;}";
+	css += ".enrollmentMsg { background-color:#d4d4d4; text-align:center; }";
+
+	// Department
+	css += "#departmentTopPadding > td { padding-top:2em; }";
+	css += "#department { color:#dddddd; background-color:#252c58; font-size:2em; padding-left:.2em;}"; 
+
+	// Dotted border surrounding the rows
+	css += "#rowBorder { border-bottom:1px dotted #CCC; }";
+
+	// Note, Restrictions, etc.
+	css += "#note, #restrictions, #summerFees, #sessionDates, #statusLastChanged { color:#6e6e6e; }";
+
+	// Row Highlighing
+	css += "tbody#highlight:hover, tbody#lecture:hover { background-color:#f0f0f0; }";
+	css += "tbody#lecture tr:first-child{ font-weight:bold; /*background-color:#fffde0;*/ }";
+
+	// Set CSS
 	styleElt.innerHTML = css;
 
 	head.appendChild(styleElt);
@@ -440,7 +459,11 @@ var newTable = (function(courseList)
 		} 
 		
 		// Course Body
-		tableRows += '<tbody id="highlight"><tr id="courseBody">';
+
+		if(crs.classType == "LEC")
+			tableRows += '<tbody id="lecture">';
+		else
+			tableRows += '<tbody id="highlight">';
 		tableRows += '<td></td>'
 		tableRows += '<td NOWRAP><b>' + crs.ccn + '</b></td>';
 		tableRows += '<td>' + crs.classType + '</td>';
