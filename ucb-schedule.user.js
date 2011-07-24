@@ -362,10 +362,16 @@ var newStylesheet = (function()
 	css += "#courseBodyLec > td { text-align: center; font-weight:bold; background-color:#000000;}";
 	css += "#courseTopPadding > td { padding-top:1em; }";
 	css += "#courseBottomPadding > td { padding-top:1px; }";
+	
+	// Small label: limit, enrolled, waitlisted, avail seats, etc.
+	css += "#smallLabel { text-align: center; font-weight:normal; color:#6e96be;}";
 
-	// Enrollment Data (limit, enrolled, waitlisted, avail seats)
-	css += "#enrollData { text-align: center; font-weight:normal; color:#6e96be;}";
-	css += ".enrollmentMsg { background-color:#d4d4d4; text-align:center; }";
+	// Enrollment Data 
+	css += ".enrollmentMsg { /*background-color:#d4d4d4;*/ text-align:center; }";
+	css += ".enrollData, .enrollDataLeft, .enrollDataRight { text-align:center;}";
+	css += ".enrollDataLeft { border-left:1px dotted #CCC;}";
+	css += ".enrollDataRight { border-right:1px dotted #CCC;}";
+	css += ".enrollDataFiller, .enrollmentMsg { border-left:1px dotted #CCC; border-right:1px dotted #CCC; }";
 
 	// Department
 	css += "#departmentTopPadding > td { padding-top:2em; }";
@@ -374,8 +380,11 @@ var newStylesheet = (function()
 	// Dotted border surrounding the rows
 	css += "#rowBorder { border-bottom:1px dotted #CCC; }";
 
-	// Note, Restrictions, etc.
-	css += "#note, #restrictions, #summerFees, #sessionDates, #statusLastChanged { color:#6e6e6e; }";
+	// Note, Summer fees, etc.
+	css += "#note, #summerFees, #sessionDates { color:#6e6e6e; }";
+
+	// Status, restrictions
+	css += "#statusLastChanged, #restrictions { text-align:center; font-family:arial; font-weight:normal; }";
 
 	// Row Highlighing
 	css += "tbody#highlight:hover, tbody#lecture:hover { background-color:#f0f0f0; }";
@@ -416,7 +425,7 @@ var newTable = (function(courseList)
 
 			tableRows += '<tr id="departmentTopPadding"><td colspan="14"></td></tr>';
 			tableRows += '<tr>';
-			tableRows += '<td colspan="14" id="department">' + crs.department + '</td>';
+			tableRows += '<td colspan="16" id="department">' + crs.department + '</td>';
 			tableRows += '</tr>';
 			tableRows += '<tr id="topRow">';
 			tableRows += '<td width="50" align="right">Course Number</td>';	
@@ -430,6 +439,9 @@ var newTable = (function(courseList)
 			tableRows += '<td></td>';	
 			tableRows += '<td></td>';	
 			tableRows += '<td></td>';	
+			tableRows += '<td></td>';	
+			tableRows += '<td width="100"></td>';	
+			tableRows += '<td width="110"></td>';	
 			tableRows += '<td></td>';	
 			tableRows += '<td></td>';	
 			tableRows += '</tr>';
@@ -448,10 +460,12 @@ var newTable = (function(courseList)
 			if(crs.courseWebsite != "")
 				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
 			tableRows += '</td>';
-			tableRows += '<td id="enrollData"><small>Limit</small></td>';	
-			tableRows += '<td id="enrollData"><small>Enrolled</small></td>';	
-			tableRows += '<td id="enrollData"><small>Waitlist</small></td>';	
-			tableRows += '<td id="enrollData"><small>Avail Seats</small></td>';	
+			tableRows += '<td id="smallLabel"><small>Limit</small></td>';	
+			tableRows += '<td id="smallLabel"><small>Enrolled</small></td>';	
+			tableRows += '<td id="smallLabel"><small>Waitlist</small></td>';	
+			tableRows += '<td id="smallLabel"><small>Avail Seats</small></td>';	
+			tableRows += '<td id="smallLabel"><small>Restrictions</small></td>';	
+			tableRows += '<td id="smallLabel"><small>Status</small></td>';	
 			tableRows += '<td colspan="2"></td>';
 			tableRows += '</td>';
 			tableRows += '</tr>';
@@ -475,16 +489,18 @@ var newTable = (function(courseList)
 
 		if(crs.limit && crs.enrolled && crs.waitlist && crs.availSeats )
 		{
-			tableRows += '<td>' + crs.limit + '</td>';
-			tableRows += '<td>' + crs.enrolled + '</td>';
-			tableRows += '<td>' + crs.waitlist + '</td>';
-			tableRows += '<td>' + crs.availSeats + '</td>';
+			tableRows += '<td class="enrollDataLeft">' + crs.limit + '</td>';
+			tableRows += '<td class="enrollData">' + crs.enrolled + '</td>';
+			tableRows += '<td class="enrollData">' + crs.waitlist + '</td>';
+			tableRows += '<td class="enrollDataRight">' + crs.availSeats + '</td>';
 		}
 		else
 		{
 			tableRows += '<td colspan="4" class="enrollmentMsg">' + crs.enrollmentMsg + '</td>';
 		}
 
+		tableRows += '<td id="restrictions"><small>' + crs.restrictions + '</small></td>';
+		tableRows += '<td id="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
 		tableRows += '<td>';
 			if(crs.enrollmentLink != "")
 				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">Enrollment</a>';
@@ -497,38 +513,42 @@ var newTable = (function(courseList)
 		tableRows += '</tr>';
 
 		tableRows += '<tr>';
-		tableRows += '<td colspan="4"></td>';
-		// row border
-		tableRows += '<td id="rowBorder"><span></span></td>';
 
-		// Course note and restrictions 
-		tableRows += '<td colspan="2" id="rowBorder"><span></span>';
 
-		if(crs.note != "" || crs.restrictions != "" || crs.summerFees != "" || crs.sessionDates != "" || crs.statusLastChanged != "")
+		if(crs.note != "" || crs.summerFees != "" || crs.sessionDates != "")
 		{
-			if(crs.summerFees != "")
-				tableRows += '<p id="summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
+			tableRows += '<td colspan="5"></td>';
+			// Course note and restrictions 
+			tableRows += '<td colspan="2">';
+				if(crs.summerFees != "")
+					tableRows += '<p id="summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
 
-			if(crs.sessionDates != "")
-				tableRows += '<p id="sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
+				if(crs.sessionDates != "")
+					tableRows += '<p id="sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
 
-			if(crs.note != "")
-				tableRows += '<p id="note"><small><b>Note:</b> ' + crs.note + '</small></p>';
+				if(crs.note != "")
+					tableRows += '<p id="note"><small><b>Note:</b> ' + crs.note + '</small></p>';
 
-			if(crs.restrictions != "")
-				tableRows += '<p id="restrictions"><small><b>Restrictions:</b> ' + crs.restrictions + '</small></p>';
 
-			if(crs.statusLastChanged != "")
-				tableRows += '<p id="statusLastChanged"><small><b>Status/Last Changed:</b> ' + crs.statusLastChanged + '</small></p>';
-
+			tableRows += '</td>';
+			tableRows += '<td colspan="1"></td>';
+			tableRows += '<td colspan="4" class="enrollDataFiller"><span></span></td>';
+			tableRows += '<td colspan="4"></td>';
 		}
-		tableRows += '</td>';
+
+		tableRows += '</tr>'
 
 		// row border
-		tableRows += '<td colspan="6" id="rowBorder"><span></span></td>';
-		tableRows += '<td></td>';
 
-		tableRows += '</tr></tbody>';
+		tableRows += '<tr>'
+		tableRows += '<td colspan="4"></td>';
+		tableRows += '<td id="rowBorder" colspan="4"><span></span></td>';
+		tableRows += '<td id="rowBorder" class="enrollmentMsg" colspan="4"><span></span></td>';
+		tableRows += '<td id="rowBorder" colspan="3"><span></span></td>';
+		tableRows += '<td></td>';
+		tableRows += '</tr>'
+
+		tableRows += '</tbody>';
 	}
 	
 	// render new table
