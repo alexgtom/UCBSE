@@ -392,6 +392,8 @@ var newStylesheet = (function()
 	// onclick row highlighting
 	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
 	css += "tbody.highlightonclick:hover { background-color:#ffd964; }";
+	css += ".highlightCursor { cursor:pointer; }";
+
 	// Set CSS
 	styleElt.innerHTML = css;
 	head.appendChild(styleElt);
@@ -507,7 +509,7 @@ var newTable = (function(courseList)
 
 		tableRows += '>';
 
-		tableRows += '<td onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
+		tableRows += '<td class="highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
 		tableRows += '<td NOWRAP><b>' + crs.ccn + '</b></td>';
 		tableRows += '<td>' + crs.classType + '</td>';
 		tableRows += '<td>' + crs.secNum + '</td>';
@@ -546,7 +548,7 @@ var newTable = (function(courseList)
 
 		if(crs.note != "" || crs.summerFees != "" || crs.sessionDates != "")
 		{
-			tableRows += '<td onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
+			tableRows += '<td class="highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
 			tableRows += '<td colspan="4"></td>';
 			// Course note and restrictions 
 			tableRows += '<td colspan="2">';
