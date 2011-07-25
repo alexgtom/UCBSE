@@ -202,9 +202,12 @@ Course.prototype.parseCourseControlNumber = function(str)
 {
 	var temp;
 
-	temp = str.match(/[0-9A-Za-z]+(?=\s*<)?/);
+//	temp = str.match(/[0-9A-Za-z]+(?=\s*<)?/);
+	temp = str.match(/[0-9]+/);
 	if(temp != null)
 		this.ccn = temp[0];
+	else
+		this.ccn = str;
 }
 
 Course.prototype.fancyCourseControlNumber = function(str)
@@ -476,7 +479,7 @@ var newStylesheet = (function()
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
-	css += "table {empty-cells:show;}";
+	css += "table {empty-cells:show; width:100%;}";
 
 	// Top row (Course Number, CCN, Class type, etc.)
 	css += ".topRow { font-weight: bold; text-align: center; } ";
@@ -505,7 +508,7 @@ var newStylesheet = (function()
 	css += ".enrollDataFiller, .enrollmentMsg { border-left:1px dotted #CCC; border-right:1px dotted #CCC; }";
 
 	// CCN
-	css += ".ccnInput { width:35px; border:1px solid #CCC; background-color:#f2f2f2; color:#666; font-size:.9em; }";
+	css += ".ccnInput { width:40px; border:1px solid #CCC; background-color:#f2f2f2; color:#666; font-size:1em; }";
 
 	// Department
 	css += ".departmentTopPadding > td { padding-top:2em; }";
@@ -527,10 +530,10 @@ var newStylesheet = (function()
 	css += ".units { width:40px; text-align:center; }";
 	css += ".instructor { text-align:left; }";
 	css += ".locn { text-align:left; }";
-	css += ".finalExamGroup { width:30px; text-align:center; }";
+	css += ".finalExamGroup { width:30px; text-align:left; }";
 	css += ".days { width:115px; text-align:center; whitespace:nowrap;}";
-	css += ".time { text-align:center; }";
-	css += ".room { text-align:center; }";
+	css += ".time { text-align:left; }";
+	css += ".room { text-align:left; }";
 
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
@@ -611,9 +614,9 @@ var newTable = (function(courseList)
 			tableRows += '<td>Section Number</td>';	
 			tableRows += '<td>Units</td>';	
 			tableRows += '<td align="left">Instructor</td>';	
-			tableRows += '<td>Days</td>';	
-			tableRows += '<td>Time</td>';	
-			tableRows += '<td>Location</td>';	
+			tableRows += '<td align="left">Days</td>';	
+			tableRows += '<td align="left">Time</td>';	
+			tableRows += '<td align="left">Location</td>';	
 			tableRows += '<td>Final Exam Group</td>';	
 			tableRows += '<td colspan="8"></td>';	
 			tableRows += '</tr>';
