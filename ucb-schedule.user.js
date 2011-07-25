@@ -202,12 +202,14 @@ Course.prototype.parseCourseControlNumber = function(str)
 {
 	var temp;
 
-//	temp = str.match(/[0-9A-Za-z]+(?=\s*<)?/);
-	temp = str.match(/[0-9]+/);
+	temp = str.match(/^[0-9]+/);
 	if(temp != null)
 		this.ccn = temp[0];
 	else
-		this.ccn = str;
+	{
+		temp = str.match(/^[0-9A-Za-z ]+(?=\s*<)?/);
+		this.ccn = temp[0];
+	}
 }
 
 Course.prototype.fancyCourseControlNumber = function(str)
