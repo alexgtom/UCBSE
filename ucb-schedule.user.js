@@ -533,9 +533,10 @@ var newStylesheet = (function()
 	css += ".instructor { text-align:left; }";
 	css += ".locn { text-align:left; }";
 	css += ".finalExamGroup { width:30px; text-align:center; }";
-	css += ".days { width:115px; text-align:center; whitespace:nowrap;}";
+	css += ".days { width:115px; text-align:center; white-space:nowrap;}";
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
+	css += ".links { white-space:nowrap; text-align:left; }";
 
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
@@ -605,7 +606,7 @@ var newTable = (function(courseList)
 		{
 			prevDepartment = crs.department;
 
-			tableRows += '<tr class="departmentTopPadding"><td colspan="14"></td></tr>';
+			tableRows += '<tr class="departmentTopPadding"><td colspan="13"></td></tr>';
 			tableRows += '<tr>';
 			tableRows += '<td colspan="18" class="department">' + crs.department + '</td>';
 			tableRows += '</tr>';
@@ -652,10 +653,10 @@ var newTable = (function(courseList)
 			tableRows += '<td class="smallLabel"><small>Avail Seats</small></td>';	
 			tableRows += '<td class="smallLabel"><small>Restrictions</small></td>';	
 			tableRows += '<td class="smallLabel"><small>Status</small></td>';	
-			tableRows += '<td colspan="2"></td>';
+			tableRows += '<td></td>';
 			tableRows += '</td>';
 			tableRows += '</tr>';
-			tableRows += '<tr class="courseBottomPadding"><td colspan="14"></td></tr>';
+			tableRows += '<tr class="courseBottomPadding"><td colspan="13"></td></tr>';
 		} 
 		
 		// Course Body
@@ -702,12 +703,9 @@ var newTable = (function(courseList)
 
 		tableRows += '<td class="restrictions' + crs.needRowBorder() + '"><small>' + crs.restrictions + '</small></td>';
 		tableRows += '<td class="statusLastChanged' + crs.needRowBorder() + '"><small>' + crs.statusLastChanged + '</small></td>';
-		tableRows += '<td>';
+		tableRows += '<td class="links">';
 			if(crs.enrollmentLink != "")
-				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">[E]</a>';
-		tableRows += '</td>';
-
-		tableRows += '<td NOWRAP>';
+				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">[E]</a> ';
 			if(crs.bookLink != "")
 				tableRows += '<a href="' + crs.bookLink + '" target="_blank">[B]</a>';
 		tableRows += '</td>';
@@ -735,7 +733,7 @@ var newTable = (function(courseList)
 			tableRows += '</td>';
 			tableRows += '<td colspan="4" class="enrollDataFiller rowBorder"><span></span></td>';
 			tableRows += '<td class="rowBorder" colspan="2"></td>';
-			tableRows += '<td colspan="2"></td>';
+			tableRows += '<td></td>';
 		}
 
 		tableRows += '</tr>'
