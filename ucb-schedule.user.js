@@ -393,6 +393,7 @@ var newStylesheet = (function()
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
+	css += "table {empty-cells:show;}";
 
 	// Top row (Course Number, CCN, Class type, etc.)
 	css += ".topRow { font-weight: bold; text-align: center; } ";
