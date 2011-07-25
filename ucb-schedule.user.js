@@ -35,6 +35,22 @@ function strip(html)
 }
 
 /*
+function addClass(element, str)
+{
+	className = stripSpace(element.className);
+	className += ' ' + str;
+	element.className = className;
+}
+
+function removeClass(element, str)
+{
+	className = element.className;
+	className.replace(str, "");
+	element.className = stripSpace(className);
+}
+*/
+
+/*
  * strips a string of the trailing and leading whitespace
  *
  * @return string
@@ -299,6 +315,32 @@ Course.prototype.log = function()
 				'\nEnrollment Link: ' + this.enrollmentLink
 				);
 }
+/*
+ * Determines if the second row is required
+ *
+ * @return true, false
+ */
+Course.prototype.needSecondRow = function()
+{
+	if(this.note != "" || this.summerFees != "" || this.sessionDates != "")
+		return true;
+	else
+		return false;
+}
+
+/*
+ * Appends row border where specified depending if a 
+ * second row is required
+ *
+ * @return string
+ */
+Course.prototype.needRowBorder = function()
+{
+	if(!this.needSecondRow())
+		return " rowBorder";
+	else
+		return "";
+}
 
 /*
  * Parse all the information into an array of courses
@@ -385,8 +427,8 @@ var newStylesheet = (function()
 
 	// Status, restrictions
 	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
-	css += ".statusLastChanged { width:100px; }";
-	css += ".restrictions { width:110px;}";
+	css += ".statusLastChanged { max-width:110px; }";
+	css += ".restrictions { max-width:110px;}";
 	css += ".ccn { white-space:nowrap; }";
 	css += ".classType { width:30px; }";
 	css += ".secNum { width:30px; }";
@@ -394,6 +436,8 @@ var newStylesheet = (function()
 	css += ".instructor { text-align:left; }";
 	css += ".locn { text-align:left; }";
 	css += ".finalExamGroup { width:30px; }";
+
+	// Border
 
 	// Advice links (courserank, ninjacourses, etc)
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
@@ -471,14 +515,7 @@ var newTable = (function(courseList)
 			tableRows += '<td align="left">Instructor</td>';	
 			tableRows += '<td align="left">Days, Time & Location</td>';	
 			tableRows += '<td width="30">Final Exam Group</td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
-			tableRows += '<td></td>';	
+			tableRows += '<td colspan="7"></td>';	
 			tableRows += '</tr>';
 		}
 		
@@ -533,25 +570,25 @@ var newTable = (function(courseList)
 		tableRows += '<td class="ccn"><b>' + crs.ccn + '</b></td>';
 		tableRows += '<td class="classType">' + crs.classType + '</td>';
 		tableRows += '<td class="secNum">' + crs.secNum + '</td>';
-		tableRows += '<td class="units">' + crs.units + '</td>';
-		tableRows += '<td class="instructor">' + crs.instructor + '</td>';
-		tableRows += '<td class="locn">' + crs.locn + '</td>';
-		tableRows += '<td class="finalExamGroup">' + crs.finalExamGroup + '</td>';
+		tableRows += '<td class="units' + crs.needRowBorder() + '">' + crs.units + '</td>';
+		tableRows += '<td class="instructor' + crs.needRowBorder() + '">' + crs.instructor + '</td>';
+		tableRows += '<td class="locn' + crs.needRowBorder() + '">' + crs.locn + '</td>';
+		tableRows += '<td class="finalExamGroup' + crs.needRowBorder() + '">' + crs.finalExamGroup + '</td>';
 
 		if(crs.limit && crs.enrolled && crs.waitlist && crs.availSeats )
 		{
-			tableRows += '<td class="enrollDataLeft">' + crs.limit + '</td>';
-			tableRows += '<td class="enrollData">' + crs.enrolled + '</td>';
-			tableRows += '<td class="enrollData">' + crs.waitlist + '</td>';
-			tableRows += '<td class="enrollDataRight">' + crs.availSeats + '</td>';
+			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '">' + crs.limit + '</td>';
+			tableRows += '<td class="enrollData' + crs.needRowBorder() + '">' + crs.enrolled + '</td>';
+			tableRows += '<td class="enrollData' + crs.needRowBorder() + '">' + crs.waitlist + '</td>';
+			tableRows += '<td class="enrollDataRight' + crs.needRowBorder() + '">' + crs.availSeats + '</td>';
 		}
 		else
 		{
-			tableRows += '<td colspan="4" class="enrollmentMsg">' + crs.enrollmentMsg + '</td>';
+			tableRows += '<td colspan="4" class="enrollmentMsg' + crs.needRowBorder() + '">' + crs.enrollmentMsg + '</td>';
 		}
 
-		tableRows += '<td class="restrictions"><small>' + crs.restrictions + '</small></td>';
-		tableRows += '<td class="statusLastChanged"><small>' + crs.statusLastChanged + '</small></td>';
+		tableRows += '<td class="restrictions' + crs.needRowBorder() + '"><small>' + crs.restrictions + '</small></td>';
+		tableRows += '<td class="statusLastChanged' + crs.needRowBorder() + '"><small>' + crs.statusLastChanged + '</small></td>';
 		tableRows += '<td>';
 			if(crs.enrollmentLink != "")
 				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">[E]</a>';
@@ -563,14 +600,15 @@ var newTable = (function(courseList)
 		tableRows += '</td>';
 		tableRows += '</tr>';
 
+		// Second row (Note, Summer Session fees, etc.)
 		tableRows += '<tr>';
 
-
-		if(crs.note != "" || crs.summerFees != "" || crs.sessionDates != "")
+		if(crs.needSecondRow())
 		{
 			tableRows += '<td class="highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
-			tableRows += '<td colspan="4"></td>';
-			tableRows += '<td colspan="2">';
+			tableRows += '<td colspan="3"></td>';
+			tableRows += '<td class="rowBorder" colspan="1"></td>';
+			tableRows += '<td class="rowBorder" colspan="3">';
 				if(crs.summerFees != "")
 					tableRows += '<p class="summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
 
@@ -582,9 +620,9 @@ var newTable = (function(courseList)
 
 
 			tableRows += '</td>';
-			tableRows += '<td colspan="1"></td>';
-			tableRows += '<td colspan="4" class="enrollDataFiller"><span></span></td>';
-			tableRows += '<td colspan="4"></td>';
+			tableRows += '<td colspan="4" class="enrollDataFiller rowBorder"><span></span></td>';
+			tableRows += '<td class="rowBorder" colspan="2"></td>';
+			tableRows += '<td colspan="2"></td>';
 		}
 
 		tableRows += '</tr>'
