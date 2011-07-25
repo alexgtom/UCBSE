@@ -168,6 +168,12 @@ Course.prototype.parseTT = function(table)
 
 }
 
+Course.prototype.praseLocn = function(str)
+{
+
+
+}
+
 Course.prototype.parseCourseControlNumber = function(str)
 {
 	var temp;
@@ -387,7 +393,6 @@ var newStylesheet = (function()
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
-	css += "table { border-collapse:collapse; } ";
 
 	// Top row (Course Number, CCN, Class type, etc.)
 	css += ".topRow { font-weight: bold; text-align: center; } ";
