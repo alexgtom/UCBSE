@@ -530,7 +530,7 @@ var newStylesheet = (function()
 	css += ".units { width:40px; text-align:center; }";
 	css += ".instructor { text-align:left; }";
 	css += ".locn { text-align:left; }";
-	css += ".finalExamGroup { width:30px; text-align:left; }";
+	css += ".finalExamGroup { width:30px; text-align:center; }";
 	css += ".days { width:115px; text-align:center; whitespace:nowrap;}";
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
@@ -627,7 +627,7 @@ var newTable = (function(courseList)
 		{
 			prevCourseNum = crs.courseNum;
 
-			tableRows += '<tr class="courseTopPadding"><td colspan="14"></td></tr>';
+			tableRows += '<tr class="courseTopPadding"><td colspan="18"></td></tr>';
 			tableRows += '<tr class="title">';
 			tableRows += '<td align="right" valign="middle" class="titleLeftBorder">' + crs.courseNum + '</td>';
 			tableRows += '<td colspan="9" valign="middle">';
