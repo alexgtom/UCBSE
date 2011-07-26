@@ -215,10 +215,16 @@ Course.prototype.parseCourseControlNumber = function(str)
 Course.prototype.fancyCourseControlNumber = function(str)
 {
 	fanCCN = "";
+
+	cssClass = "";
+	if(this.isFull())
+		cssClass += "full";
+	else
+		cssClass += "open";
 	
-	fanCCN += '<td class="ccn">'
+	fanCCN += '<td class="ccn ' + this.needRowBorder() + '">'
 	if(str.match(/[0-9]+/) != null)
-		fanCCN += '<input type="text" onclick="select()" class="ccnInput" value="' + str + '" >';
+		fanCCN += '<input type="text" onclick="select()" class="ccnInput ' + cssClass + '" value="' + str + '" >';
 	else
 		fanCCN += '<b>' + str + '</b>';
 	
@@ -394,6 +400,11 @@ Course.prototype.needRowBorder = function()
 		return "";
 }
 
+/*
+ * Produces the days in a fancy format
+ *
+ * @return string
+ */
 Course.prototype.fancyDays = function(days)
 {
 	dayArr = Array();
@@ -436,6 +447,15 @@ Course.prototype.fancyDays = function(days)
 
 	return fanDays;
 }
+
+Course.prototype.isFull = function()
+{
+	if(this.availSeats > 0)
+		return false;
+	else
+		return true;
+}
+
 /*
  * Parse all the information into an array of courses
  */
@@ -510,7 +530,7 @@ var newStylesheet = (function()
 	css += ".enrollDataFiller, .enrollmentMsg { border-left:1px dotted #CCC; border-right:1px dotted #CCC; }";
 
 	// CCN
-	css += ".ccnInput { width:40px; border:1px solid #CCC; background-color:#f2f2f2; color:#666; font-size:1em; }";
+	css += ".ccnInput { width:40px; border:0px solid #CCC; font-size:1em; font-weight:bold; font-family: arial, verdana, tahoma;}";
 
 	// Department
 	css += ".departmentTopPadding > td { padding-top:2em; }";
@@ -526,7 +546,7 @@ var newStylesheet = (function()
 	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
 	css += ".statusLastChanged { width:110px; }";
 	css += ".restrictions { width:110px;}";
-	css += ".ccn { white-space:nowrap; }";
+	css += ".ccn { white-space:nowrap; border-right: 1px dotted #CCC;}";
 	css += ".classType { width:30px; }";
 	css += ".secNum { width:30px; }";
 	css += ".units { width:40px; text-align:center; }";
@@ -537,6 +557,8 @@ var newStylesheet = (function()
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
 	css += ".links { white-space:nowrap; text-align:left; }";
+	css += ".full { background-color:#fff2f2; color:#e70d0d;}";
+	css += ".open { background-color:#eafff1; color:#248d49;}";
 
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
@@ -668,16 +690,15 @@ var newTable = (function(courseList)
 		else
 			tableRows += 'class="highlight"';
 
-		tableRows += '';
-
 		tableRows += '>';
 
 		tableRows += '<td class="highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
 		tableRows += crs.fancyCourseControlNumber(crs.ccn);
-		tableRows += '<td class="classType">' + crs.classType + '</td>';
-		tableRows += '<td class="secNum">' + crs.secNum + '</td>';
+		tableRows += '<td class="classType' + crs.needRowBorder() + '">' + crs.classType + '</td>';
+		tableRows += '<td class="secNum' + crs.needRowBorder() + '">' + crs.secNum + '</td>';
 		tableRows += '<td class="units' + crs.needRowBorder() + '">' + crs.units + '</td>';
 		tableRows += '<td class="instructor' + crs.needRowBorder() + '">' + crs.instructor + '</td>';
+
 		if(crs.locn == "")
 		{
 			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="days">' + crs.fancyDays(crs.days) +'</div></td>';
@@ -717,7 +738,8 @@ var newTable = (function(courseList)
 		if(crs.needSecondRow())
 		{
 			tableRows += '<td class="highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
-			tableRows += '<td colspan="3"></td>';
+			tableRows += '<td class="ccn rowBorder"></td>';
+			tableRows += '<td colspan="2" class="rowBorder"></td>';
 			tableRows += '<td class="rowBorder" colspan="1"></td>';
 			tableRows += '<td class="rowBorder" colspan="5">';
 				if(crs.summerFees != "")
