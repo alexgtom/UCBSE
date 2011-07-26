@@ -22,6 +22,17 @@
 //	  Want to make this script better? Fork us on github!
 //	  https://github.com/athk/UCBSE
 //
+
+/*
+ * converts spaces to +
+ *
+ * @return string
+ */
+function spaceToPlus(str)
+{
+	return str.replace(' ', '+');
+}
+
 /*
  * strips a string of its HTML tags
  *
@@ -557,8 +568,8 @@ var newStylesheet = (function()
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
 	css += ".links { white-space:nowrap; text-align:left; }";
-	css += ".full { background-color:#fff2f2; color:#e70d0d;}";
-	css += ".open { background-color:#eafff1; color:#248d49;}";
+	css += ".full { background-color:#ff9b9b; color:#7c2626;}";
+	css += ".open { background-color:#c5ffc8; color:#18571b;}";
 
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
@@ -662,9 +673,9 @@ var newTable = (function(courseList)
 				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
 			tableRows += '</span>';
 			tableRows += '<span style="float:right;" class="adviceLinks">';
-			tableRows += '<a href="http://www.koofers.com/search?q=' + crs.department + ' ' + crs.courseNum + '" target="blank">[K]</a> ';
-			tableRows += '<a href="http://www.myedu.com/search?q=' + crs.department + ' ' + crs.courseNum + '&doctype=all&facets=&search_school=University+of+California%2C+Berkeley" target="blank">[ME]</a> ';
-			tableRows += '<a href="https://www.courserank.com/berkeley/search#query=' + crs.department + ' ' + crs.courseNum + '&filter_term_currentYear=on" target="blank">[CR]</a>';
+			tableRows += '<a href="' + encodeURI('http://www.koofers.com/search?q=' + crs.department + ' ' + crs.courseNum) + '" target="blank">[K]</a> ';
+			tableRows += '<a href="' + encodeURI('http://www.myedu.com/search?q=' + crs.department + ' ' + crs.courseNum + '&doctype=all&facets=&search_school=University+of+California%2C+Berkeley') + '" target="blank">[ME]</a> ';
+			tableRows += '<a href="' + encodeURI('https://www.courserank.com/berkeley/search#query=' + crs.department + ' ' + crs.courseNum + '&filter_term_currentYear=on') + '" target="blank">[CR]</a>';
 			tableRows += '</span>';
 			tableRows += '<div style="clear:both"></div>';
 
