@@ -104,6 +104,155 @@ Course.prototype.days = "";
 Course.prototype.room = "";
 Course.prototype.time = "";
 
+Course.prototype.getDeptAbrev = function(str)
+{
+	departments = [
+		{ name: "AFRICAN AMERICAN STUDIES", shortName: "AFRICAM" },
+		{ name: "AGRICULTURAL AND ENVIRON CHEMISTRY", shortName: "AGR CHM" },
+		{ name: "ENVIRONMENTAL ECONOMICS AND POLICY", shortName: "ENVECON" },
+		{ name: "AGRICULTURAL AND RESOURCE ECONOMICS", shortName: "A,RESEC" },
+		{ name: "AMERICAN STUDIES", shortName: "AMERSTD" },
+		{ name: "ANCIENT HISTORY AND MED. ARCH.", shortName: "AHMA" },
+		{ name: "ANTHROPOLOGY", shortName: "ANTHRO" },
+		{ name: "APPLIED SCIENCE AND TECHNOLOGY", shortName: "AST" },
+		{ name: "ARCHITECTURE", shortName: "ARCH" },
+		{ name: "VISUAL STUDIES", shortName: "VIS STD" },
+		{ name: "PRACTICE OF ART", shortName: "ART" },
+		{ name: "HISTORY OF ART", shortName: "HISTART" },
+		{ name: "ASIAN AMERICAN STUDIES", shortName: "ASAMST" },
+		{ name: "ASIAN STUDIES", shortName: "ASIANST" },
+		{ name: "ASTRONOMY", shortName: "ASTRON" },
+		{ name: "BIOENGINEERING", shortName: "BIO ENG" },
+		{ name: "BIOLOGY", shortName: "BIOPHYSICS" },
+		{ name: "BIOPHY", shortName: "GROUP IN BUDDHIST STUDIES" },
+		{ name: "BUDDSTD", shortName: "UNDERGRAD. BUSINESS ADMINISTRATION" },
+		{ name: "UGBA", shortName: "MASTERS IN BUSINESS ADMINISTRATION" },
+		{ name: "PH.D. IN BUSINESS ADMINISTRATION", shortName: "PHDBA" },
+		{ name: "CELTIC STUDIES", shortName: "CELTIC" },
+		{ name: "CHEMICAL ENGINEERING", shortName: "CHM ENG" },
+		{ name: "CHEMISTRY", shortName: "CHEM" },
+		{ name: "CHICANO STUDIES", shortName: "CHICANO" },
+		{ name: "CITY AND REGIONAL PLANNING", shortName: "CY PLAN" },
+		{ name: "CIVIL AND ENVIRONMENTAL ENGINEERING", shortName: "CIV ENG" },
+		{ name: "CLASSICS", shortName: "CLASSIC" },
+		{ name: "GREEK", shortName: "LATIN" },
+		{ name: "COGNITIVE SCIENCE", shortName: "COG SCI" },
+		{ name: "COLLEGE WRITING PROGRAM", shortName: "COLWRIT" },
+		{ name: "COMPARATIVE BIOCHEMISTRY", shortName: "COMPBIO" },
+		{ name: "COMPARATIVE LITERATURE", shortName: "COM LIT" },
+		{ name: "CRITICAL THEORY GRADUATE GROUP", shortName: "CRIT TH" },
+		{ name: "DEMOGRAPHY", shortName: "DEMOG" },
+		{ name: "DEVELOPMENT STUDIES", shortName: "DEV STD" },
+		{ name: "EARTH AND PLANETARY SCIENCE", shortName: "EPS" },
+		{ name: "EAST ASIAN LANGUAGES AND CULTURES", shortName: "EA LANG" },
+		{ name: "CHINESE", shortName: "JAPANESE" },
+		{ name: "JAPAN", shortName: "KOREAN" },
+		{ name: "TIBETAN", shortName: "ECONOMICS" },
+		{ name: "ECON", shortName: "EDUCATION" },
+		{ name: "EDUC", shortName: "ELECTRICAL ENGINEERING" },
+		{ name: "EL ENG", shortName: "COMPUTER SCIENCE" },
+		{ name: "COMPSCI", shortName: "ENERGY AND RESOURCES GROUP" },
+		{ name: "ENE,RES", shortName: "ENGINEERING" },
+		{ name: "ENGIN", shortName: "ENGLISH" },
+		{ name: "ENVIRONMENTAL DESIGN", shortName: "ENV DES" },
+		{ name: "ENVIRON SCI, POLICY, AND MANAGEMENT", shortName: "ESPM" },
+		{ name: "ENVIRONMENTAL SCIENCES", shortName: "ENV SCI" },
+		{ name: "ETHNIC STUDIES", shortName: "ETH STD" },
+		{ name: "ETHNIC STUDIES GRADUATE GROUP", shortName: "ETH GRP" },
+		{ name: "FILM AND MEDIA", shortName: "FILM" },
+		{ name: "FOLKLORE", shortName: "FOLKLOR" },
+		{ name: "FRENCH", shortName: "GENDER AND WOMEN'S STUDIES" },
+		{ name: "GWS", shortName: "LESBIAN GAY BISEXUAL TRANSGENDER ST" },
+		{ name: "LGBT", shortName: "GEOGRAPHY" },
+		{ name: "GEOG", shortName: "GERMAN" },
+		{ name: "YIDDISH", shortName: "DUTCH" },
+		{ name: "GLOBAL METROPOLITAN STUDIES", shortName: "GMS" },
+		{ name: "GLOBAL POVERTY AND PRACTICE", shortName: "GPP" },
+		{ name: "LANGUAGE PROFICIENCY PROGRAM", shortName: "LAN PRO" },
+		{ name: "HEALTH AND MEDICAL SCIENCES", shortName: "HMEDSCI" },
+		{ name: "HISTORY", shortName: "INDUSTRIAL ENGIN AND OPER RESEARCH" },
+		{ name: "IND ENG", shortName: "INFORMATION" },
+		{ name: "INFO", shortName: "INTEGRATIVE BIOLOGY" },
+		{ name: "INTEGBI", shortName: "INTERDISCIPLINARY STUDIES FIELD MAJ" },
+		{ name: "ISF", shortName: "INTERNATIONAL AND AREA STUDIES" },
+		{ name: "IAS", shortName: "ITALIAN STUDIES" },
+		{ name: "ITALIAN", shortName: "JEWISH STUDIES" },
+		{ name: "JEWISH", shortName: "JOURNALISM" },
+		{ name: "JOURN", shortName: "LANDSCAPE ARCHITECTURE" },
+		{ name: "LD ARCH", shortName: "LATIN AMERICAN STUDIES" },
+		{ name: "LATAMST", shortName: "LEGAL STUDIES" },
+		{ name: "LEGALST", shortName: "LETTERS AND SCIENCE" },
+		{ name: "L & S", shortName: "LINGUISTICS" },
+		{ name: "LINGUIS", shortName: "MATERIALS SCIENCE AND ENGINEERING" },
+		{ name: "MAT SCI", shortName: "MATHEMATICS" },
+		{ name: "MATH", shortName: "MECHANICAL ENGINEERING" },
+		{ name: "MEC ENG", shortName: "MEDIA STUDIES" },
+		{ name: "MEDIAST", shortName: "MIDDLE EASTERN STUDIES" },
+		{ name: "M E STU", shortName: "MILITARY AFFAIRS" },
+		{ name: "MIL AFF", shortName: "AEROSPACE STUDIES" },
+		{ name: "AEROSPC", shortName: "MILITARY SCIENCE" },
+		{ name: "MIL SCI", shortName: "NAVAL SCIENCE" },
+		{ name: "NAV SCI", shortName: "MOLECULAR AND CELL BIOLOGY" },
+		{ name: "MCELLBI", shortName: "MUSIC" },
+		{ name: "NANOSCALE SCIENCE AND ENGINEERING", shortName: "NSE" },
+		{ name: "NATIVE AMERICAN STUDIES", shortName: "NATAMST" },
+		{ name: "NATURAL RESOURCES", shortName: "NAT RES" },
+		{ name: "NEAR EASTERN STUDIES", shortName: "NE STUD" },
+		{ name: "ARABIC", shortName: "CUNEIFORM" },
+		{ name: "CUNEIF", shortName: "EGYPTIAN" },
+		{ name: "EGYPT", shortName: "HEBREW" },
+		{ name: "PERSIAN", shortName: "TURKISH" },
+		{ name: "NEUROSCIENCE", shortName: "NEUROSC" },
+		{ name: "NEW MEDIA", shortName: "NWMEDIA" },
+		{ name: "NUCLEAR ENGINEERING", shortName: "NUC ENG" },
+		{ name: "NUTRITIONAL SCIENCES AND TOXICOLOGY", shortName: "NUSCTX" },
+		{ name: "OPTOMETRY", shortName: "OPTOM" },
+		{ name: "VISION SCIENCE", shortName: "VIS SCI" },
+		{ name: "PEACE AND CONFLICT STUDIES", shortName: "PACS" },
+		{ name: "PHILOSOPHY", shortName: "PHILOS" },
+		{ name: "PHYSICAL EDUCATION", shortName: "PHYS ED" },
+		{ name: "PHYSICS", shortName: "PHYSICS" },
+		{ name: "PLANT AND MICROBIAL BIOLOGY", shortName: "PLANTBI" },
+		{ name: "POLITICAL ECONOMY OF INDUSTRIAL SOC", shortName: "POLECIS" },
+		{ name: "POLITICAL SCIENCE", shortName: "POL SCI" },
+		{ name: "PSYCHOLOGY", shortName: "PSYCH" },
+		{ name: "PUBLIC HEALTH", shortName: "PB HLTH" },
+		{ name: "PUBLIC POLICY", shortName: "PUB POL" },
+		{ name: "RELIGIOUS STUDIES", shortName: "RELIGST" },
+		{ name: "RHETORIC", shortName: "RHETOR" },
+		{ name: "SCANDINAVIAN", shortName: "SCANDIN" },
+		{ name: "SCIENCE AND MATHEMATICS EDUCATION", shortName: "SCMATHE" },
+		{ name: "SLAVIC LANGUAGES AND LITERATURES", shortName: "SLAVIC" },
+		{ name: "EAST EUROPEAN STUDIES", shortName: "EAEURST" },
+		{ name: "EURASIAN STUDIES", shortName: "EURA ST" },
+		{ name: "SOCIAL WELFARE", shortName: "SOC WEL" },
+		{ name: "SOCIOLOGY", shortName: "SOCIOL" },
+		{ name: "SOUTH AND SOUTHEAST ASIAN STUDIES", shortName: "S,SEASN" },
+		{ name: "SOUTH ASIAN", shortName: "S ASIAN" },
+		{ name: "SOUTHEAST ASIAN", shortName: "SEASIAN" },
+		{ name: "BENGALI", shortName: "BANGLA" },
+		{ name: "FILIPINO", shortName: "FILIPN" },
+		{ name: "HINDI-URDU", shortName: "HIN-URD" },
+		{ name: "KHMER", shortName: "MALAY/INDONESIAN" },
+		{ name: "MALAY/I", shortName: "PUNJABI" },
+		{ name: "SANSKRIT", shortName: "SANSKR" },
+		{ name: "TAGALOG", shortName: "TAMIL" },
+		{ name: "TELUGU", shortName: "VIETNAMESE" },
+		{ name: "VIETNMS", shortName: "SPANISH" },
+		{ name: "PORTUGUESE", shortName: "PORTUG" },
+		{ name: "STATISTICS", shortName: "STAT" },
+		{ name: "THEATER, DANCE, AND PERFORMANCE ST", shortName: "THEATER" },
+		{ name: "UNDERGRAD INTERDISCIPLINARY STUDIES", shortName: "UGIS" }
+	];
+
+	for(var i = 0, len = departments.length; i < len; i++)
+	{
+		if(str.match(departments[i].name))
+			return departments[i].shortName;
+	}
+	return str;
+}
+
 /*
  * @return string the link inside the href property
  */
@@ -568,15 +717,15 @@ var newStylesheet = (function()
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
 	css += ".links { white-space:nowrap; text-align:left; }";
-	css += ".full { background-color:#ff9b9b; color:#7c2626;}";
-	css += ".open { background-color:#c5ffc8; color:#18571b;}";
+	css += ".full { background-color:#ff9b9b; color:#520e0e;}";
+	css += ".open { background-color:#c5ffc8; color:#15520e;}";
 
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
 	css += ".dayInactive { color:#999; background-color:#dddddd; }";
 	css += ".dayActive, .dayInactive { font-weight:normal;  float:left; margin-right:1px; width:20px; text-align:center; padding:1px;}";
 	
-	// Advice links (courserank, ninjacourses, etc)
+	// Advice links (courserank, myedu, etc)
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
 
 	// Row Highlighting
@@ -673,9 +822,12 @@ var newTable = (function(courseList)
 				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
 			tableRows += '</span>';
 			tableRows += '<span style="float:right;" class="adviceLinks">';
-			tableRows += '<a href="' + encodeURI('http://www.koofers.com/search?q=' + crs.department + ' ' + crs.courseNum) + '" target="blank">[K]</a> ';
-			tableRows += '<a href="' + encodeURI('http://www.myedu.com/search?q=' + crs.department + ' ' + crs.courseNum + '&doctype=all&facets=&search_school=University+of+California%2C+Berkeley') + '" target="blank">[ME]</a> ';
-			tableRows += '<a href="' + encodeURI('https://www.courserank.com/berkeley/search#query=' + crs.department + ' ' + crs.courseNum + '&filter_term_currentYear=on') + '" target="blank">[CR]</a>';
+		
+			deptAbrev = crs.getDeptAbrev(crs.department);
+
+			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '" target="blank">[K]</a> ';
+			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
+			tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '&filter_term_currentYear=on' + '" target="blank">[CR]</a>';
 			tableRows += '</span>';
 			tableRows += '<div style="clear:both"></div>';
 
