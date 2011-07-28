@@ -643,7 +643,7 @@ Course.prototype.fancyDays = function(days)
 
 Course.prototype.isFull = function()
 {
-	if(this.availSeats > 0)
+	if(this.availSeats > 0 && this.waitlist == 0)
 		return false;
 	else
 		return true;
