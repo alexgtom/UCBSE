@@ -416,10 +416,12 @@ Course.prototype.fancyCourseControlNumber = function(str)
 	fanCCN = "";
 
 	cssClass = "";
-	if(this.isFull())
+	if(this.isFull() == 1)
 		cssClass += "full";
-	else
+	else if(this.isFull() == 0)
 		cssClass += "open";
+	else
+		cssClass += "openButWaitlist";
 	
 	fanCCN += '<td class="ccn ' + this.needRowBorder() + '">'
 	if(str.match(/[0-9]+/) != null)
@@ -650,12 +652,17 @@ Course.prototype.fancyDays = function(days)
 	return fanDays;
 }
 
+/*
+ * @return 1 if full, 0 if open, -1 if open but theres a waitlist
+ */
 Course.prototype.isFull = function()
 {
-	if(this.availSeats > 0 && this.waitlist == 0)
-		return false;
-	else
-		return true;
+	if(this.limit == this.enrolled)
+		return 1;
+	if((this.enrolled < this.limit) && (this.waitlist > 0))
+		return -1;
+	if(this.enrolled < this.limit)
+		return 0;
 }
 
 /*
@@ -761,6 +768,7 @@ var newStylesheet = (function()
 	css += ".links { white-space:nowrap; text-align:left; }";
 	css += ".full { background-color:#ff9b9b; color:#520e0e;}";
 	css += ".open { background-color:#c5ffc8; color:#15520e;}";
+	css += ".openButWaitlist { background-color:#ffd563; color:#473608;}";
 	css += ".unsched { background-color:#dddddd; color:#333; }";
 
 	// Days
