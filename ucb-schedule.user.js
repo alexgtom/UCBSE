@@ -387,6 +387,12 @@ Course.prototype.parseLocn = function(str)
 			}
 		}
 	}
+	else if(str.match(/^UNSCHED/))
+	{
+		temp = str.replace(/^UNSCHED\s*/, '');
+		this.room = temp;
+		this.days = "UNSCHED";
+	}
 	else
 		this.locn = str;
 }
@@ -603,6 +609,9 @@ Course.prototype.fancyDays = function(days)
 	dayArr = Array();
 	fanDays = "";
 	
+	if(days.match(/UNSCHED/))
+		return '<div class="unsched">UNSCHED</div>';
+	
 	if(days.match(/M/))
 		dayArr.push("M");
 	else
@@ -752,6 +761,7 @@ var newStylesheet = (function()
 	css += ".links { white-space:nowrap; text-align:left; }";
 	css += ".full { background-color:#ff9b9b; color:#520e0e;}";
 	css += ".open { background-color:#c5ffc8; color:#15520e;}";
+	css += ".unsched { background-color:#dddddd; color:#333; }";
 
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
