@@ -90,10 +90,10 @@ Course.prototype.bookLink = "";
 Course.prototype.units = "";
 Course.prototype.finalExamGroup = "";
 Course.prototype.restrictions = "";
-Course.prototype.limit = "";
-Course.prototype.enrolled = "";
-Course.prototype.waitlist = "";
-Course.prototype.availSeats = "";
+Course.prototype.limit = null;
+Course.prototype.enrolled = null;
+Course.prototype.waitlist = null;
+Course.prototype.availSeats = null;
 Course.prototype.enrollmentLink = "";
 Course.prototype.enrollmentMsg = "";
 Course.prototype.statusLastChanged = "";
@@ -420,7 +420,7 @@ Course.prototype.fancyCourseControlNumber = function(str)
 		cssClass += "full";
 	else if(this.isFull() == 0)
 		cssClass += "open";
-	else
+	else if(this.isFull() == -1)
 		cssClass += "openButWaitlist";
 	
 	fanCCN += '<td class="ccn ' + this.needRowBorder() + '">'
@@ -447,10 +447,11 @@ Course.prototype.parseEnrollment = function(str)
 	}
 	else
 	{
-		this.limit = temp[0];
-		this.enrolled = temp[1];
-		this.waitlist = temp[2];
-		this.availSeats = temp[3];
+		this.enrollmentMsg = null;
+		this.limit = parseInt(temp[0]);
+		this.enrolled = parseInt(temp[1]);
+		this.waitlist = parseInt(temp[2]);
+		this.availSeats = parseInt(temp[3]);
 	}
 }
 
@@ -659,7 +660,7 @@ Course.prototype.isFull = function()
 {
 	if(this.limit == this.enrolled)
 		return 1;
-	if((this.enrolled < this.limit) && (this.waitlist > 0))
+	if(this.enrolled < this.limit && this.waitlist > 0)
 		return -1;
 	if(this.enrolled < this.limit)
 		return 0;
@@ -924,7 +925,7 @@ var newTable = (function(courseList)
 
 		tableRows += '<td class="finalExamGroup' + crs.needRowBorder() + '">' + crs.finalExamGroup + '</td>';
 
-		if(crs.limit && crs.enrolled && crs.waitlist && crs.availSeats )
+		if(!crs.enrollmentMsg)
 		{
 			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '">' + crs.limit + '</td>';
 			tableRows += '<td class="enrollData' + crs.needRowBorder() + '">' + crs.enrolled + '</td>';
