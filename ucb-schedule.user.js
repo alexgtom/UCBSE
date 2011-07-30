@@ -393,6 +393,10 @@ Course.prototype.parseLocn = function(str)
 		this.room = temp;
 		this.days = "UNSCHED";
 	}
+	else if(str.match(/CANCELLED/))
+	{
+		this.days = "CANCELLED";
+	}
 	else
 		this.locn = str;
 }
@@ -614,6 +618,8 @@ Course.prototype.fancyDays = function(days)
 	
 	if(days.match(/UNSCHED/))
 		return '<div class="unsched">UNSCHED</div>';
+	if(days.match(/CANCELLED/))
+		return '<div class="unsched">CANCELLED</div>';
 	
 	if(days.match(/M/))
 		dayArr.push("M");
@@ -654,10 +660,12 @@ Course.prototype.fancyDays = function(days)
 }
 
 /*
- * @return 1 if full, 0 if open, -1 if open but theres a waitlist
+ * @return 1 if full or canceled, 0 if open, -1 if open but theres a waitlist
  */
 Course.prototype.isFull = function()
 {
+	if((this.days).match(/CANCELLED/))
+		return 1;
 	if(this.limit == this.enrolled)
 		return 1;
 	if(this.enrolled < this.limit && this.waitlist > 0)
@@ -835,7 +843,7 @@ var newTable = (function(courseList)
 	var prevCourseNum = "";
 	var prevDepartment = "";
 
-	tableRows += '<tr><td colspan="18"><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full and may or may not have a waitlist.</div></td></tr>';
+	tableRows += '<tr><td colspan="18"><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full or has been cancelled.</div></td></tr>';
 
 	for(var i = 0, len = courseList.length; i < len; i++)
 	{
