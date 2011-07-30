@@ -797,8 +797,8 @@ var newStylesheet = (function()
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
 
 	// Row Highlighting
-	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#f0f0f0; }";
-	css += "tbody.lecture { background-color:#ececec; }";
+	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#dfffa4; }";
+	css += "tbody.lecture { background-color:#f4f4f4; }";
 	css += "tbody.lecture tr:first-child > td { font-weight:bold; }";
 	css += "tbody.lecture .rowBorder { border-bottom:2px solid #CCC; }";
 
