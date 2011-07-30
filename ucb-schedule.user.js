@@ -782,7 +782,8 @@ var newStylesheet = (function()
 
 	// Row Highlighting
 	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#f0f0f0; }";
-	css += "tbody.lecture tr:first-child{ font-weight:bold; /*background-color:#fffde0;*/ }";
+	css += "tbody.lecture { font-weight:bold; border-top:2px solid #CCC; }";
+	css += "tbody.lecture .rowBorder { border-bottom:2px solid #CCC; }";
 
 	// onclick row highlighting
 	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
@@ -830,6 +831,8 @@ var newTable = (function(courseList)
 	var tableRows = "";
 	var prevCourseNum = "";
 	var prevDepartment = "";
+
+	tableRows += '<tr><td colspan="18"><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates that seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full and may or may not have a waitlist.</div></td></tr>';
 
 	for(var i = 0, len = courseList.length; i < len; i++)
 	{
