@@ -631,7 +631,7 @@ Course.prototype.fancyDays = function(days)
 		dayArr.push("--");
 	
 	if(days.match(/Th/))
-		dayArr.push("TH");
+		dayArr.push("Th");
 	else
 		dayArr.push("--");
 
