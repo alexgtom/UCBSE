@@ -674,6 +674,14 @@ Course.prototype.isFull = function()
 		return 0;
 }
 
+Course.prototype.isFinalExamGroup = function()
+{
+	if(this.finalExamGroup == "")
+		return false;
+	else 
+		return true;
+}
+
 /*
  * Parse all the information into an array of courses
  */
@@ -930,14 +938,26 @@ var newTable = (function(courseList)
 
 		if(crs.locn == "")
 		{
+			if(crs.isFinalExamGroup())
+				numCol = 1;
+			else
+				numCol = 2;
+
 			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="days">' + crs.fancyDays(crs.days) +'</div></td>';
 			tableRows += '<td class="time ' + crs.needRowBorder() + '">' + crs.time + '</td>';
-			tableRows += '<td class="room ' + crs.needRowBorder() + '">' + crs.room + '</td>';
+			tableRows += '<td class="room ' + crs.needRowBorder() + '" colspan="' + numCol + '">' + crs.room + '</td>';
 		}
 		else
-			tableRows += '<td colspan="3" class="locn' + crs.needRowBorder() + '">' + crs.locn + '</td>';
+		{
+			if(crs.isFinalExamGroup())
+				numCol = 3;
+			else
+				numCol = 4;
+			tableRows += '<td colspan="' + numCol + '" class="locn' + crs.needRowBorder() + '">' + crs.locn + '</td>';
+		}
 
-		tableRows += '<td class="finalExamGroup' + crs.needRowBorder() + '">' + crs.finalExamGroup + '</td>';
+		if(crs.isFinalExamGroup())
+			tableRows += '<td class="finalExamGroup' + crs.needRowBorder() + '">' + crs.finalExamGroup + '</td>';
 
 		if(!crs.enrollmentMsg)
 		{
