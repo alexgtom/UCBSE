@@ -798,7 +798,7 @@ var newStylesheet = (function()
 
 	// Row Highlighting
 	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#dfffa4; }";
-	css += "tbody.lecture { background-color:#eeeeee; }";
+	css += "tbody.lecture { background-color:#f1f1f1; }";
 	css += "tbody.lecture tr:first-child > td { font-weight:bold; }";
 	css += "tbody.lecture .rowBorder { border-bottom:1px dotted #CCC; }";
 
