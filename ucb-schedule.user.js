@@ -782,7 +782,7 @@ var newStylesheet = (function()
 	css += ".days { width:115px; text-align:center; white-space:nowrap;}";
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
-	css += ".links { background-color:#FFF; white-space:nowrap; text-align:left; }";
+	css += ".links { white-space:nowrap; text-align:left; }";
 	css += ".full { background-color:#ff9b9b; color:#520e0e;}";
 	css += ".open { background-color:#c5ffc8; color:#15520e;}";
 	css += ".openButWaitlist { background-color:#ffd563; color:#473608;}";
@@ -806,7 +806,7 @@ var newStylesheet = (function()
 	// onclick row highlighting
 	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
 	css += "tbody.highlightonclick:hover { background-color:#ffd964; }";
-	css += ".highlightCursor { cursor:pointer; background-color:#FFF; }";
+	css += ".highlightCursor { cursor:pointer; }";
 
 	// key
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
