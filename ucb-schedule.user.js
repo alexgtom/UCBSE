@@ -782,7 +782,7 @@ var newStylesheet = (function()
 	css += ".days { width:115px; text-align:center; white-space:nowrap;}";
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
-	css += ".links { white-space:nowrap; text-align:left; }";
+	css += ".links { background-color:#FFF; white-space:nowrap; text-align:left; }";
 	css += ".full { background-color:#ff9b9b; color:#520e0e;}";
 	css += ".open { background-color:#c5ffc8; color:#15520e;}";
 	css += ".openButWaitlist { background-color:#ffd563; color:#473608;}";
@@ -798,14 +798,15 @@ var newStylesheet = (function()
 
 	// Row Highlighting
 	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#dfffa4; }";
-	css += "tbody.lecture { background-color:#f4f4f4; }";
+	css += "tbody.lecture { background-color:#eeeeee; }";
 	css += "tbody.lecture tr:first-child > td { font-weight:bold; }";
-	css += "tbody.lecture .rowBorder { border-bottom:2px solid #CCC; }";
+	css += "tbody.lecture .rowBorder { border-bottom:1px dotted #CCC; }";
+
 
 	// onclick row highlighting
 	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
 	css += "tbody.highlightonclick:hover { background-color:#ffd964; }";
-	css += ".highlightCursor { cursor:pointer; }";
+	css += ".highlightCursor { cursor:pointer; background-color:#FFF; }";
 
 	// key
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
@@ -1005,7 +1006,7 @@ var newTable = (function(courseList)
 			tableRows += '</td>';
 			tableRows += '<td colspan="4" class="enrollDataFiller rowBorder"><span></span></td>';
 			tableRows += '<td class="rowBorder" colspan="2"></td>';
-			tableRows += '<td></td>';
+			tableRows += '<td class="links"></td>';
 		}
 
 		tableRows += '</tr>'
