@@ -830,6 +830,12 @@ var newStylesheet = (function()
 	js += "			element.className = 'highlight';";
 	js += "}";
 
+	js += "	function popupwindow(url, name, width, height)"
+	js += "	{"
+	js += "		newwindow = window.open(url, name, \"width=\" + width + \",height=\" + height);"
+	js += "		if(window.focus) { newwindow.focus() }"
+	js += "			return false;";
+	js += "	}"
 	jsElt.innerHTML = js;
 
 	head.appendChild(jsElt);
