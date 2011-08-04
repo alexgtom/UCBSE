@@ -727,7 +727,7 @@ var newStylesheet = (function()
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
-	css += "table {empty-cells:show; width:100%;}";
+	css += "table {empty-cells:show; }";
 
 	// Top row (Course Number, CCN, Class type, etc.)
 	css += ".topRow { font-weight: bold; text-align: center; } ";
@@ -767,6 +767,7 @@ var newStylesheet = (function()
 
 	// Note, Summer fees, etc.
 	css += ".note, .summerFees, .sessionDates { color:#6e6e6e; }";
+	css += ".note { max-width:400px; }";
 
 	// Status, restrictions
 	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
