@@ -877,15 +877,15 @@ var newTable = (function(courseList)
 			tableRows += '</tr>';
 			tableRows += '<tr class="topRow">';
 			tableRows += '<td width="50" align="right">Course Number</td>';	
-			tableRows += '<td>CCN</td>';	
-			tableRows += '<td>Class Type</td>';	
-			tableRows += '<td>Section Number</td>';	
-			tableRows += '<td>Units</td>';	
+			tableRows += '<td >CCN</td>';	
+			tableRows += '<td width="30">Class Type</td>';	
+			tableRows += '<td width="30">Section Number</td>';	
+			tableRows += '<td width="40">Units</td>';	
 			tableRows += '<td align="left">Instructor</td>';	
 			tableRows += '<td align="left">Days</td>';	
 			tableRows += '<td align="left">Time</td>';	
 			tableRows += '<td align="left">Location</td>';	
-			tableRows += '<td>Final Exam Group</td>';	
+			tableRows += '<td width="30">Final Exam Group</td>';	
 			tableRows += '<td colspan="8"></td>';	
 			tableRows += '</tr>';
 		}
