@@ -101,21 +101,185 @@ function strip(html)
    return tmp.textContent||tmp.innerText;
 }
 
-/*
-function addClass(element, str)
+function insertAfter( referenceNode, newNode )
 {
-	className = stripSpace(element.className);
-	className += ' ' + str;
-	element.className = className;
+    referenceNode.parentNode.insertBefore( newNode, referenceNode.nextSibling );
 }
 
-function removeClass(element, str)
+function toggleMaximize()
 {
-	className = element.className;
-	className.replace(str, "");
-	element.className = stripSpace(className);
+	var table = document.getElementById('enhanced');
+	if( hasClass(table, 'enhancedFull'))
+	{
+		GM_setValue("isMaximum", "false");
+		removeClass(table, 'enhancedFull');
+		addClass(table, 'enhanced');
+	}
+	else
+	{
+		removeClass(table, 'enhanced');
+		addClass(table, 'enhancedFull');
+		GM_setValue("isMaximum", "true");
+	}
+
 }
-*/
+
+function toggleCCNBg()
+{
+	var elements = document.getElementsByClassName('ccnInput');
+
+	if(GM_getValue("isBg") == "false")
+	{
+		for(var i = 0, len = elements.length; i < len; i++)
+			removeClass(elements[i], "nobg");
+
+		GM_setValue("isBg", "true");
+	}
+	else
+	{
+		for(var i = 0, len = elements.length; i < len; i++)
+			addClass(elements[i], "nobg");
+
+		GM_setValue("isBg", "false");
+	}
+}
+
+function hasClass(ele,cls) {
+	if ((typeof(ele) == 'undefined') || (ele == null)) {
+		console.log(arguments.callee.caller);
+		return false;
+	}
+	return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
+}
+function addClass(ele,cls) {
+	if (!hasClass(ele,cls)) ele.className += " "+cls;
+}
+function removeClass(ele,cls) {
+	if (hasClass(ele,cls)) {
+		var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+		ele.className=ele.className.replace(reg,' ');
+	}
+}
+
+
+// GreaseMonkey API compatibility for Chrome
+// @copyright      2009, 2010 James Campos
+// @modified		2010 Steve Sobel - added some missing gm_* functions
+// @license        cc-by-3.0; http://creativecommons.org/licenses/by/3.0/
+if ((typeof GM_deleteValue == 'undefined') || (typeof GM_addStyle == 'undefined')) {
+	GM_addStyle = function(css) {
+		var style = document.createElement('style');
+		style.textContent = css;
+		var head = document.getElementsByTagName('head')[0];
+		if (head) {
+			head.appendChild(style);
+		}
+	}
+
+	GM_deleteValue = function(name) {
+		localStorage.removeItem(name);
+	}
+
+	GM_getValue = function(name, defaultValue) {
+		var value = localStorage.getItem(name);
+		if (!value)
+			return defaultValue;
+		var type = value[0];
+		value = value.substring(1);
+		switch (type) {
+			case 'b':
+				return value == 'true';
+			case 'n':
+				return Number(value);
+			default:
+				return value;
+		}
+	}
+
+	GM_log = function(message) {
+		console.log(message);
+	}
+
+	GM_registerMenuCommand = function(name, funk) {
+	//todo
+	}
+
+	GM_setValue = function(name, value) {
+		value = (typeof value)[0] + value;
+		localStorage.setItem(name, value);
+	}
+	
+	if (typeof(chrome) != 'undefined') {
+		GM_xmlhttpRequest = function(obj) {
+			var crossDomain = (obj.url.indexOf(location.hostname) == -1);
+			
+			if ((typeof(obj.onload) != 'undefined') && (crossDomain)) {
+				obj.requestType = 'GM_xmlhttpRequest';
+				if (typeof(obj.onload) != 'undefined') {
+					chrome.extension.sendRequest(obj, function(response) {
+						obj.onload(response);
+					});
+				}
+			} else {
+				var request=new XMLHttpRequest();
+				request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
+				request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
+				try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
+				if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
+				request.send(obj.data); return request;
+			}
+		}
+	} else if (typeof(safari) != 'undefined')  {
+		GM_xmlhttpRequest = function(obj) {
+			obj.requestType = 'GM_xmlhttpRequest';
+			// Safari is a bastard.  Since it doesn't provide legitimate callbacks, I have to store the onload function here
+			// in the main userscript in a queue (see xhrQueue), wait for data to come back from the background page, then call the onload. Damn this sucks.
+			// See how much easier it was up there in the Chrome statement?  Damn.
+			if (typeof(obj.onload) != 'undefined') {
+				obj.XHRID = xhrQueue.count;
+				xhrQueue.onloads[xhrQueue.count] = obj.onload;
+				safari.self.tab.dispatchMessage("GM_xmlhttpRequest", obj);
+				xhrQueue.count++;
+			}
+		}
+	} else if (typeof(opera) != 'undefined') {
+		GM_xmlhttpRequest = function(obj) {
+			obj.requestType = 'GM_xmlhttpRequest';
+			// Turns out, Opera works this way too, but I'll forgive them since their extensions are so young and they're awesome people...
+			// Really though, we need callbacks like Chrome has!  This is such a hacky way to emulate GM_xmlhttpRequest.
+
+			// oy vey... another problem. When Opera sends xmlhttpRequests from the background page, it loses the cookies etc that it'd have 
+			// had from the foreground page... so we need to write a bit of a hack here, and call different functions based on whether or 
+			// not the request is cross domain... For same-domain requests, we'll call from the foreground...
+			var crossDomain = (obj.url.indexOf(location.hostname) == -1);
+			
+			if ((typeof(obj.onload) != 'undefined') && (crossDomain)) {
+				obj.XHRID = xhrQueue.count;
+				xhrQueue.onloads[xhrQueue.count] = obj.onload;
+				opera.extension.postMessage(JSON.stringify(obj));
+				xhrQueue.count++;
+			} else {
+				var request=new XMLHttpRequest();
+				request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
+				request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
+				try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
+				if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
+				request.send(obj.data); return request;
+			}
+		}
+	} else {
+		GM_xmlhttpRequest=function(obj) {
+			var request=new XMLHttpRequest();
+			request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
+			request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
+			try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
+			if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
+			request.send(obj.data); return request;
+		}
+	}
+
+}
+
 
 /*
  * strips a string of the trailing and leading whitespace
@@ -142,6 +306,7 @@ Course.prototype.title = "";
 Course.prototype.catalogDescLink = "";
 Course.prototype.locn = "";
 Course.prototype.instructor = "";
+Course.prototype.lastName = "";
 Course.prototype.note = "";
 Course.prototype.bookLink = "";
 Course.prototype.units = "";
@@ -397,7 +562,7 @@ Course.prototype.parseTT = function(table)
 		if(label.match("Location:"))
 			this.parseLocn(ttArr[i].innerHTML);
 		else if(label.match("Instructor:"))
-			this.instructor 				= ttArr[i].innerHTML;
+			this.parseInstructor(ttArr[i].innerHTML);
 		else if(label.match("Status/Last Changed:"))
 			this.parseStatus(ttArr[i].innerHTML);
 		else if(label.match("Course Control Number:"))
@@ -420,6 +585,15 @@ Course.prototype.parseTT = function(table)
 
 }
 
+Course.prototype.parseInstructor = function(str)
+{
+	if(str)
+	{
+		this.instructor = str;
+		this.lastName = str.replace(/,[^$]*$/g, '');
+	}
+}
+
 Course.prototype.parseCourseTitle = function(table)
 {
 	htmlCourseTitle = table.getElementsByClassName("coursetitle")[0];
@@ -429,15 +603,20 @@ Course.prototype.parseCourseTitle = function(table)
 Course.prototype.parseLocn = function(str)
 {
 	var temp;
-	temp = str.match(/^[\s]*[MTWFuh]{1,7}[\s]+[0-9\-AP]+,/);
+	temp = str.match(/^[\s]*[MTWFuhSA]{1,7}[\s]+[0-9\-AP]+,/);
 	if(temp != null)
 	{
-		days = str.match(/^[\s]*[MTWFuh]{1,7}/);
+		days = str.match(/^[\s]*[MTWFuhSA]{1,7}/);
 
 		if(days != null)
 		{
 			this.days = days[0];
-			temp = str.replace(/^[\s]*[MTWFuh]{1,7}[\s]*/, '');
+
+			if(str.match(/^[\s]*MTWTF[\s]/))
+				this.days = "MTuWThF";				// this is a special case
+
+
+			temp = str.replace(/^[\s]*[MTWFuhSA]{1,7}[\s]*/, '');
 			time = temp.match(/^[0-9\-AP]+/);
 
 			if(time != null)
@@ -487,6 +666,8 @@ Course.prototype.fancyCourseControlNumber = function(str)
 		cssClass += "open";
 	else if(this.isFull() == -1)
 		cssClass += "openButWaitlist";
+	else
+		cssClass += "full";
 	
 	fanCCN += '<td class="ccn ' + this.needRowBorder() + '">'
 	if(str.match(/[0-9]+/) != null)
@@ -754,6 +935,9 @@ Course.prototype.fancyDays = function(days)
 		dayArr.push("F");
 	else
 		dayArr.push("--");
+	
+	if(days.match(/SA/))
+		dayArr.push("SA");
 
 	for(var i = 0, len = dayArr.length; i < len; i++)
 	{
@@ -838,6 +1022,8 @@ var newStylesheet = (function()
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
 	css += "table {empty-cells:show; }";
+	css += ".enhancedFull { width:100%; }";
+	css += ".enhanced { width:auto; }";
 
 	// links
 	css += "a {color:#336699}";
@@ -893,7 +1079,7 @@ var newStylesheet = (function()
 	css += ".instructor { text-align:left; }";
 	css += ".locn { text-align:left; }";
 	css += ".finalExamGroup { width:30px; text-align:center; }";
-	css += ".days { width:115px; text-align:center; white-space:nowrap;}";
+	css += ".days { min-width:120px; max-width:140px; text-align:center; white-space:nowrap;}";
 	css += ".time { text-align:left; }";
 	css += ".room { text-align:left; }";
 	css += ".links { white-space:nowrap; text-align:left; }";
@@ -905,7 +1091,7 @@ var newStylesheet = (function()
 	// Days
 	css += ".dayActive { background-color:#c5ffc8; color:#18571b;}";
 	css += ".dayInactive { color:#999; background-color:#dddddd; }";
-	css += ".dayActive, .dayInactive { font-weight:normal;  float:left; margin-right:1px; width:20px; text-align:center; padding:1px;}";
+	css += ".dayActive, .dayInactive { font-weight:normal; float:left; margin-right:1px; width:20px; text-align:center; padding:1px;}";
 	
 	// Advice links (courserank, myedu, etc)
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
@@ -924,6 +1110,13 @@ var newStylesheet = (function()
 
 	// key
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
+
+	// controls
+	css += "#controls { float:right;background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:300px; border:1px solid #CCC; text-align:center;}";
+	css += "#controls input { padding:0px; margin:2px 2px 0 2px; }";
+
+	// special classes
+	css += ".nobg { background-color:transparent; color:#000;}";
 
 	// Set CSS
 	styleElt.innerHTML = css;
@@ -949,6 +1142,13 @@ var newTable = (function(courseList)
 	body.setAttribute("background", "");
 	var table = document.createElement("table");
 	table.setAttribute("id", "enhanced");
+
+	if(GM_getValue("isMaximum") != "false")
+		table.setAttribute("class", "enhancedFull");
+	else
+		table.setAttribute("class", "enhanced");
+
+
 	table.setAttribute("cellspacing", "0");
 	var tableList = document.getElementsByTagName("TABLE");
 	
@@ -957,6 +1157,7 @@ var newTable = (function(courseList)
 	var tableRows = "";
 	var prevCourseNum = "";
 	var prevDepartment = "";
+
 
 	tableRows += '<tr><td colspan="18"><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full or has been cancelled.</div></td></tr>';
 
@@ -1041,7 +1242,7 @@ var newTable = (function(courseList)
 		tableRows += '<td class="classType' + crs.needRowBorder() + '">' + crs.classType + '</td>';
 		tableRows += '<td class="secNum' + crs.needRowBorder() + '">' + crs.secNum + '</td>';
 		tableRows += '<td class="units' + crs.needRowBorder() + '">' + crs.units + '</td>';
-		tableRows += '<td class="instructor' + crs.needRowBorder() + '">' + crs.instructor + '</td>';
+		tableRows += '<td class="instructor' + crs.needRowBorder() + '"><a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.lastName + '" target="_blank">' + crs.instructor + '</a></td>';
 
 		if(crs.locn == "")
 		{
@@ -1114,7 +1315,7 @@ var newTable = (function(courseList)
 			tableRows += '<td class="links"></td>';
 		}
 
-		tableRows += '</tr>'
+		tableRows += '</tr>';
 
 
 
@@ -1124,3 +1325,55 @@ var newTable = (function(courseList)
 	// render new table
 	table.innerHTML = tableRows;
 }(courseList));
+
+var controls = (function()
+{
+	var container = document.createElement("div");
+	container.setAttribute("id", "controls");
+
+
+	var controlLabel = document.createElement("b");
+	controlLabel.innerHTML = "Controls: ";
+	container.appendChild(controlLabel);
+
+	// Maximize Toggle
+	var toggleMaximizeElement = document.createElement("input");
+	toggleMaximizeElement.setAttribute("type", "checkbox");
+
+	var toggleMaximizeLabel = document.createTextNode("Maximize Table");
+
+	toggleMaximizeElement.addEventListener("click", toggleMaximize, false);
+
+	if(GM_getValue("isMaximum") == "true")
+	{
+		toggleMaximizeElement.setAttribute("checked", "yes");
+//		toggleMaximize();
+	}
+
+	container.appendChild(toggleMaximizeElement);
+	container.appendChild(toggleMaximizeLabel);
+
+	// CCN Bg Toggle
+	var toggleCCNBgElement = document.createElement("input");
+	toggleCCNBgElement.setAttribute("type", "checkbox");
+
+	var toggleCCNBgLabel = document.createTextNode("CCN Background Colors");
+
+	if(GM_getValue("isBg") != "false")
+	{
+		toggleCCNBgElement.setAttribute("checked", "yes");
+	}
+	else
+	{
+		var elements = document.getElementsByClassName('ccnInput');
+		for(var i = 0, len = elements.length; i < len; i++)
+			addClass(elements[i], "nobg");
+	}
+
+	toggleCCNBgElement.addEventListener("click", toggleCCNBg, false);
+	container.appendChild(toggleCCNBgElement);
+	container.appendChild(toggleCCNBgLabel);
+
+	// Render Controls
+	document.body.insertBefore(container, document.body.firstChild);
+}());
