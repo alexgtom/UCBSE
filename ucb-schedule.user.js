@@ -606,25 +606,27 @@ Course.prototype.parseLocn = function(str)
 	temp = str.match(/^[\s]*[MTWFuhSA]{1,7}[\s]+[0-9\-AP]+,/);
 	if(temp != null)
 	{
-		days = str.match(/^[\s]*[MTWFuhSA]{1,7}/);
-
-		if(days != null)
-		{
+		days = str.match(/^[\s]*(M|Tu|W|Th|F|SA){1,7}[\s]/);
+		if(days)
 			this.days = days[0];
+		else if(str.match(/^[\s]*MTWTF[\s]/))
+			this.days = "MTuWThF";				// this is a special case
 
-			if(str.match(/^[\s]*MTWTF[\s]/))
-				this.days = "MTuWThF";				// this is a special case
+		// remove the days
+		temp = str.replace(/^[\s]*[MTWFuhSA]{1,7}[\s]*/, '');
 
+		// get the time
+		time = temp.match(/^[0-9\-AP]+/);
 
-			temp = str.replace(/^[\s]*[MTWFuhSA]{1,7}[\s]*/, '');
-			time = temp.match(/^[0-9\-AP]+/);
+		if(time != null)
+		{
+			this.time = time[0];
 
-			if(time != null)
-			{
-				this.time = time[0];
-				temp = temp.replace(/^[0-9\-AP]+,[\s]*/, '');
-				this.room = temp;
-			}
+			// remove the time
+			temp = temp.replace(/^[0-9\-AP]+,[\s]*/, '');
+
+			// get the room
+			this.room = temp;
 		}
 	}
 	else if(str.match(/^UNSCHED/))
