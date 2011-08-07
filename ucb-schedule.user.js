@@ -23,6 +23,62 @@
 //	  https://github.com/athk/UCBSE
 //
 
+function post_to_url(path, params, method, target) 
+{
+    method = method || "post"; // Set method to post by default, if not specified.
+	target = target || "_self";
+
+    // The rest of this code assumes you are not using a library.
+    // It can be made less wordy if you use one.
+    var form = document.createElement("form");
+    form.setAttribute("method", method);
+    form.setAttribute("action", path);
+    form.setAttribute("target", target);
+
+    for(var key in params) {
+        var hiddenField = document.createElement("input");
+        hiddenField.setAttribute("type", "hidden");
+        hiddenField.setAttribute("name", key);
+        hiddenField.setAttribute("value", params[key]);
+
+        form.appendChild(hiddenField);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function associativeArrayToString(arr)
+{
+	str = "{ ";
+	for(var key in arr)
+	{
+		str += "'" + key + "' : '" + arr[key] + "', ";
+	}
+	str = str.replace(/,[\s]*$/, '');
+	str += "}";
+	return str;
+}
+
+function popupwindow(url, name, width, height)
+{
+	newwindow = window.open(url, name, "width=" + width + ",height=" + height);
+	if(window.focus) { newwindow.focus() }
+	return false;
+}
+
+function highlightRow(element) 
+{
+	if(element.className == 'highlight')
+		element.className = 'highlightonclick';
+	else if(element.className == 'lecture')
+		element.className = 'lecture highlightonclick';
+	else if(element.className == 'lecture highlightonclick')
+		element.className = 'lecture';
+	else
+		element.className = 'highlight';
+}
+
 /*
  * converts spaces to +
  *
@@ -77,6 +133,7 @@ function Course()
 }
 
 Course.prototype.department = "";
+Course.prototype.departmentAbrev = "";
 Course.prototype.ccn = "";
 Course.prototype.ps = "";
 Course.prototype.secNum = "";
@@ -336,11 +393,9 @@ Course.prototype.parseTT = function(table)
 		var label = bArr[i+1].innerHTML; // we don't want to parse the "Course:"
 										 // because it's a special case, so we 
 										 // skip it
-		if(label.match("Course Title:"))
-			this.title 						= strip(ttArr[i].innerHTML);
-		else if(label.match("Location:"))
+		
+		if(label.match("Location:"))
 			this.parseLocn(ttArr[i].innerHTML);
-//			this.locn 						= ttArr[i].innerHTML;
 		else if(label.match("Instructor:"))
 			this.instructor 				= ttArr[i].innerHTML;
 		else if(label.match("Status/Last Changed:"))
@@ -363,6 +418,12 @@ Course.prototype.parseTT = function(table)
 			this.summerFees					= ttArr[i].innerHTML;
 	}
 
+}
+
+Course.prototype.parseCourseTitle = function(table)
+{
+	htmlCourseTitle = table.getElementsByClassName("coursetitle")[0];
+	this.title = strip(htmlCourseTitle.innerHTML);
 }
 
 Course.prototype.parseLocn = function(str)
@@ -459,22 +520,69 @@ Course.prototype.parseEnrollment = function(str)
 	}
 }
 
-/**
- * Selects all A tags and sets the according properties
+/*
+ * @return string "javascript:call_to_function()"
  */
-Course.prototype.parseA = function(table)
+Course.prototype.parseLinks = function(table)
 {
-	link = table.querySelectorAll("A");
 
-	for(var i = 0, len = link.length; i < len; i++)
+
+	function getValue(tbl, name)
 	{
-		var temp = link[i].innerHTML;
+		for(var i = 0, len = tbl.length; i < len; i++)
+			if(tbl[i].getAttribute("name") == name)
+				return tbl[i].getAttribute("value");
+	}
+
+	var input = table.getElementsByTagName("input");
+
+	for(var i = 0, len = input.length; i < len; i++)
+	{
+		var temp = input[i].getAttribute("value");
 		if(temp.match(/(catalog description)/) != null)
-			this.catalogDescLink = link[i].getAttribute("href");
+		{
+			var catalogDescParams = new Array();
+
+			catalogDescParams['p_dept_name'] = spaceToPlus(this.department);
+			catalogDescParams['p_dept_cd'] = spaceToPlus(this.departmentAbrev);
+			catalogDescParams['p_title'] = "";
+			catalogDescParams['p_number'] = this.courseNum;
+
+			catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_sso_search_sends_request', ";
+			catalogDescLink += associativeArrayToString(catalogDescParams);
+			catalogDescLink += ",'post','_blank');";
+
+			this.catalogDescLink = catalogDescLink;
+		}
 		else if(temp.match(/Click here for current enrollment/) != null)
-			this.enrollmentLink = link[i].getAttribute("href");
+		{
+			var enrollmentParams = new Array();
+			
+			enrollmentParams['_InField1'] = getValue(input, "_InField1");
+			enrollmentParams['_InField2'] = getValue(input, "_InField2");
+			enrollmentParams['_InField3'] = getValue(input, "_InField3");
+
+			enrollmentLink = "javascript:post_to_url('http://infobears.berkeley.edu:3400/osc', ";
+			enrollmentLink += associativeArrayToString(enrollmentParams);
+			enrollmentLink += ",'post','_blank');";
+
+			this.enrollmentLink = enrollmentLink;
+		}
 		else if(temp.match(/View Books/) != null)
-			this.bookLink = link[i].getAttribute("href");
+		{
+			var bookParams = new Array();
+
+			bookParams['bookstore_id-1'] = getValue(input, "bookstore_id-1");
+			bookParams['term_id-1'] = getValue(input, "term_id-1");
+			bookParams['div-1'] = getValue(input, "div-1");
+			bookParams['crn-1'] = this.ccn;
+
+			bookLink = "javascript:post_to_url('http://www.bkstr.com/webapp/wcs/stores/servlet/booklookServlet', ";
+			bookLink += associativeArrayToString(bookParams);
+			bookLink += ",'post','_blank');";
+
+			this.bookLink = bookLink;
+		}
 	}
 }
 
@@ -506,7 +614,8 @@ Course.prototype.parseCourse = function(table)
 		for(var i = 0; i < beginCourseIndex; i++)
 			courseName += str[i] + " ";
 
-		this.department = courseName;					// Course Name
+		this.department = courseName;					// Department
+		this.departmentAbrev = this.getDeptAbrev(courseName); // Department Abrev
 		this.courseNum = str[beginCourseIndex];			// Course Number
 		this.ps = str[beginCourseIndex + 1];			// P/S (not sure what P or S means)
 		this.secNum = str[beginCourseIndex + 2];		// Section Number
@@ -696,8 +805,9 @@ var courseList = (function()
 		var crs = new Course();
 
 		crs.parseTT(entryList[i]);
-		crs.parseA(entryList[i]);
 		crs.parseCourse(entryList[i]);		
+		crs.parseCourseTitle(entryList[i]);
+		crs.parseLinks(entryList[i]);
 
 		courseList.push(crs);
 	}
@@ -728,6 +838,9 @@ var newStylesheet = (function()
 	css += "body { font-family:arial, tahoma, verdana; } ";
 	css += "table, tr, td { font-size: 0.9em; } ";
 	css += "table {empty-cells:show; }";
+
+	// links
+	css += "a {color:#336699}";
 
 	// Top row (Course Number, CCN, Class type, etc.)
 	css += ".topRow { font-weight: bold; text-align: center; } ";
@@ -807,7 +920,7 @@ var newStylesheet = (function()
 	// onclick row highlighting
 	css += "tbody.highlightonclick, tbody.highlightonclick:active, tbody.highlightonclick:visited { background-color:#fff98a; }";
 	css += "tbody.highlightonclick:hover { background-color:#ffd964; }";
-	css += ".highlightCursor { cursor:pointer; }";
+	css += ".highlightCursor, a { cursor:pointer; }";
 
 	// key
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
@@ -819,25 +932,10 @@ var newStylesheet = (function()
 	// Add JS
 	var jsElt = document.createElement("script");
 
-	js = "";
-	js += "function highlightRow(element) {";
-	js += "		if(element.className == 'highlight')";
-	js += "			element.className = 'highlightonclick';";
-	js += "		else if(element.className == 'lecture')";
-	js += "			element.className = 'lecture highlightonclick';";
-	js += "		else if(element.className == 'lecture highlightonclick')";
-	js += "			element.className = 'lecture';";
-	js += "		else";
-	js += "			element.className = 'highlight';";
-	js += "}";
-
-	js += "	function popupwindow(url, name, width, height)"
-	js += "	{"
-	js += "		newwindow = window.open(url, name, \"width=\" + width + \",height=\" + height);"
-	js += "		if(window.focus) { newwindow.focus() }"
-	js += "			return false;";
-	js += "	}"
-	jsElt.innerHTML = js;
+	// Add functions defined in this javascript file to the head of the OSOC page
+	jsElt.appendChild(document.createTextNode(highlightRow));
+	jsElt.appendChild(document.createTextNode(popupwindow));
+	jsElt.appendChild(document.createTextNode(post_to_url));
 
 	head.appendChild(jsElt);
 }());
@@ -900,13 +998,13 @@ var newTable = (function(courseList)
 			tableRows += '<td align="right" valign="middle" class="titleLeftBorder">' + crs.courseNum + '</td>';
 			tableRows += '<td colspan="9" valign="middle">';
 			tableRows += '<span style="float:left;">';
-			tableRows += '<a href="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a>';
+			tableRows += '<a onclick="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a>';
 			if(crs.courseWebsite != "")
 				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
 			tableRows += '</span>';
 			tableRows += '<span style="float:right;" class="adviceLinks">';
 		
-			deptAbrev = crs.getDeptAbrev(crs.department);
+			deptAbrev = crs.departmentAbrev;
 
 			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '" target="blank">[K]</a> ';
 			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
@@ -984,9 +1082,9 @@ var newTable = (function(courseList)
 		tableRows += '<td class="statusLastChanged' + crs.needRowBorder() + '"><small>' + crs.statusLastChanged + '</small></td>';
 		tableRows += '<td class="links">';
 			if(crs.enrollmentLink != "")
-				tableRows += '<a href="' + crs.enrollmentLink+ '" target="_blank">[E]</a> ';
+				tableRows += '<a onclick="' + crs.enrollmentLink+ '" target="_blank">[E]</a> ';
 			if(crs.bookLink != "")
-				tableRows += '<a href="' + crs.bookLink + '" target="_blank">[B]</a>';
+				tableRows += '<a onclick="' + crs.bookLink + '" target="_blank">[B]</a>';
 		tableRows += '</td>';
 		tableRows += '</tr>';
 
