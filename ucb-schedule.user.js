@@ -60,13 +60,13 @@ function associativeArrayToString(arr)
 	return str;
 }
 
-function toggleColumn(n) {
-    var currentClass = document.getElementById("enhanced").className;
+function toggleColumn(element, n) {
+    var currentClass = document.getElementById(element).className;
     if (currentClass.indexOf("hide"+n) != -1) {
-        document.getElementById("enhanced").className = currentClass.replace("hide"+n, "");
+        document.getElementById(element).className = currentClass.replace("hide"+n, "");
     }
     else {
-        document.getElementById("enhanced").className += " " + "hide"+n;
+        document.getElementById(element).className += " " + "hide"+n;
     }
 }
 
@@ -78,7 +78,7 @@ function createToggleColumnElement(container, n, label)
 	var toggleColElement = document.createElement("input");
 
 	toggleColElement.setAttribute("type", "checkbox");
-	toggleColElement.setAttribute("onclick", "toggleColumn(" + n + ")");
+	toggleColElement.setAttribute("onclick", "toggleColumn('enhanced', " + n + ")");
 	var toggleColLabel = document.createTextNode(label);
 	toggleColElement.addEventListener("click", function() { if(GM_getValue("isCol" + n) == "false") GM_setValue("isCol" + n, "true"); else GM_setValue("isCol" + n, "false"); console.log(GM_getValue("isCol" + n));}, false);
 	
@@ -1082,6 +1082,9 @@ var newStylesheet = (function()
 	// for showing and hiding second row
 	css += "table.hide200 .col200 { display:none; }";
 
+	// for showing and hiding controls
+	css += "div.hide900 { display:none; background-color:#000; }";
+
 	// links
 	css += "a {color:#336699}";
 
@@ -1172,14 +1175,18 @@ var newStylesheet = (function()
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
 
 	// controls
-	css += "#controls { float:right;background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:500px; border:1px solid #CCC; text-align:center;}";
+	css += "#controls { float:left; background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:150px; border:1px solid #CCC; text-align:center;}";
 	css += "#controls input { padding:0px; margin:2px 2px 0 2px; }";
-
-	css += ".checkboxElement {float:left; width:100px; text-align:left;}";
+	css += ".checkboxElement {float:left; width:150px; text-align:left;}";
 
 	// special classes
 	css += "table.nobg .open, table.nobg .openButWaitlist, table.nobg .full { background-color:transparent; color:#000;}";
 
+	// configuration link
+	css += "#configLink { float:top left; text-align:right;}";
+
+	// sidebar
+	css += "#sidebar {width:165px; float:right; text-align:right;}";
 
 	// Set CSS
 	styleElt.innerHTML = css;
@@ -1402,15 +1409,16 @@ var controls = (function()
 {
 	var container = document.createElement("div");
 	container.setAttribute("id", "controls");
+	container.setAttribute("class", "col900 hide900");
 
 	var controlLabelContainer = document.createElement("div");
 	controlLabelContainer.setAttribute("class", "checkboxElement");
-
+/*
 	var controlLabel = document.createElement("b");
 	controlLabel.innerHTML = "Controls: ";
 	controlLabelContainer.appendChild(controlLabel);
-
 	container.appendChild(controlLabelContainer);
+*/
 
 	// Maximize Toggle
 	var toggleMaximizeContainer = document.createElement("div");
@@ -1480,6 +1488,22 @@ var controls = (function()
 	createToggleColumnElement(container, 18, "Enrollment Message");
 	createToggleColumnElement(container, 200, "Second Row");
 
+	// Configuration link
+	var toggleControlsContainer = document.createElement("div");
+	toggleControlsContainer.setAttribute("id", "configLink");
+	var toggleControls = document.createElement("a");
+	toggleControls.setAttribute("onclick", "toggleColumn('controls', 900)");
+	toggleControls.innerHTML = "Configuration";
+	toggleControlsContainer.appendChild(toggleControls);
+
+
+	// Sidebar container
+	var sidebarContainer = document.createElement("div");
+	sidebarContainer.setAttribute("id", "sidebar");
+
+	sidebarContainer.appendChild(toggleControlsContainer);
+	sidebarContainer.appendChild(container);
+
 	// Render Controls
-	document.body.insertBefore(container, document.body.firstChild);
+	document.body.insertBefore(sidebarContainer, document.body.firstChild);
 }());
