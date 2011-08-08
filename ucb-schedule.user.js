@@ -72,6 +72,9 @@ function toggleColumn(n) {
 
 function createToggleColumnElement(container, n, label)
 {
+	var divContainer = document.createElement("div");
+	divContainer.setAttribute("class", "checkboxElement");
+
 	var toggleColElement = document.createElement("input");
 
 	toggleColElement.setAttribute("type", "checkbox");
@@ -89,8 +92,10 @@ function createToggleColumnElement(container, n, label)
         document.getElementById("enhanced").className += " " + "hide"+n;
 
 
-	container.appendChild(toggleColElement);
-	container.appendChild(toggleColLabel);
+	divContainer.appendChild(toggleColElement);
+	divContainer.appendChild(toggleColLabel);
+
+	container.appendChild(divContainer);
 }
 
 function popupwindow(url, name, width, height)
@@ -1167,11 +1172,14 @@ var newStylesheet = (function()
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
 
 	// controls
-	css += "#controls { float:right;background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:600px; border:1px solid #CCC; text-align:center;}";
+	css += "#controls { float:right;background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:500px; border:1px solid #CCC; text-align:center;}";
 	css += "#controls input { padding:0px; margin:2px 2px 0 2px; }";
+
+	css += ".checkboxElement {float:left; width:100px; text-align:left;}";
 
 	// special classes
 	css += "table.nobg .open, table.nobg .openButWaitlist, table.nobg .full { background-color:transparent; color:#000;}";
+
 
 	// Set CSS
 	styleElt.innerHTML = css;
@@ -1395,12 +1403,19 @@ var controls = (function()
 	var container = document.createElement("div");
 	container.setAttribute("id", "controls");
 
+	var controlLabelContainer = document.createElement("div");
+	controlLabelContainer.setAttribute("class", "checkboxElement");
 
 	var controlLabel = document.createElement("b");
 	controlLabel.innerHTML = "Controls: ";
-	container.appendChild(controlLabel);
+	controlLabelContainer.appendChild(controlLabel);
+
+	container.appendChild(controlLabelContainer);
 
 	// Maximize Toggle
+	var toggleMaximizeContainer = document.createElement("div");
+	toggleMaximizeContainer.setAttribute("class", "checkboxElement");
+
 	var toggleMaximizeElement = document.createElement("input");
 	toggleMaximizeElement.setAttribute("type", "checkbox");
 
@@ -1411,13 +1426,17 @@ var controls = (function()
 	if(GM_getValue("isMaximum") == "true")
 	{
 		toggleMaximizeElement.setAttribute("checked", "yes");
-//		toggleMaximize();
 	}
 
-	container.appendChild(toggleMaximizeElement);
-	container.appendChild(toggleMaximizeLabel);
+	toggleMaximizeContainer.appendChild(toggleMaximizeElement);
+	toggleMaximizeContainer.appendChild(toggleMaximizeLabel);
+
+	container.appendChild(toggleMaximizeContainer);
 
 	// CCN Bg Toggle
+	var toggleCCNBgContainer = document.createElement("div");
+	toggleCCNBgContainer.setAttribute("class", "checkboxElement");
+
 	var toggleCCNBgElement = document.createElement("input");
 	toggleCCNBgElement.setAttribute("type", "checkbox");
 
@@ -1434,8 +1453,11 @@ var controls = (function()
 	}
 
 	toggleCCNBgElement.addEventListener("click", toggleCCNBg, false);
-	container.appendChild(toggleCCNBgElement);
-	container.appendChild(toggleCCNBgLabel);
+
+	toggleCCNBgContainer.appendChild(toggleCCNBgElement);
+	toggleCCNBgContainer.appendChild(toggleCCNBgLabel);
+
+	container.appendChild(toggleCCNBgContainer);
 
 	// col1
 	createToggleColumnElement(container, 1, "Course Number");
