@@ -1330,14 +1330,14 @@ var newTable = (function(courseList)
 		tableRows += '<td class="col3 classType' + crs.needRowBorder() + '">' + crs.classType + '</td>';
 		tableRows += '<td class="col4 secNum' + crs.needRowBorder() + '">' + crs.secNum + '</td>';
 		tableRows += '<td class="col5 units' + crs.needRowBorder() + '">' + crs.units + '</td>';
-		tableRows += '<td class="instructor' + crs.needRowBorder() + '">';
+		tableRows += '<td class="instructor' + crs.needRowBorder() + '"><div class="col6">';
 
 		if(crs.instructor.match(/THE STAFF/))
 			tableRows += crs.instructor;
 		else if(crs.instructor != "")
-			tableRows += '<div class="col6"><a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.lastName + '" target="_blank">' + crs.instructor + '</a></div>';
+			tableRows += '<a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.lastName + '" target="_blank">' + crs.instructor + '</a>';
 
-		tableRows += '</td>';
+		tableRows += '</div></td>';
 
 		if(crs.locn == "")
 		{
@@ -1386,7 +1386,7 @@ var newTable = (function(courseList)
 		tableRows += '</tr>';
 
 		// Second row (Note, Summer Session fees, etc.)
-		tableRows += '<tr class="col200">';
+		tableRows += '<tr class="">';
 
 		if(crs.needSecondRow())
 		{
@@ -1397,13 +1397,13 @@ var newTable = (function(courseList)
 			tableRows += '<td class="col5 rowBorder"></td>';
 			tableRows += '<td class="rowBorder" colspan="5">';
 				if(crs.summerFees != "")
-					tableRows += '<p class="summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
+					tableRows += '<p class="col200 summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
 
 				if(crs.sessionDates != "")
-					tableRows += '<p class="sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
+					tableRows += '<p class="col200 sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
 
 				if(crs.note != "")
-					tableRows += '<p class="note"><small><b>Note:</b> ' + crs.note + '</small></p>';
+					tableRows += '<p class="col200 note"><small><b>Note:</b> ' + crs.note + '</small></p>';
 
 
 			tableRows += '</td>';
