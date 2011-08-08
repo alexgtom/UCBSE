@@ -70,26 +70,28 @@ function toggleColumn(element, n) {
     }
 }
 
-function createToggleColumnElement(container, n, label)
+function createToggleColumnElement(container, n, label, id)
 {
+	id = id || "enhanced";
+
 	var divContainer = document.createElement("div");
 	divContainer.setAttribute("class", "checkboxElement");
 
 	var toggleColElement = document.createElement("input");
 
 	toggleColElement.setAttribute("type", "checkbox");
-	toggleColElement.setAttribute("onclick", "toggleColumn('enhanced', " + n + ")");
+	toggleColElement.setAttribute("onclick", 'toggleColumn("' + id + '", ' + n + ')');
 	var toggleColLabel = document.createTextNode(label);
 	toggleColElement.addEventListener("click", function() { if(GM_getValue("isCol" + n) == "false") GM_setValue("isCol" + n, "true"); else GM_setValue("isCol" + n, "false"); console.log(GM_getValue("isCol" + n));}, false);
 	
-    	var currentClass = document.getElementById("enhanced").className;
+    	var currentClass = document.getElementById(id).className;
 	if(GM_getValue("isCol" + n) != "false")
 	{
-        document.getElementById("enhanced").className = currentClass.replace("hide"+n, "");
+        document.getElementById(id).className = currentClass.replace("hide"+n, "");
 		toggleColElement.setAttribute("checked", "yes");
 	}
 	else
-        document.getElementById("enhanced").className += " " + "hide"+n;
+        document.getElementById(id).className += " " + "hide"+n;
 
 
 	divContainer.appendChild(toggleColElement);
@@ -1062,6 +1064,7 @@ var newStylesheet = (function()
 	css += "table { empty-cells:show; }";
 	css += ".enhancedFull { width:100%; }";
 	css += ".enhanced { width:auto; }";
+
 	css += "table.hide1 .col1,";
 
 	var numCol = 18;
@@ -1147,7 +1150,7 @@ var newStylesheet = (function()
 	css += ".room { text-align:left; }";
 	css += ".links { white-space:nowrap; text-align:left; }";
 	css += ".full { background-color:#ff9b9b; color:#520e0e;}";
-	css += ".open { background-color:#c5ffc8; color:#15520e;}";
+	css += ".open { background-color:#c5ffc8; color:#15520e;}" ;
 	css += ".openButWaitlist { background-color:#ffd563; color:#473608;}";
 	css += ".unsched { background-color:#dddddd; color:#333; margin-right:1px;}";
 
@@ -1173,20 +1176,24 @@ var newStylesheet = (function()
 
 	// key
 	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
+	css += "table.hide300 { display:none; background-color:#000; }";
+
+	// turn of bg on ccn
+	css += "table.nobg .open, table.nobg .openButWaitlist, table.nobg .full { background-color:transparent; color:#000;}";
 
 	// controls
-	css += "#controls { float:left; background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:150px; border:1px solid #CCC; text-align:center;}";
+	css += "#controls { float:left; background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:150px; border:1px solid #CCC; text-align:center; opacity: .9;}";
+	css += "#controls hr { background-color:#CCC; height:1px; border:0px; float:left; width:100%;}";
 	css += "#controls input { padding:0px; margin:2px 2px 0 2px; }";
 	css += ".checkboxElement {float:left; width:150px; text-align:left;}";
 
-	// special classes
-	css += "table.nobg .open, table.nobg .openButWaitlist, table.nobg .full { background-color:transparent; color:#000;}";
+	// sidebar
+	css += "#sidebar {width:165px; float:right; text-align:right;z-index:100; position:absolute; right:10px; top:10px; }";
 
 	// configuration link
 	css += "#configLink { float:top left; text-align:right;}";
 
-	// sidebar
-	css += "#sidebar {width:165px; float:right; text-align:right;}";
+
 
 	// Set CSS
 	styleElt.innerHTML = css;
@@ -1202,6 +1209,19 @@ var newStylesheet = (function()
 	jsElt.appendChild(document.createTextNode(toggleColumn));
 
 	head.appendChild(jsElt);
+}());
+
+/*
+ * Create Key
+ */
+	
+var newKey = (function()
+{
+	var table = document.createElement("table");
+	table.setAttribute("id", "key");
+	table.innerHTML = '<tr><td><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full or has been cancelled.</div></td></tr>';
+
+	document.body.insertBefore(table, document.body.firstChild.nextSibling.nextSibling);
 }());
 
 /*
@@ -1223,14 +1243,12 @@ var newTable = (function(courseList)
 	table.setAttribute("cellspacing", "0");
 	var tableList = document.getElementsByTagName("TABLE");
 	
-	body.insertBefore(table, body.firstChild.nextSibling.nextSibling);
+	body.insertBefore(table, body.firstChild.nextSibling.nextSibling.nextSibling);
 
 	var tableRows = "";
 	var prevCourseNum = "";
 	var prevDepartment = "";
 
-
-	tableRows += '<tr><td colspan="18"><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full or has been cancelled.</div></td></tr>';
 
 	for(var i = 0, len = courseList.length; i < len; i++)
 	{
@@ -1413,12 +1431,6 @@ var controls = (function()
 
 	var controlLabelContainer = document.createElement("div");
 	controlLabelContainer.setAttribute("class", "checkboxElement");
-/*
-	var controlLabel = document.createElement("b");
-	controlLabel.innerHTML = "Controls: ";
-	controlLabelContainer.appendChild(controlLabel);
-	container.appendChild(controlLabelContainer);
-*/
 
 	// Maximize Toggle
 	var toggleMaximizeContainer = document.createElement("div");
@@ -1467,7 +1479,13 @@ var controls = (function()
 
 	container.appendChild(toggleCCNBgContainer);
 
-	// col1
+	// Key toggle
+	createToggleColumnElement(container, 300, "Key", "key");
+
+	// hr
+	container.appendChild(document.createElement("hr"));
+
+	// Column controls
 	createToggleColumnElement(container, 1, "Course Number");
 	createToggleColumnElement(container, 2, "CCN");
 	createToggleColumnElement(container, 3, "Class Type");
@@ -1495,7 +1513,6 @@ var controls = (function()
 	toggleControls.setAttribute("onclick", "toggleColumn('controls', 900)");
 	toggleControls.innerHTML = "Configuration";
 	toggleControlsContainer.appendChild(toggleControls);
-
 
 	// Sidebar container
 	var sidebarContainer = document.createElement("div");
