@@ -1425,6 +1425,7 @@ var newTable = (function(courseList)
 
 var controls = (function()
 {
+	// container for the controls
 	var container = document.createElement("div");
 	container.setAttribute("id", "controls");
 	container.setAttribute("class", "col900 hide900");
