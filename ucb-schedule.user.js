@@ -1502,17 +1502,21 @@ var controls = (function()
 	createToggleColumnElement(container, 4, "Section Number");
 	createToggleColumnElement(container, 5, "Units");
 	createToggleColumnElement(container, 6, "Instructor");
+	container.appendChild(document.createElement("hr"));
 	createToggleColumnElement(container, 7, "Days");
 	createToggleColumnElement(container, 8, "Time");
 	createToggleColumnElement(container, 9, "Location");
 	createToggleColumnElement(container, 10, "Final Exam Group");
+	container.appendChild(document.createElement("hr"));
 	createToggleColumnElement(container, 11, "Limit");
 	createToggleColumnElement(container, 12, "Enrolled");
 	createToggleColumnElement(container, 13, "Waitlist");
 	createToggleColumnElement(container, 14, "Avail Seats");
+	container.appendChild(document.createElement("hr"));
 	createToggleColumnElement(container, 15, "Restrictions");
 	createToggleColumnElement(container, 16, "Status");
 	createToggleColumnElement(container, 17, "Links");
+	container.appendChild(document.createElement("hr"));
 	createToggleColumnElement(container, 18, "Enrollment Message");
 	createToggleColumnElement(container, 200, "Second Row");
 
