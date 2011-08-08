@@ -59,7 +59,7 @@ function associativeArrayToString(arr)
 	str += "}";
 	return str;
 }
-
+/*
 function toggleColumn(element, n) {
     var currentClass = document.getElementById(element).className;
     if (currentClass.indexOf("hide"+n) != -1) {
@@ -68,6 +68,14 @@ function toggleColumn(element, n) {
     else {
         document.getElementById(element).className += " " + "hide"+n;
     }
+}
+*/
+function toggleColumn(element, n) {
+    var object = document.getElementById(element);
+	if(hasClass(object, "hide" + n))
+		removeClass(object, "hide" + n);
+	else
+		addClass(object, "hide" + n);
 }
 
 function createToggleColumnElement(container, n, label, id)
@@ -82,7 +90,7 @@ function createToggleColumnElement(container, n, label, id)
 	toggleColElement.setAttribute("type", "checkbox");
 	toggleColElement.setAttribute("onclick", 'toggleColumn("' + id + '", ' + n + ')');
 	var toggleColLabel = document.createTextNode(label);
-	toggleColElement.addEventListener("click", function() { if(GM_getValue("isCol" + n) == "false") GM_setValue("isCol" + n, "true"); else GM_setValue("isCol" + n, "false"); console.log(GM_getValue("isCol" + n));}, false);
+	toggleColElement.addEventListener("click", function() { if(GM_getValue("isCol" + n) == "false") GM_setValue("isCol" + n, "true"); else GM_setValue("isCol" + n, "false"); }, false);
 	
     	var currentClass = document.getElementById(id).className;
 	if(GM_getValue("isCol" + n) != "false")
@@ -184,7 +192,6 @@ function toggleCCNBg()
 
 function hasClass(ele,cls) {
 	if ((typeof(ele) == 'undefined') || (ele == null)) {
-		console.log(arguments.callee.caller);
 		return false;
 	}
 	return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
@@ -709,13 +716,13 @@ Course.prototype.fancyCourseControlNumber = function(str)
 	else
 		cssClass += "full";
 	
-	fanCCN += '<td class="col2 ccn ' + this.needRowBorder() + '">'
+	fanCCN += '<td class="ccn ' + this.needRowBorder() + '"><div class="col2">'
 	if(str.match(/[0-9]+/) != null)
 		fanCCN += '<input type="text" onclick="select()" class="ccnInput ' + cssClass + '" value="' + str + '" >';
 	else
 		fanCCN += '<b>' + str + '</b>';
 	
-	fanCCN += '</td>';
+	fanCCN += '</div></td>';
 	return fanCCN;
 }
 
@@ -1065,7 +1072,6 @@ var newStylesheet = (function()
 	css += ".enhancedFull { width:100%; }";
 	css += ".enhanced { width:auto; }";
 
-	css += "table.hide1 .col1,";
 
 	var numCol = 18;
 	// col18 = enrollment message
@@ -1137,7 +1143,7 @@ var newStylesheet = (function()
 	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
 	css += ".statusLastChanged, .col16 { width:110px; }";
 	css += ".restrictions, .col15 { width:110px;}";
-	css += ".ccn { white-space:nowrap; border-right: 1px dotted #CCC;}";
+	css += ".ccn { margin:auto; text-align:center; white-space:nowrap; border-right: 1px dotted #CCC;}";
 	css += ".classType { width:30px; }";
 	css += ".secNum { width:30px; }";
 	css += ".units { width:40px; text-align:center; }";
@@ -1207,6 +1213,9 @@ var newStylesheet = (function()
 	jsElt.appendChild(document.createTextNode(popupwindow));
 	jsElt.appendChild(document.createTextNode(post_to_url));
 	jsElt.appendChild(document.createTextNode(toggleColumn));
+	jsElt.appendChild(document.createTextNode(hasClass));
+	jsElt.appendChild(document.createTextNode(addClass));
+	jsElt.appendChild(document.createTextNode(removeClass));
 
 	head.appendChild(jsElt);
 }());
@@ -1263,11 +1272,11 @@ var newTable = (function(courseList)
 			tableRows += '<td colspan="18" class="department">' + crs.department + '</td>';
 			tableRows += '</tr>';
 			tableRows += '<tr class="topRow">';
-			tableRows += '<td class="col1" width="50" align="right">Course Number</td>';	
-			tableRows += '<td class="col2">CCN</td>';	
-			tableRows += '<td class="col3" width="30">Class<br>Type</td>';	
-			tableRows += '<td class="col4" width="30">Section<br>Number</td>';	
-			tableRows += '<td class="col5" width="40">Units</td>';	
+			tableRows += '<td class="col1" align="right">Course<br>Number</td>';	
+			tableRows += '<td><div class="col2">CCN</div></td>';	
+			tableRows += '<td><div class="col3">Class<br>Type</div></td>';	
+			tableRows += '<td><div class="col4">Section<br>Number</div></td>';	
+			tableRows += '<td><div class="col5">Units</div></td>';	
 			tableRows += '<td align="left"><div class="col6">Instructor</div></td>';	
 			tableRows += '<td align="left"><div class="col7">Days</div></td>';	
 			tableRows += '<td align="left"><div class="col8">Time</div></td>';	
@@ -1302,13 +1311,13 @@ var newTable = (function(courseList)
 			tableRows += '<div style="clear:both"></div>';
 
 			tableRows += '</td>';
-			tableRows += '<td class="smallLabel"><div class="col11"><small>Limit</small></div></td>';	
-			tableRows += '<td class="smallLabel"><div class="col12"><small>Enrolled</small></div></td>';	
-			tableRows += '<td class="smallLabel"><div class="col13"><small>Waitlist</small></div></td>';	
-			tableRows += '<td class="smallLabel"><div class="col14"><small>Avail Seats</small></div></td>';	
-			tableRows += '<td class="smallLabel"><div class="col15"><small>Restrictions</small></div></td>';	
-			tableRows += '<td class="smallLabel"><div class="col16"><small>Status</small></div></td>';	
-			tableRows += '<td class="col17"></td>';
+			tableRows += '<td><div class="smallLabel col11"><small>Limit</small></div></td>';	
+			tableRows += '<td><div class="smallLabel col12"><small>Enrolled</small></div></td>';	
+			tableRows += '<td><div class="smallLabel col13"><small>Waitlist</small></div></td>';	
+			tableRows += '<td><div class="smallLabel col14"><small>Avail Seats</small></div></td>';	
+			tableRows += '<td><div class="smallLabel col15"><small>Restrictions</small></div></td>';	
+			tableRows += '<td><div class="smallLabel col16"><small>Status</small></div></td>';	
+			tableRows += '<td></td>';
 			tableRows += '</td>';
 			tableRows += '</tr>';
 			tableRows += '<tr class="courseBottomPadding"><td colspan="13"></td></tr>';
@@ -1327,10 +1336,10 @@ var newTable = (function(courseList)
 
 		tableRows += '<td class="col1 highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
 		tableRows += crs.fancyCourseControlNumber(crs.ccn);
-		tableRows += '<td class="col3 classType' + crs.needRowBorder() + '">' + crs.classType + '</td>';
-		tableRows += '<td class="col4 secNum' + crs.needRowBorder() + '">' + crs.secNum + '</td>';
-		tableRows += '<td class="col5 units' + crs.needRowBorder() + '">' + crs.units + '</td>';
-		tableRows += '<td class="instructor' + crs.needRowBorder() + '"><div class="col6">';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="classType col3">' + crs.classType + '</div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="secNum col4">' + crs.secNum + '</div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="units col5">' + crs.units + '</div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="instructor col6">';
 
 		if(crs.instructor.match(/THE STAFF/))
 			tableRows += crs.instructor;
@@ -1347,8 +1356,8 @@ var newTable = (function(courseList)
 				numCol = 2;
 
 			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="days col7">' + crs.fancyDays(crs.days) +'</div></td>';
-			tableRows += '<td class="time ' + crs.needRowBorder() + '"><div class="col8">' + crs.time + '</div></td>';
-			tableRows += '<td colspan="' + numCol + '" class="room ' + crs.needRowBorder() + '"><div class="col9">' + crs.room + '</div></td>';
+			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="time col8">' + crs.time + '</div></td>';
+			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="room col9">' + crs.room + '</div></td>';
 		}
 		else
 		{
@@ -1357,11 +1366,11 @@ var newTable = (function(courseList)
 			else
 				numCol = 4;
 
-			tableRows += '<td colspan="' + numCol + '" class="locn' + crs.needRowBorder() + '"><div class="col9">' + crs.locn + '</div></td>';
+			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="locn col9">' + crs.locn + '</div></td>';
 		}
 		
 		if(crs.isFinalExamGroup())
-			tableRows += '<td class="finalExamGroup' + crs.needRowBorder() + '"><div class="col10">' + crs.finalExamGroup + '</div></td>';
+			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="finalExamGroup col10">' + crs.finalExamGroup + '</div></td>';
 
 		if(!crs.enrollmentMsg)
 		{
@@ -1372,17 +1381,17 @@ var newTable = (function(courseList)
 		}
 		else
 		{
-			tableRows += '<td colspan="4" class="enrollmentMsg' + crs.needRowBorder() + '"><div class="col18">' + crs.enrollmentMsg + '</div></td>';
+			tableRows += '<td colspan="4" class="' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.enrollmentMsg + '</div></td>';
 		}
 
-		tableRows += '<td class="restrictions col15' + crs.needRowBorder() + '"><small>' + crs.restrictions + '</small></td>';
-		tableRows += '<td class="statusLastChanged col16' + crs.needRowBorder() + '"><small>' + crs.statusLastChanged + '</small></td>';
-		tableRows += '<td class="links col17">';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col15 restrictions"><small>' + crs.restrictions + '</small></div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col16 statusLastChanged"><small>' + crs.statusLastChanged + '</small></div></td>';
+		tableRows += '<td class=""><div class="col17 links">';
 			if(crs.enrollmentLink != "")
-				tableRows += '<a onclick="' + crs.enrollmentLink+ '" target="_blank">[E]</a> ';
+				tableRows += '<a onclick="' + crs.enrollmentLink+ '" target="_blank" alt="Enrollment">[E]</a> ';
 			if(crs.bookLink != "")
-				tableRows += '<a onclick="' + crs.bookLink + '" target="_blank">[B]</a>';
-		tableRows += '</td>';
+				tableRows += '<a onclick="' + crs.bookLink + '" target="_blank" alt="Books">[B]</a>';
+		tableRows += '</div></td>';
 		tableRows += '</tr>';
 
 		// Second row (Note, Summer Session fees, etc.)
@@ -1391,10 +1400,10 @@ var newTable = (function(courseList)
 		if(crs.needSecondRow())
 		{
 			tableRows += '<td class="highlightCursor col1" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
-			tableRows += '<td class="col2 ccn rowBorder"></td>';
-			tableRows += '<td class="col3 rowBorder"></td>';
-			tableRows += '<td class="col4 rowBorder"></td>';
-			tableRows += '<td class="col5 rowBorder"></td>';
+			tableRows += '<td class="ccn rowBorder"></td>';
+			tableRows += '<td class="rowBorder"></td>';
+			tableRows += '<td class="rowBorder"></td>';
+			tableRows += '<td class="rowBorder"></td>';
 			tableRows += '<td class="rowBorder" colspan="5">';
 				if(crs.summerFees != "")
 					tableRows += '<p class="col200 summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
@@ -1503,7 +1512,7 @@ var controls = (function()
 	createToggleColumnElement(container, 14, "Avail Seats");
 	createToggleColumnElement(container, 15, "Restrictions");
 	createToggleColumnElement(container, 16, "Status");
-	createToggleColumnElement(container, 17, "Link");
+	createToggleColumnElement(container, 17, "Links");
 	createToggleColumnElement(container, 18, "Enrollment Message");
 	createToggleColumnElement(container, 200, "Second Row");
 
