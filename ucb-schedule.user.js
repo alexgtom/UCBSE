@@ -59,17 +59,7 @@ function associativeArrayToString(arr)
 	str += "}";
 	return str;
 }
-/*
-function toggleColumn(element, n) {
-    var currentClass = document.getElementById(element).className;
-    if (currentClass.indexOf("hide"+n) != -1) {
-        document.getElementById(element).className = currentClass.replace("hide"+n, "");
-    }
-    else {
-        document.getElementById(element).className += " " + "hide"+n;
-    }
-}
-*/
+
 function toggleColumn(element, n) {
     var object = document.getElementById(element);
 	if(hasClass(object, "hide" + n))
@@ -206,6 +196,27 @@ function removeClass(ele,cls) {
 	}
 }
 
+/*
+ * strips a string of the trailing and leading whitespace
+ *
+ * @return string
+ */
+function stripSpace(str)
+{
+	return str.replace(/^(\s|&nbsp;)+/, "").replace(/(\s|&nbsp)+$/, "");
+}
+
+/*
+ * @return emtry string is str is null
+ */
+function nullToEmpty(str)
+{
+	if(str)
+		return str;
+	else
+		return "";
+}
+
 
 // GreaseMonkey API compatibility for Chrome
 // @copyright      2009, 2010 James Campos
@@ -325,55 +336,13 @@ if ((typeof GM_deleteValue == 'undefined') || (typeof GM_addStyle == 'undefined'
 
 }
 
+var UCBSE = UCBSE || {};
 
-/*
- * strips a string of the trailing and leading whitespace
- *
- * @return string
- */
-function stripSpace(str)
+UCBSE.Course = function()
 {
-	return str.replace(/^(\s|&nbsp;)+/, "").replace(/(\s|&nbsp)+$/, "");
-}
-
-function Course()
-{
-
-}
-
-Course.prototype.department = "";
-Course.prototype.departmentAbrev = "";
-Course.prototype.ccn = "";
-Course.prototype.ps = "";
-Course.prototype.secNum = "";
-Course.prototype.classType = "";
-Course.prototype.title = "";
-Course.prototype.catalogDescLink = "";
-Course.prototype.locn = "";
-Course.prototype.instructor = "";
-Course.prototype.lastName = "";
-Course.prototype.note = "";
-Course.prototype.bookLink = "";
-Course.prototype.units = "";
-Course.prototype.finalExamGroup = "";
-Course.prototype.restrictions = "";
-Course.prototype.limit = null;
-Course.prototype.enrolled = null;
-Course.prototype.waitlist = null;
-Course.prototype.availSeats = null;
-Course.prototype.enrollmentLink = "";
-Course.prototype.enrollmentMsg = "";
-Course.prototype.statusLastChanged = "";
-Course.prototype.sessionDates = "";
-Course.prototype.summerFees = "";
-Course.prototype.courseWebsite = "";
-Course.prototype.days = "";
-Course.prototype.room = "";
-Course.prototype.time = "";
-
-Course.prototype.getDeptAbrev = function(str)
-{
-	departments = [
+	// private attributes 
+	
+	var DEPARTMENTS = [
 		{ shortName: "AEROSPC", name: "AEROSPACE STUDIES" },
 		{ shortName: "AFRICAM", name: "AFRICAN AMERICAN STUDIES" },
 		{ shortName: "AGR CHM", name: "AGRICULTURAL AND ENVIRON CHEMISTRY" },
@@ -545,482 +514,592 @@ Course.prototype.getDeptAbrev = function(str)
 		{ shortName: "YIDDISH", name: "YIDDISH" }
 	];
 
-	for(var i = 0, len = departments.length; i < len; i++)
-	{
-		if(str.match(departments[i].name))
-			return departments[i].shortName;
-	}
-	return str;
-}
+	var department = null;
+	var courseNum = null;
+	var departmentAbrev = null;
+	var ccn = null;
+	var ps = null;
+	var secNum = null;
+	var classType = null;
+	var title = null;
+	var catalogDescLink = null;
+	var locn = null;
+	var instructor = null;
+	var lastName = null;
+	var note = null;
+	var bookLink = null;
+	var units = null;
+	var finalExamGroup = null;
+	var restrictions = null;
+	var limit = null;
+	var enrolled = null;
+	var waitlist = null;
+	var availSeats = null;
+	var enrollmentLink = null;
+	var enrollmentMsg = null;
+	var statusLastChanged = null;
+	var sessionDates = null;
+	var summerFees = null;
+	var courseWebsite = null;
+	var days = null;
+	var room = null;
+	var time = null;
 
-/*
- * @return string the link inside the href property
- */
-
-Course.prototype.extractHref = function(str)
-{
-	if(typeof str != 'string')
-		throw new Error("extractHref : Paramater is not a string");
-
-	str = str.match(/(href=\")([^\"]*)(\")/gi);
-	if(str == null)
-		return null;
-	str = str[0];
-	str = str.replace(/^href[\s]*=[\s]*"/, '');
-	str = str.replace(/\"$/,'');
-
-	return str;
-}
-
-/*
- * splits a string up into tokens based on word boundaries
- *
- * For example. "how    are you doin." is transformed into
- * "how" "are" "you" "doin."
- *
- * @return array of strings 
- */
-
-Course.prototype.tokenize = function(str)
-{
-	str = str.match(/[A-Za-z0-9.-]+/g) + "";
-	return str.split(',');
-}
-
-/**
- * Selects all TT tags in the entry and sets the according 
- * properties
- */
-
-Course.prototype.parseTT = function(table)
-{
-	ttArr = table.querySelectorAll('TT');
-	bArr = table.querySelectorAll('TD[ALIGN="right"] FONT[size="1"] B');
-
-
-	for(var i = 0, len = ttArr.length; i < len; i++)
-	{
-		var label = bArr[i+1].innerHTML; // we don't want to parse the "Course:"
-										 // because it's a special case, so we 
-										 // skip it
-		
-		if(label.match("Location:"))
-			this.parseLocn(ttArr[i].innerHTML);
-		else if(label.match("Instructor:"))
-			this.parseInstructor(ttArr[i].innerHTML);
-		else if(label.match("Status/Last Changed:"))
-			this.parseStatus(ttArr[i].innerHTML);
-		else if(label.match("Course Control Number:"))
-			this.parseCourseControlNumber(ttArr[i].innerHTML);
-		else if(label.match("Units/Credit:"))
-			this.units						= ttArr[i].innerHTML;
-		else if(label.match("Final Exam Group:"))
-			this.parseFinalExamGroup(ttArr[i].innerHTML);
-		else if(label.match("Restrictions:"))
-			this.restrictions				= ttArr[i].innerHTML;
-		else if(label.match("Note:"))
-			this.parseNote(ttArr[i].innerHTML);
-		else if(label.match("Enrollment on "))
-			this.parseEnrollment(ttArr[i].innerHTML);
-		else if(label.match("Session Dates:"))
-			this.sessionDates 				= ttArr[i].innerHTML;
-		else if(label.match("Summer Fees:"))
-			this.summerFees					= ttArr[i].innerHTML;
-	}
-
-}
-
-Course.prototype.parseInstructor = function(str)
-{
-	if(str)
-	{
-		this.instructor = stripSpace(str);
-		this.lastName = str.replace(/,[^$]*$/g, '');
-	}
-}
-
-Course.prototype.parseCourseTitle = function(table)
-{
-	htmlCourseTitle = table.getElementsByClassName("coursetitle")[0];
-	this.title = strip(htmlCourseTitle.innerHTML);
-}
-
-Course.prototype.parseLocn = function(str)
-{
-	var temp;
-	temp = str.match(/^[\s]*[MTWFuhSA]{1,7}[\s]+[0-9\-AP]+,/);
-	if(temp != null)
-	{
-		days = str.match(/^[\s]*(M|Tu|W|Th|F|SA){1,7}[\s]/);
-		if(days)
-			this.days = days[0];
-		else if(str.match(/^[\s]*MTWTF[\s]/))
-			this.days = "MTuWThF";				// this is a special case
-
-		// remove the days
-		temp = str.replace(/^[\s]*[MTWFuhSA]{1,7}[\s]*/, '');
-
-		// get the time
-		time = temp.match(/^[0-9\-AP]+/);
-
-		if(time != null)
-		{
-			this.time = time[0];
-
-			// remove the time
-			temp = temp.replace(/^[0-9\-AP]+,[\s]*/, '');
-
-			// get the room
-			this.room = temp;
-		}
-	}
-	else if(str.match(/^UNSCHED/))
-	{
-		temp = str.replace(/^UNSCHED\s*/, '');
-		this.room = temp;
-		this.days = "UNSCHED";
-	}
-	else if(str.match(/CANCELLED/))
-	{
-		this.days = "CANCELLED";
-	}
-	else
-		this.locn = str;
-}
-
-Course.prototype.parseCourseControlNumber = function(str)
-{
-	var temp;
-
-	temp = str.match(/^[0-9]+/);
-	if(temp != null)
-		this.ccn = temp[0];
-	else
-	{
-		temp = str.match(/^[0-9A-Za-z ]+(?=\s*<)?/);
-		this.ccn = temp[0];
-	}
-}
-
-Course.prototype.fancyCourseControlNumber = function(str)
-{
-	fanCCN = "";
-
-	cssClass = "";
-	if(this.isFull() == 1)
-		cssClass += "full";
-	else if(this.isFull() == 0)
-		cssClass += "open";
-	else if(this.isFull() == -1)
-		cssClass += "openButWaitlist";
-	else
-		cssClass += "full";
+	// private methods
 	
-	fanCCN += '<td class="ccn ' + this.needRowBorder() + '"><div class="col2">'
-	if(str.match(/[0-9]+/) != null)
-		fanCCN += '<input type="text" onclick="select()" class="ccnInput ' + cssClass + '" value="' + str + '" >';
-	else
-		fanCCN += '<b>' + str + '</b>';
-	
-	fanCCN += '</div></td>';
-	return fanCCN;
-}
-
-Course.prototype.parseEnrollment = function(str)
-{
-	var temp = str.match(/[0-9]+/g);	
-
-	if(temp == null)
+	/**
+	 * Gets the apartments abbreviation
+	 * @param str department name
+	 * @return department abbreviation 
+	 */
+	var _getDeptAbrev = function(str)
 	{
-		this.enrollmentMsg = str;
-		this.limit = null;
-		this.enrolled = null;
-		this.waitlist = null;
-		this.availSeats = null;
-	}
-	else
-	{
-		this.enrollmentMsg = null;
-		this.limit = parseInt(temp[0]);
-		this.enrolled = parseInt(temp[1]);
-		this.waitlist = parseInt(temp[2]);
-		this.availSeats = parseInt(temp[3]);
-	}
-}
-
-/*
- * @return string "javascript:call_to_function()"
- */
-Course.prototype.parseLinks = function(table)
-{
-
-
-	function getValue(tbl, name)
-	{
-		for(var i = 0, len = tbl.length; i < len; i++)
-			if(tbl[i].getAttribute("name") == name)
-				return tbl[i].getAttribute("value");
-	}
-
-	var input = table.getElementsByTagName("input");
-
-	for(var i = 0, len = input.length; i < len; i++)
-	{
-		var temp = input[i].getAttribute("value");
-		if(temp.match(/(catalog description)/) != null)
+		for(var i = 0, len = DEPARTMENTS.length; i < len; i++)
 		{
-			var catalogDescParams = new Array();
-
-			catalogDescParams['p_dept_name'] = spaceToPlus(this.department);
-			catalogDescParams['p_dept_cd'] = spaceToPlus(this.departmentAbrev);
-			catalogDescParams['p_title'] = "";
-			catalogDescParams['p_number'] = this.courseNum;
-
-			catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_sso_search_sends_request', ";
-			catalogDescLink += associativeArrayToString(catalogDescParams);
-			catalogDescLink += ",'post','_blank');";
-
-			this.catalogDescLink = catalogDescLink;
+			if(str.match(DEPARTMENTS[i].name))
+				return DEPARTMENTS[i].shortName;
 		}
-		else if(temp.match(/Click here for current enrollment/) != null)
+		return str;
+	};
+	
+
+	return {
+		// public attributes	
+
+		// public methods
+		getDepartment: 			function(){ return this.department; },
+		getDepartmentAbrev: 	function(){ return this.departmentAbrev; },
+		getCourseNum: 			function(){ return this.courseNum; },
+		getCCN: 				function(){ return this.ccn; },
+		getPS: 					function(){ return this.ps; },
+		getSecNum: 				function(){ return this.secNum; },
+		getClassType: 			function(){ return this.classType; },
+		getTitle: 				function(){ return this.title; },
+		getCatalogDescLink: 	function(){ return this.catalogDescLink; },
+		getLocn: 				function(){ return this.locn; },
+		getInstructor: 			function(){ return this.instructor; },
+		getLastName: 			function(){ return this.lastName; },
+		getNote: 				function(){ return this.note; },
+		getBookLink: 			function(){ return this.bookLink; },
+		getUnits: 				function(){ return this.units; },
+		getFinalExamGroup: 		function(){ return this.finalExamGroup; },
+		getRestrictions: 		function(){ return this.restrictions; },
+		getLimit: 				function(){ return this.limit; },
+		getEnrolled: 			function(){ return this.enrolled; },
+		getWaitlist: 			function(){ return this.waitlist; },
+		getAvailSeats: 			function(){ return this.availSeats; },
+		getEnrollmentLink: 		function(){ return this.enrollmentLink; },
+		getEnrollmentMsg: 		function(){ return this.enrollmentMsg; },
+		getStatusLastChanged: 	function(){ return this.statusLastChanged; },
+		getSessionDates: 		function(){ return this.sessionDates; },
+		getSummerFees: 			function(){ return this.summerFees; },
+		getCourseWebsite: 		function(){ return this.courseWebsite; },
+		getDays: 				function(){ return this.days; },
+		getRoom: 				function(){ return this.room; },
+		getTime: 				function(){ return this.time; },
+
+		setDepartment: 			function(str){ this.department = str; },
+		setDepartmentAbrev: 	function(str){ this.departmentAbrev = str; },
+		setCCN: 				function(str){ this.ccn = str; },
+		setPS: 					function(str){ this.ps = str; },
+		setSecNum: 				function(str){ this.secNum = str; },
+		setClassType: 			function(str){ this.classType = str; },
+		setTitle: 				function(str){ this.title = str; },
+		setCatalogDescLink: 	function(str){ this.catalogDescLink = str; },
+		setLocn: 				function(str){ this.locn = str; },
+		setInstructor: 			function(str){ this.instructor = str; },
+		setLastName: 			function(str){ this.lastName = str; },
+		setNote: 				function(str){ this.note = str; },
+		setBookLink: 			function(str){ this.bookLink = str; },
+		setUnits: 				function(str){ this.units = str; },
+		setFinalExamGroup: 		function(str){ this.finalExamGroup = str; },
+		setRestrictions: 		function(str){ this.restrictions = str; },
+		setLimit: 				function(str){ this.limit = str; },
+		setEnrolled: 			function(str){ this.enrolled = str; },
+		setWaitlist: 			function(str){ this.waitlist = str; },
+		setAvailSeats: 			function(str){ this.availSeats = str; },
+		setEnrollmentLink: 		function(str){ this.enrollmentLink = str; },
+		setEnrollmentMsg: 		function(str){ this.enrollmentMsg = str; },
+		setStatusLastChanged: 	function(str){ this.statusLastChanged = str; },
+		setSessionDates: 		function(str){ this.sessionDates = str; },
+		setSummerFees: 			function(str){ this.summerFees = str; },
+		setCourseWebsite: 		function(str){ this.courseWebsite = str; },
+		setDays: 				function(str){ this.days = str; },
+		setRoom: 				function(str){ this.room = str; },
+		setTime: 				function(str){ this.time = str; },
+
+		/**
+		 * Parses TT elements
+		 * @param table the array of courses
+		 * @return locn, instructor, ccn, units, finalexamgroup, restricions, note, enrollment, sessiondates, summer fees set
+		 */
+		parseTT: function(table)
 		{
-			var enrollmentParams = new Array();
+			var ttArr = table.querySelectorAll('TT');
+			var bArr = table.querySelectorAll('TD[ALIGN="right"] FONT[size="1"] B');
+
+			for(var i = 0, len = ttArr.length; i < len; i++)
+			{
+				var label = bArr[i+1].innerHTML; // we don't want to parse the "Course:"
+												 // because it's a special case, so we 
+												 // skip it
+				
+				if(label.match("Location:"))
+					this.parseLocn(ttArr[i].innerHTML);
+				else if(label.match("Instructor:"))
+					this.parseInstructor(ttArr[i].innerHTML);
+				else if(label.match("Status/Last Changed:"))
+					this.parseStatus(ttArr[i].innerHTML);
+				else if(label.match("Course Control Number:"))
+					this.parseCourseControlNumber(ttArr[i].innerHTML);
+				else if(label.match("Units/Credit:"))
+					this.units						= ttArr[i].innerHTML;
+				else if(label.match("Final Exam Group:"))
+					this.parseFinalExamGroup(ttArr[i].innerHTML);
+				else if(label.match("Restrictions:"))
+					this.restrictions				= ttArr[i].innerHTML;
+				else if(label.match("Note:"))
+					this.parseNote(ttArr[i].innerHTML);
+				else if(label.match("Enrollment on "))
+					this.parseEnrollment(ttArr[i].innerHTML);
+				else if(label.match("Session Dates:"))
+					this.sessionDates 				= ttArr[i].innerHTML;
+				else if(label.match("Summer Fees:"))
+					this.summerFees					= ttArr[i].innerHTML;
+			}
+		},
+
+		/*
+		 * @return string the link inside the href property
+		 */
+
+		extractHref: function(str)
+		{
+			if(typeof str != 'string')
+				throw new Error("extractHref : Paramater is not a string");
+
+			str = str.match(/(href=\")([^\"]*)(\")/gi);
+			if(str == null)
+				return null;
+			str = str[0];
+			str = str.replace(/^href[\s]*=[\s]*"/, '');
+			str = str.replace(/\"$/,'');
+
+			return str;
+		},
+
+		/*
+		 * splits a string up into tokens based on word boundaries
+		 *
+		 * For example. "how    are you doin." is transformed into
+		 * "how" "are" "you" "doin."
+		 *
+		 * @return array of strings 
+		 */
+
+		tokenize: function(str)
+		{
+			str = str.match(/[A-Za-z0-9.-]+/g) + "";
+			return str.split(',');
+		},
+
+		/**
+		 * Selects all TT tags in the entry and sets the according 
+		 * properties
+		 */
+
+		parseInstructor: function(str)
+		{
+			if(str)
+			{
+				this.instructor = stripSpace(str);
+				this.lastName = str.replace(/,[^$]*$/g, '');
+			}
+		},
+
+		parseCourseTitle: function(table)
+		{
+			var htmlCourseTitle = table.getElementsByClassName("coursetitle")[0];
+			this.title = strip(htmlCourseTitle.innerHTML);
+		},
+
+		parseLocn: function(str)
+		{
+			var temp = str.match(/^[\s]*[MTWFuhSA]{1,7}[\s]+[0-9\-AP]+,/);
+
+
+			if(temp != null)
+			{
+				days = str.match(/^[\s]*(M|Tu|W|Th|F|SA){1,7}[\s]/);
+				if(days)
+					this.days = days[0];
+				else if(str.match(/^[\s]*MTWTF[\s]/))
+					this.days = "MTuWThF";				// this is a special case
+
+				// remove the days
+				temp = str.replace(/^[\s]*[MTWFuhSA]{1,7}[\s]*/, '');
+
+				// get the time
+				time = temp.match(/^[0-9\-AP]+/);
+
+				if(time != null)
+				{
+					this.time = time[0];
+
+					// remove the time
+					temp = temp.replace(/^[0-9\-AP]+,[\s]*/, '');
+
+					// get the room
+					this.room = temp;
+				}
+			}
+			else if(str.match(/^UNSCHED/))
+			{
+				temp = str.replace(/^UNSCHED\s*/, '');
+				this.room = temp;
+				this.days = "UNSCHED";
+			}
+			else if(str.match(/CANCELLED/))
+			{
+				this.days = "CANCELLED";
+			}
+			else
+				this.locn = str;
+		},
+		parseCourseControlNumber: function(str)
+		{
+			var temp = str.match(/^[0-9]+/);
+
+			if(temp != null)
+				this.ccn = temp[0];
+			else
+			{
+				temp = str.match(/^[0-9A-Za-z ]+(?=\s*<)?/);
+				this.ccn = temp[0];
+			}
+		},
+
+
+		parseEnrollment: function(str)
+		{
+			var temp = str.match(/[0-9]+/g);	
+
+			if(temp == null)
+			{
+				this.enrollmentMsg = str;
+				this.limit = null;
+				this.enrolled = null;
+				this.waitlist = null;
+				this.availSeats = null;
+			}
+			else
+			{
+				this.enrollmentMsg = null;
+				this.limit = parseInt(temp[0]);
+				this.enrolled = parseInt(temp[1]);
+				this.waitlist = parseInt(temp[2]);
+				this.availSeats = parseInt(temp[3]);
+			}
+		},
+
+		/*
+		 * @return string "javascript:call_to_function()"
+		 */
+		parseLinks: function(table)
+		{
+			function getValue(tbl, name)
+			{
+				for(var i = 0, len = tbl.length; i < len; i++)
+					if(tbl[i].getAttribute("name") == name)
+						return tbl[i].getAttribute("value");
+			}
+
+			var input = table.getElementsByTagName("input");
+
+			for(var i = 0, len = input.length; i < len; i++)
+			{
+				var temp = input[i].getAttribute("value");
+				if(temp.match(/(catalog description)/) != null)
+				{
+					var catalogDescParams = new Array();
+
+					catalogDescParams['p_dept_name'] = spaceToPlus(this.department);
+					catalogDescParams['p_dept_cd'] = spaceToPlus(this.departmentAbrev);
+					catalogDescParams['p_title'] = "";
+					catalogDescParams['p_number'] = this.courseNum;
+
+					catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_sso_search_sends_request', ";
+					catalogDescLink += associativeArrayToString(catalogDescParams);
+					catalogDescLink += ",'post','_blank');";
+
+					this.catalogDescLink = catalogDescLink;
+				}
+				else if(temp.match(/Click here for current enrollment/) != null)
+				{
+					var enrollmentParams = new Array();
+					
+					enrollmentParams['_InField1'] = getValue(input, "_InField1");
+					enrollmentParams['_InField2'] = getValue(input, "_InField2");
+					enrollmentParams['_InField3'] = getValue(input, "_InField3");
+
+					enrollmentLink = "javascript:post_to_url('http://infobears.berkeley.edu:3400/osc', ";
+					enrollmentLink += associativeArrayToString(enrollmentParams);
+					enrollmentLink += ",'post','_blank');";
+
+					this.enrollmentLink = enrollmentLink;
+				}
+				else if(temp.match(/View Books/) != null)
+				{
+					var bookParams = new Array();
+
+					bookParams['bookstore_id-1'] = getValue(input, "bookstore_id-1");
+					bookParams['term_id-1'] = getValue(input, "term_id-1");
+					bookParams['div-1'] = getValue(input, "div-1");
+					bookParams['crn-1'] = this.ccn;
+
+					bookLink = "javascript:post_to_url('http://www.bkstr.com/webapp/wcs/stores/servlet/booklookServlet', ";
+					bookLink += associativeArrayToString(bookParams);
+					bookLink += ",'post','_blank');";
+
+					this.bookLink = bookLink;
+				}
+			}
+		},
+
+		/**
+		 * Parses the course under the "Course" label
+		 */
+		parseCourse: function(table)
+		{
+			var course = table.querySelector('TBODY TR TD FONT[size="2"] B').innerHTML;
+			var link = this.extractHref(course);
+
+			if(link)
+			{
+				this.courseWebsite = link;
+				str = course.match(/^[A-Z0-9.,&$#@\s]+/i);
+				str = str[0];
+			}
+			else
+				str = course;	
+
+			if(str)
+			{
+				str = this.tokenize(str);
+
+				var beginCourseIndex = str.length - 4;
+				var courseName = "";
+
+				for(var i = 0; i < beginCourseIndex; i++)
+					courseName += str[i] + " ";
+
+				this.department = courseName;					// Department
+				this.departmentAbrev = _getDeptAbrev(courseName); // Department Abrev
+				this.courseNum = str[beginCourseIndex];			// Course Number
+				this.ps = str[beginCourseIndex + 1];			// P/S (not sure what P or S means)
+				this.secNum = str[beginCourseIndex + 2];		// Section Number
+				this.classType = str[beginCourseIndex + 3];		// Class type (LEC, SEM, LAB, etc.)
+			}
+		},
+
+		/**
+		 * Parses the note. It removes the html code for the space and
+		 * sets it to an empty string.
+		 */
+		parseNote: function(str)
+		{
+			this.note = stripSpace(str);
+		},
+
+		/**
+		 * Parses status. removes the html code for the space and sets 
+		 * to an empty trying if there is only a space there.
+		 */
+		parseStatus: function(str)
+		{
+			this.statusLastChanged = stripSpace(str);
+		},
+
+		/**
+		 * Removes the date from the Final Exam Group leaving only
+		 * the number
+		 */
+		parseFinalExamGroup: function(str)
+		{
+			var temp = str.match("^[0-9][0-9]*(?=:)");
+			if(temp != null)
+				this.finalExamGroup = temp[0];
+			else
+				this.finalExamGroup = str;
+		},
+
+		/**
+		 * used for debugging
+		 *
+		 * @return dump of course object in log
+		 */
+		log: function()
+		{
+			console.log('\nTitle: ' + this.title + 
+						'\nDepartment: ' + this.department + 
+						'\nPS: ' + this.ps + 
+						'\nSection Number' + this.secNum + 
+						'\nLocation: ' + this.locn +
+						'\nClass Type: ' + this.classType + 
+						'\nInstructor: ' + this.instructor +
+						'\nStatus Last Changed: ' + this.statusLastChanged +
+						'\nBook Link: ' + this.bookLink +
+						'\nCCN: ' + this.ccn +
+						'\nUnits: ' + this.units +
+						'\nFinal Exam Group: ' + this.finalExamGroup +
+						'\nRestructions: ' + this.restrictions +
+						'\nNote: ' + this.note +
+						'\nLimit: ' + this.limit +
+						'\nEnrolled: ' + this.enrolled +
+						'\nWaitlist: ' + this.waitlist +
+						'\nAvailble Seats: ' + this.availSeats + 
+						'\nCatalog Description Link: ' + this.catalogDescLink + 
+						'\nEnrollment Link: ' + this.enrollmentLink + 
+						'\nDays: ' + this.days + 
+						'\nRoom: ' + this.room + 
+						'\nTime: ' + this.time
+						);
+		},
+		/*
+		 * Determines if the second row is required
+		 *
+		 * @return true, false
+		 */
+		needSecondRow: function()
+		{
+			if(this.note || this.summerFees || this.sessionDates)
+				return true;
+			else
+				return false;
+		},
+
+		/*
+		 * Appends row border where specified depending if a 
+		 * second row is required
+		 *
+		 * @return string
+		 */
+		needRowBorder: function()
+		{
+			if(!this.needSecondRow())
+				return " rowBorder";
+			else
+				return "";
+		},
+		fancyCourseControlNumber: function(str)
+		{
+			var fanCCN = "";
+			var cssClass = "";
+
+			if(this.isFull() == 1)
+				cssClass += "full";
+			else if(this.isFull() == 0)
+				cssClass += "open";
+			else if(this.isFull() == -1)
+				cssClass += "openButWaitlist";
+			else
+				cssClass += "full";
 			
-			enrollmentParams['_InField1'] = getValue(input, "_InField1");
-			enrollmentParams['_InField2'] = getValue(input, "_InField2");
-			enrollmentParams['_InField3'] = getValue(input, "_InField3");
+			fanCCN += '<td class="ccn ' + this.needRowBorder() + '"><div class="col2">'
+			if(str.match(/[0-9]+/) != null)
+				fanCCN += '<input type="text" onclick="select()" class="ccnInput ' + cssClass + '" value="' + str + '" >';
+			else
+				fanCCN += '<b>' + str + '</b>';
+			
+			fanCCN += '</div></td>';
+			return fanCCN;
+		},
 
-			enrollmentLink = "javascript:post_to_url('http://infobears.berkeley.edu:3400/osc', ";
-			enrollmentLink += associativeArrayToString(enrollmentParams);
-			enrollmentLink += ",'post','_blank');";
-
-			this.enrollmentLink = enrollmentLink;
-		}
-		else if(temp.match(/View Books/) != null)
+		/*
+		 * Produces the days in a fancy format
+		 *
+		 * @return string
+		 */
+		fancyDays: function(days)
 		{
-			var bookParams = new Array();
+			dayArr = Array();
+			fanDays = "";
+			
+			if(days.match(/UNSCHED/))
+				return '<div class="unsched">UNSCHED</div>';
+			if(days.match(/CANCELLED/))
+				return '<div class="unsched">CANCELLED</div>';
+			
+			if(days.match(/M/))
+				dayArr.push("M");
+			else
+				dayArr.push("--");
 
-			bookParams['bookstore_id-1'] = getValue(input, "bookstore_id-1");
-			bookParams['term_id-1'] = getValue(input, "term_id-1");
-			bookParams['div-1'] = getValue(input, "div-1");
-			bookParams['crn-1'] = this.ccn;
+			if(days.match(/Tu/))
+				dayArr.push("Tu");
+			else
+				dayArr.push("--");
+			
+			if(days.match(/W/))
+				dayArr.push("W");
+			else
+				dayArr.push("--");
+			
+			if(days.match(/Th/))
+				dayArr.push("Th");
+			else
+				dayArr.push("--");
 
-			bookLink = "javascript:post_to_url('http://www.bkstr.com/webapp/wcs/stores/servlet/booklookServlet', ";
-			bookLink += associativeArrayToString(bookParams);
-			bookLink += ",'post','_blank');";
+			if(days.match(/F/))
+				dayArr.push("F");
+			else
+				dayArr.push("--");
+			
+			if(days.match(/SA/))
+				dayArr.push("SA");
 
-			this.bookLink = bookLink;
+			for(var i = 0, len = dayArr.length; i < len; i++)
+			{
+				day = dayArr.shift();
+
+				if(day != "--")
+					fanDays += '<div class="dayActive">' + day + '</div>';
+				else
+					fanDays += '<div class="dayInactive">' + day + '</div>';
+			}
+
+			return fanDays;
+		},
+
+		/*
+		 * @return 1 if full or canceled, 0 if open, -1 if open but theres a waitlist
+		 */
+		isFull: function()
+		{
+			if(!this.days)
+				return 0;
+
+			if((this.days).match(/CANCELLED/))
+				return 1;
+			if(this.limit == this.enrolled)
+				return 1;
+			if(this.enrolled < this.limit && this.waitlist > 0)
+				return -1;
+			if(this.enrolled < this.limit)
+				return 0;
+		},
+
+		isFinalExamGroup: function()
+		{
+			if(this.finalExamGroup)
+				return false;
+			else 
+				return true;
 		}
 	}
 }
 
-/**
- * Parses the course under the "Course" label
- */
-Course.prototype.parseCourse = function(table)
-{
-	var course = table.querySelector('TBODY TR TD FONT[size="2"] B').innerHTML;
 
-	var link = this.extractHref(course);
-
-	if(link)
-	{
-		this.courseWebsite = link;
-		str = course.match(/^[A-Z0-9.,&$#@\s]+/i);
-		str = str[0];
-	}
-	else
-		str = course;	
-
-	if(str)
-	{
-		str = this.tokenize(str);
-
-		var beginCourseIndex = str.length - 4;
-		var courseName = "";
-
-		for(var i = 0; i < beginCourseIndex; i++)
-			courseName += str[i] + " ";
-
-		this.department = courseName;					// Department
-		this.departmentAbrev = this.getDeptAbrev(courseName); // Department Abrev
-		this.courseNum = str[beginCourseIndex];			// Course Number
-		this.ps = str[beginCourseIndex + 1];			// P/S (not sure what P or S means)
-		this.secNum = str[beginCourseIndex + 2];		// Section Number
-		this.classType = str[beginCourseIndex + 3];		// Class type (LEC, SEM, LAB, etc.)
-
-	}
-}
-
-/**
- * Parses the note. It removes the html code for the space and
- * sets it to an empty string.
- */
-Course.prototype.parseNote = function(str)
-{
-	this.note = stripSpace(str);
-}
-
-
-/**
- * Parses status. removes the html code for the space and sets 
- * to an empty trying if there is only a space there.
- */
-Course.prototype.parseStatus = function(str)
-{
-	this.statusLastChanged = stripSpace(str);
-}
-
-/**
- * Removes the date from the Final Exam Group leaving only
- * the number
- */
-Course.prototype.parseFinalExamGroup = function(str)
-{
-	var temp = str.match("^[0-9][0-9]*(?=:)");
-	if(temp != null)
-		this.finalExamGroup = temp[0];
-	else
-		this.finalExamGroup = str;
-}
-
-/**
- * used for debugging
- *
- * @return dump of course object in log
- */
-Course.prototype.log = function()
-{
-	console.log('\nTitle: ' + this.title + 
-				'\nDepartment: ' + this.department + 
-				'\nPS: ' + this.ps + 
-				'\nSection Number' + this.secNum + 
-				'\nLocation: ' + this.locn +
-				'\nClass Type: ' + this.classType + 
-				'\nInstructor: ' + this.instructor +
-				'\nStatus Last Changed: ' + this.statusLastChanged +
-				'\nBook Link: ' + this.bookLink +
-				'\nCCN: ' + this.ccn +
-				'\nUnits: ' + this.units +
-				'\nFinal Exam Group: ' + this.finalExamGroup +
-				'\nRestructions: ' + this.restrictions +
-				'\nNote: ' + this.note +
-				'\nLimit: ' + this.limit +
-				'\nEnrolled: ' + this.enrolled +
-				'\nWaitlist: ' + this.waitlist +
-				'\nAvailble Seats: ' + this.availSeats + 
-				'\nCatalog Description Link: ' + this.catalogDescLink + 
-				'\nEnrollment Link: ' + this.enrollmentLink + 
-				'\nDays: ' + this.days + 
-				'\nRoom: ' + this.room + 
-				'\nTime: ' + this.time
-				);
-}
-/*
- * Determines if the second row is required
- *
- * @return true, false
- */
-Course.prototype.needSecondRow = function()
-{
-	if(this.note != "" || this.summerFees != "" || this.sessionDates != "")
-		return true;
-	else
-		return false;
-}
-
-/*
- * Appends row border where specified depending if a 
- * second row is required
- *
- * @return string
- */
-Course.prototype.needRowBorder = function()
-{
-	if(!this.needSecondRow())
-		return " rowBorder";
-	else
-		return "";
-}
-
-/*
- * Produces the days in a fancy format
- *
- * @return string
- */
-Course.prototype.fancyDays = function(days)
-{
-	dayArr = Array();
-	fanDays = "";
-	
-	if(days.match(/UNSCHED/))
-		return '<div class="unsched">UNSCHED</div>';
-	if(days.match(/CANCELLED/))
-		return '<div class="unsched">CANCELLED</div>';
-	
-	if(days.match(/M/))
-		dayArr.push("M");
-	else
-		dayArr.push("--");
-
-	if(days.match(/Tu/))
-		dayArr.push("Tu");
-	else
-		dayArr.push("--");
-	
-	if(days.match(/W/))
-		dayArr.push("W");
-	else
-		dayArr.push("--");
-	
-	if(days.match(/Th/))
-		dayArr.push("Th");
-	else
-		dayArr.push("--");
-
-	if(days.match(/F/))
-		dayArr.push("F");
-	else
-		dayArr.push("--");
-	
-	if(days.match(/SA/))
-		dayArr.push("SA");
-
-	for(var i = 0, len = dayArr.length; i < len; i++)
-	{
-		day = dayArr.shift();
-
-		if(day != "--")
-			fanDays += '<div class="dayActive">' + day + '</div>';
-		else
-			fanDays += '<div class="dayInactive">' + day + '</div>';
-	}
-
-	return fanDays;
-}
-
-/*
- * @return 1 if full or canceled, 0 if open, -1 if open but theres a waitlist
- */
-Course.prototype.isFull = function()
-{
-	if((this.days).match(/CANCELLED/))
-		return 1;
-	if(this.limit == this.enrolled)
-		return 1;
-	if(this.enrolled < this.limit && this.waitlist > 0)
-		return -1;
-	if(this.enrolled < this.limit)
-		return 0;
-}
-
-Course.prototype.isFinalExamGroup = function()
-{
-	if(this.finalExamGroup == "")
-		return false;
-	else 
-		return true;
-}
 
 /*
  * Parse all the information into an array of courses
@@ -1033,7 +1112,7 @@ var courseList = (function()
 
 	for(var i = 1, len = entryList.length; i < len - 1; i++)
 	{
-		var crs = new Course();
+		var crs = new UCBSE.Course();
 
 		crs.parseTT(entryList[i]);
 		crs.parseCourse(entryList[i]);		
@@ -1060,7 +1139,7 @@ var courseList = (function()
 /*
  * Set CSS properties
  */
-var newStylesheet = (function()
+UCBSE.css = (function()
 {
 	var head = document.querySelector("HEAD");
 	var styleElt = document.createElement("style");
@@ -1080,7 +1159,7 @@ var newStylesheet = (function()
 		css += "table.hide" + i + " .col" + i + ",";
 	css += "table.hide" + i + " .col" + i;
 
-	css += "{ /*display: none; position:absolute; left:-9999px;*/ display:none;}";
+	css += "{ display:none;}";
 
 	for(var i = 1; i <= numCol - 1; i++)
 		css += ".col" + i + ",";
@@ -1224,7 +1303,7 @@ var newStylesheet = (function()
  * Create Key
  */
 	
-var newKey = (function()
+UCBSE.key = (function()
 {
 	var table = document.createElement("table");
 	table.setAttribute("id", "key");
@@ -1236,7 +1315,7 @@ var newKey = (function()
 /*
  * Create new table
  */
-var newTable = (function(courseList)
+UCBSE.table = (function(courseList)
 {
 	var body = document.body;
 	body.setAttribute("background", "");
@@ -1264,12 +1343,13 @@ var newTable = (function(courseList)
 		var crs = courseList[i];
 		
 		// Department Title
-		if(prevDepartment !== crs.department)
+		if(prevDepartment !== crs.getDepartment())
 		{
-			prevDepartment = crs.department;
+			prevDepartment = crs.getDepartment();
+
 			tableRows += '<tr class="departmentTopPadding"><td colspan="13"></td></tr>';
 			tableRows += '<tr>';
-			tableRows += '<td colspan="18" class="department">' + crs.department + '</td>';
+			tableRows += '<td colspan="18" class="department">' + nullToEmpty(crs.getDepartment()) + '</td>';
 			tableRows += '</tr>';
 			tableRows += '<tr class="topRow">';
 			tableRows += '<td class="col1" align="right">Course<br>Number</td>';	
@@ -1277,36 +1357,38 @@ var newTable = (function(courseList)
 			tableRows += '<td><div class="col3">Class<br>Type</div></td>';	
 			tableRows += '<td><div class="col4">Section<br>Number</div></td>';	
 			tableRows += '<td><div class="col5">Units</div></td>';	
-			tableRows += '<td align="left"><div class="col6">Instructor</div></td>';	
-			tableRows += '<td align="left"><div class="col7">Days</div></td>';	
-			tableRows += '<td align="left"><div class="col8">Time</div></td>';	
-			tableRows += '<td align="left"><div class="col9">Location</div></td>';	
+			tableRows += '<td><div class="col6">Instructor</div></td>';	
+			tableRows += '<td><div class="col7">Days</div></td>';	
+			tableRows += '<td><div class="col8">Time</div></td>';	
+			tableRows += '<td><div class="col9">Location</div></td>';	
 			tableRows += '<td><div class="col10">Final<br>Exam<br>Group</div></td>';	
 			tableRows += '<td colspan="8"></td>';	
 			tableRows += '</tr>';
 		}
 		
 		// Course Title
-		if(prevCourseNum !== crs.courseNum)
+		if(prevCourseNum !== crs.getCourseNum())
 		{
-			prevCourseNum = crs.courseNum;
+			prevCourseNum = crs.getCourseNum();
 
 			tableRows += '<tr class="courseTopPadding"><td colspan="18"></td></tr>';
 			tableRows += '<tr class="title">';
-			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">' + crs.courseNum + '</td>';
+			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">' + nullToEmpty(crs.getCourseNum()) + '</td>';
 			tableRows += '<td colspan="9" valign="middle">';
 			tableRows += '<span style="float:left;">';
-			tableRows += '<a onclick="' + crs.catalogDescLink + '" target="_blank">' + crs.title + '</a>';
-			if(crs.courseWebsite != "")
-				tableRows += ' <a href="' + crs.courseWebsite + '" target="_blank">(Course Website)</a>';
+			tableRows += '<a onclick="' + crs.getCatalogDescLink() + '" target="_blank">' + nullToEmpty(crs.getTitle()) + '</a>';
+
+			if(crs.getCourseWebsite())
+				tableRows += ' <a href="' + crs.getCourseWebsite() + '" target="_blank">(Course Website)</a>';
+
 			tableRows += '</span>';
 			tableRows += '<span style="float:right;" class="adviceLinks">';
 		
-			deptAbrev = crs.departmentAbrev;
+			deptAbrev = crs.getDepartmentAbrev();
 
-			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '" target="blank">[K]</a> ';
-			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
-			tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.courseNum) + '&filter_term_currentYear=on' + '" target="blank">[CR]</a>';
+			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="blank">[K]</a> ';
+			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
+			tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="blank">[CR]</a>';
 			tableRows += '</span>';
 			tableRows += '<div style="clear:both"></div>';
 
@@ -1327,7 +1409,7 @@ var newTable = (function(courseList)
 		
 		tableRows += '<tbody ';
 
-		if(crs.classType == "LEC")
+		if(crs.getClassType() == "LEC")
 			tableRows += 'class="lecture"';
 		else
 			tableRows += 'class="highlight"';
@@ -1335,29 +1417,31 @@ var newTable = (function(courseList)
 		tableRows += '>';
 
 		tableRows += '<td class="col1 highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
-		tableRows += crs.fancyCourseControlNumber(crs.ccn);
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="classType col3">' + crs.classType + '</div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="secNum col4">' + crs.secNum + '</div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="units col5">' + crs.units + '</div></td>';
+		tableRows += crs.fancyCourseControlNumber(crs.getCCN());
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="classType col3">' + nullToEmpty(crs.getClassType()) + '</div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="secNum col4">' + nullToEmpty(crs.getSecNum()) + '</div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="units col5">' + nullToEmpty(crs.getUnits()) + '</div></td>';
 		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="instructor col6">';
 
-		if(crs.instructor.match(/THE STAFF/))
-			tableRows += crs.instructor;
-		else if(crs.instructor != "")
-			tableRows += '<a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.lastName + '" target="_blank">' + crs.instructor + '</a>';
+		if(crs.getInstructor() && crs.getInstructor().match(/THE STAFF/))
+		{
+			tableRows += crs.getInstructor().match(/THE STAFF/);
+		}
+		else if(crs.getInstructor())
+			tableRows += '<a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.getLastName() + '" target="_blank">' + crs.getInstructor() + '</a>';
 
 		tableRows += '</div></td>';
 
-		if(crs.locn == "")
+		if(!crs.getLocn())
 		{
 			if(crs.isFinalExamGroup())
 				numCol = 1;
 			else
 				numCol = 2;
 
-			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="days col7">' + crs.fancyDays(crs.days) +'</div></td>';
-			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="time col8">' + crs.time + '</div></td>';
-			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="room col9">' + crs.room + '</div></td>';
+			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="days col7">' + crs.fancyDays(crs.getDays()) +'</div></td>';
+			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="time col8">' + nullToEmpty(crs.getTime()) + '</div></td>';
+			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="room col9">' + nullToEmpty(crs.getRoom()) + '</div></td>';
 		}
 		else
 		{
@@ -1366,31 +1450,33 @@ var newTable = (function(courseList)
 			else
 				numCol = 4;
 
-			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="locn col9">' + crs.locn + '</div></td>';
+			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="locn col9">' + nullToEmpty(crs.getLocn()) + '</div></td>';
 		}
 		
 		if(crs.isFinalExamGroup())
-			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="finalExamGroup col10">' + crs.finalExamGroup + '</div></td>';
+			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="finalExamGroup col10">' + nullToEmpty(crs.getFinalExamGroup()) + '</div></td>';
 
-		if(!crs.enrollmentMsg)
+		if(!crs.getEnrollmentMsg())
 		{
-			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.limit + '</td>';
-			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col12">' + crs.enrolled + '</td>';
-			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col13">' + crs.waitlist + '</td>';
-			tableRows += '<td class="enrollDataRight' + crs.needRowBorder() + '"><div class="col14">' + crs.availSeats + '</td>';
+			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</td>';
+			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col12">' + crs.getEnrolled() + '</td>';
+			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col13">' + crs.getWaitlist() + '</td>';
+			tableRows += '<td class="enrollDataRight' + crs.needRowBorder() + '"><div class="col14">' + crs.getAvailSeats() + '</td>';
 		}
 		else
 		{
-			tableRows += '<td colspan="4" class="' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.enrollmentMsg + '</div></td>';
+			tableRows += '<td colspan="4" class="' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
 		}
 
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col15 restrictions"><small>' + crs.restrictions + '</small></div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col16 statusLastChanged"><small>' + crs.statusLastChanged + '</small></div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col15 restrictions"><small>' + crs.getRestrictions() + '</small></div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col16 statusLastChanged"><small>' + crs.getStatusLastChanged() + '</small></div></td>';
 		tableRows += '<td class=""><div class="col17 links">';
-			if(crs.enrollmentLink != "")
-				tableRows += '<a onclick="' + crs.enrollmentLink+ '" target="_blank" alt="Enrollment">[E]</a> ';
-			if(crs.bookLink != "")
-				tableRows += '<a onclick="' + crs.bookLink + '" target="_blank" alt="Books">[B]</a>';
+
+		if(crs.getEnrollmentLink())
+			tableRows += '<a onclick="' + crs.getEnrollmentLink()+ '" target="_blank" alt="Enrollment">[E]</a> ';
+		if(crs.getBookLink())
+			tableRows += '<a onclick="' + crs.getBookLink() + '" target="_blank" alt="Books">[B]</a>';
+
 		tableRows += '</div></td>';
 		tableRows += '</tr>';
 
@@ -1405,15 +1491,15 @@ var newTable = (function(courseList)
 			tableRows += '<td class="rowBorder"></td>';
 			tableRows += '<td class="rowBorder"></td>';
 			tableRows += '<td class="rowBorder" colspan="5">';
-				if(crs.summerFees != "")
-					tableRows += '<p class="col200 summerFees"><small><b>Summer Fees:</b> ' + crs.summerFees + '</small></p>';
 
-				if(crs.sessionDates != "")
-					tableRows += '<p class="col200 sessionDates"><small><b>Session Dates</b> ' + crs.sessionDates + '</small></p>';
+			if(crs.getSummerFees())
+				tableRows += '<p class="col200 summerFees"><small><b>Summer Fees:</b> ' + crs.getSummerFees() + '</small></p>';
 
-				if(crs.note != "")
-					tableRows += '<p class="col200 note"><small><b>Note:</b> ' + crs.note + '</small></p>';
+			if(crs.getSessionDates())
+				tableRows += '<p class="col200 sessionDates"><small><b>Session Dates</b> ' + crs.getSessionDates() + '</small></p>';
 
+			if(crs.getNote())
+				tableRows += '<p class="col200 note"><small><b>Note:</b> ' + crs.getNote() + '</small></p>';
 
 			tableRows += '</td>';
 			tableRows += '<td colspan="4" class="enrollDataFiller rowBorder"><span></span></td>';
@@ -1422,9 +1508,6 @@ var newTable = (function(courseList)
 		}
 
 		tableRows += '</tr>';
-
-
-
 		tableRows += '</tbody>';
 	}
 	
@@ -1432,7 +1515,7 @@ var newTable = (function(courseList)
 	table.innerHTML = tableRows;
 }(courseList));
 
-var controls = (function()
+UCBSE.controls = (function()
 {
 	// container for the controls
 	var container = document.createElement("div");
