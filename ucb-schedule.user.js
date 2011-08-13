@@ -50,7 +50,7 @@ function post_to_url(path, params, method, target)
 
 function associativeArrayToString(arr)
 {
-	str = "{ ";
+	var str = "{ ";
 	for(var key in arr)
 	{
 		str += "'" + key + "' : '" + arr[key] + "', ";
@@ -82,7 +82,8 @@ function createToggleColumnElement(container, n, label, id)
 	var toggleColLabel = document.createTextNode(label);
 	toggleColElement.addEventListener("click", function() { if(GM_getValue("isCol" + n) == "false") GM_setValue("isCol" + n, "true"); else GM_setValue("isCol" + n, "false"); }, false);
 	
-    	var currentClass = document.getElementById(id).className;
+    var currentClass = document.getElementById(id).className;
+
 	if(GM_getValue("isCol" + n) != "false")
 	{
         document.getElementById(id).className = currentClass.replace("hide"+n, "");
@@ -90,7 +91,6 @@ function createToggleColumnElement(container, n, label, id)
 	}
 	else
         document.getElementById(id).className += " " + "hide"+n;
-
 
 	divContainer.appendChild(toggleColElement);
 	divContainer.appendChild(toggleColLabel);
@@ -100,7 +100,7 @@ function createToggleColumnElement(container, n, label, id)
 
 function popupwindow(url, name, width, height)
 {
-	newwindow = window.open(url, name, "width=" + width + ",height=" + height);
+	var newwindow = window.open(url, name, "width=" + width + ",height=" + height);
 	if(window.focus) { newwindow.focus() }
 	return false;
 }
@@ -169,27 +169,30 @@ function toggleCCNBg()
 	if(GM_getValue("isBg") == "false")
 	{
 		removeClass(currentClass, "nobg");
-
 		GM_setValue("isBg", "true");
 	}
 	else
 	{
 		addClass(currentClass, "nobg");
-
 		GM_setValue("isBg", "false");
 	}
 }
 
-function hasClass(ele,cls) {
+function hasClass(ele,cls) 
+{
 	if ((typeof(ele) == 'undefined') || (ele == null)) {
 		return false;
 	}
 	return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
 }
-function addClass(ele,cls) {
+
+function addClass(ele,cls) 
+{
 	if (!hasClass(ele,cls)) ele.className += " "+cls;
 }
-function removeClass(ele,cls) {
+
+function removeClass(ele,cls) 
+{
 	if (hasClass(ele,cls)) {
 		var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
 		ele.className=ele.className.replace(reg,' ');
@@ -1202,7 +1205,7 @@ UCBSE.css = (function()
 	css += ".enrollData, .enrollDataLeft, .enrollDataRight { text-align:center;}";
 	css += ".enrollDataLeft { border-left:1px dotted #CCC;}";
 	css += ".enrollDataRight { border-right:1px dotted #CCC;}";
-	css += ".enrollDataFiller, .enrollmentMsg { border-left:1px dotted #CCC; border-right:1px dotted #CCC; }";
+	css += ".enrollDataFiller { border-left:1px dotted #CCC; border-right:1px dotted #CCC; }";
 
 	// CCN
 	css += ".ccnInput { width:40px; border:0px solid #CCC; font-size:1em; font-weight:bold; font-family: arial, verdana, tahoma;}";
@@ -1465,7 +1468,7 @@ UCBSE.table = (function(courseList)
 		}
 		else
 		{
-			tableRows += '<td colspan="4" class="' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
+			tableRows += '<td colspan="4" class="enrollDataLeft enrollDataRight ' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
 		}
 
 		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col15 restrictions"><small>' + crs.getRestrictions() + '</small></div></td>';
@@ -1481,10 +1484,10 @@ UCBSE.table = (function(courseList)
 		tableRows += '</tr>';
 
 		// Second row (Note, Summer Session fees, etc.)
-		tableRows += '<tr class="">';
 
 		if(crs.needSecondRow())
 		{
+			tableRows += '<tr class="">';
 			tableRows += '<td class="highlightCursor col1" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
 			tableRows += '<td class="ccn rowBorder"></td>';
 			tableRows += '<td class="rowBorder"></td>';
@@ -1502,12 +1505,12 @@ UCBSE.table = (function(courseList)
 				tableRows += '<p class="col200 note"><small><b>Note:</b> ' + crs.getNote() + '</small></p>';
 
 			tableRows += '</td>';
-			tableRows += '<td colspan="4" class="enrollDataFiller rowBorder"><span></span></td>';
+			tableRows += '<td colspan="4" class="rowBorder"></td>';
 			tableRows += '<td class="rowBorder" colspan="2"></td>';
 			tableRows += '<td class="links"></td>';
+			tableRows += '</tr>';
 		}
 
-		tableRows += '</tr>';
 		tableRows += '</tbody>';
 	}
 	
