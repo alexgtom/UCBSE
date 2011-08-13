@@ -823,12 +823,12 @@ UCBSE.Course = function()
 				{
 					var catalogDescParams = new Array();
 
-					catalogDescParams['p_dept_name'] = spaceToPlus(this.department);
-					catalogDescParams['p_dept_cd'] = spaceToPlus(this.departmentAbrev);
+					catalogDescParams['p_dept_name'] = spaceToPlus(stripSpace(this.department));
+					catalogDescParams['p_dept_cd'] = spaceToPlus(stripSpace(this.departmentAbrev));
 					catalogDescParams['p_title'] = "";
 					catalogDescParams['p_number'] = this.courseNum;
 
-					catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_sso_search_sends_request', ";
+					catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_search_sends_request', ";
 					catalogDescLink += associativeArrayToString(catalogDescParams);
 					catalogDescLink += ",'post','_blank');";
 
