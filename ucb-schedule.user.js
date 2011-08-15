@@ -1276,10 +1276,12 @@ UCBSE.css = (function()
 	css += ".checkboxElement {float:left; width:150px; text-align:left;}";
 
 	// sidebar
-	css += "#sidebar {width:165px; float:right; text-align:right;z-index:100; position:absolute; right:10px; top:10px; }";
+	css += "#sidebar {width:165px; float:right; text-align:right;z-index:100; position:fixed; right:10px; top:10px; }";
+	css += "#sidebar a {color:#9f911e;}";
+	css += "#sidebar a:hover {color:#9f911e; text-decoration: underline; background-color:transparent;}";
 
 	// configuration link
-	css += "#configLink { float:top left; text-align:right;}";
+	css += "#configLink { float:top left; text-align:right; background-color:#fffcb8; font-size:.7em; font-family:arial, tahoma, san-serif; padding:5px; border:1px solid #decc35; opacity:.8;}";
 
 
 
