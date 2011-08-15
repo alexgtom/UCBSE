@@ -80,11 +80,16 @@ function createToggleColumnElement(container, n, label, id)
 	toggleColElement.setAttribute("type", "checkbox");
 	toggleColElement.setAttribute("onclick", 'toggleColumn("' + id + '", ' + n + ')');
 	var toggleColLabel = document.createTextNode(label);
-	toggleColElement.addEventListener("click", function() { if(GM_getValue("isCol" + n) == "false") GM_setValue("isCol" + n, "true"); else GM_setValue("isCol" + n, "false"); }, false);
+	toggleColElement.addEventListener("click", function() { 
+			if(GM_getValue("isCol" + n) == false) 
+				GM_setValue("isCol" + n, true); 
+			else 
+				GM_setValue("isCol" + n, false); 
+		}, false);
 	
     var currentClass = document.getElementById(id).className;
 
-	if(GM_getValue("isCol" + n) != "false")
+	if(GM_getValue("isCol" + n) != false)
 	{
         document.getElementById(id).className = currentClass.replace("hide"+n, "");
 		toggleColElement.setAttribute("checked", "yes");
@@ -149,7 +154,7 @@ function toggleMaximize()
 	var table = document.getElementById('enhanced');
 	if( hasClass(table, 'enhancedFull'))
 	{
-		GM_setValue("isMaximum", "false");
+		GM_setValue("isMaximum", false);
 		removeClass(table, 'enhancedFull');
 		addClass(table, 'enhanced');
 	}
@@ -157,7 +162,7 @@ function toggleMaximize()
 	{
 		removeClass(table, 'enhanced');
 		addClass(table, 'enhancedFull');
-		GM_setValue("isMaximum", "true");
+		GM_setValue("isMaximum", true);
 	}
 
 }
@@ -166,15 +171,15 @@ function toggleCCNBg()
 {
     var currentClass = document.getElementById("enhanced");
 
-	if(GM_getValue("isBg") == "false")
+	if(GM_getValue("isBg") == false)
 	{
 		removeClass(currentClass, "nobg");
-		GM_setValue("isBg", "true");
+		GM_setValue("isBg", true);
 	}
 	else
 	{
 		addClass(currentClass, "nobg");
-		GM_setValue("isBg", "false");
+		GM_setValue("isBg", false);
 	}
 }
 
@@ -1327,16 +1332,14 @@ UCBSE.table = (function(courseList)
 	var table = document.createElement("table");
 	table.setAttribute("id", "enhanced");
 
-	if(GM_getValue("isMaximum") != "false")
+	if(GM_getValue("isMaximum") != false)
 		table.setAttribute("class", "enhancedFull");
 	else
 		table.setAttribute("class", "enhanced");
 
 
 	table.setAttribute("cellspacing", "0");
-	var tableList = document.getElementsByTagName("TABLE");
 	
-	body.insertBefore(table, body.firstChild.nextSibling.nextSibling.nextSibling);
 
 	var tableRows = "";
 	var prevCourseNum = "";
@@ -1490,7 +1493,9 @@ UCBSE.table = (function(courseList)
 		if(crs.needSecondRow())
 		{
 			tableRows += '<tr class="">';
+
 			tableRows += '<td class="highlightCursor col1" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>';
+
 			tableRows += '<td class="ccn rowBorder"></td>';
 			tableRows += '<td class="rowBorder"></td>';
 			tableRows += '<td class="rowBorder"></td>';
@@ -1507,7 +1512,7 @@ UCBSE.table = (function(courseList)
 				tableRows += '<p class="col200 note"><small><b>Note:</b> ' + crs.getNote() + '</small></p>';
 
 			tableRows += '</td>';
-			tableRows += '<td colspan="4" class="rowBorder"></td>';
+			tableRows += '<td colspan="4" class="rowBorder enrollDataLeft enrollDataRight"></td>';
 			tableRows += '<td class="rowBorder" colspan="2"></td>';
 			tableRows += '<td class="links"></td>';
 			tableRows += '</tr>';
@@ -1518,6 +1523,7 @@ UCBSE.table = (function(courseList)
 	
 	// render new table
 	table.innerHTML = tableRows;
+	body.insertBefore(table, body.firstChild.nextSibling.nextSibling.nextSibling);
 }(courseList));
 
 UCBSE.controls = (function()
@@ -1541,7 +1547,7 @@ UCBSE.controls = (function()
 
 	toggleMaximizeElement.addEventListener("click", toggleMaximize, false);
 
-	if(GM_getValue("isMaximum") == "true")
+	if(GM_getValue("isMaximum") == true)
 	{
 		toggleMaximizeElement.setAttribute("checked", "yes");
 	}
@@ -1560,7 +1566,7 @@ UCBSE.controls = (function()
 
 	var toggleCCNBgLabel = document.createTextNode("CCN Background Colors");
 
-	if(GM_getValue("isBg") != "false")
+	if(GM_getValue("isBg") != false)
 	{
 		toggleCCNBgElement.setAttribute("checked", "yes");
 	}
