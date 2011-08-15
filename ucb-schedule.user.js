@@ -122,6 +122,26 @@ function highlightRow(element)
 		element.className = 'highlight';
 }
 
+function highlightListener(crs) 
+{
+	var foundIndex = UCBSE.searchCourseList(crs, UCBSE.highlightedCourses);
+
+	if(foundIndex == null)	
+	{
+		UCBSE.highlightedCourses.push(crs);
+		GM_setValue("highlightArrayJSON", JSON.stringify(UCBSE.highlightedCourses));
+		console.log(UCBSE.highlightedCourses.length + " push " + crs.getCCN());
+	}
+	else
+	{
+		console.log(UCBSE.highlightedCourses.length + " pop " + 
+				UCBSE.highlightedCourses.pop().getCCN());
+		GM_setValue("highlightArrayJSON", JSON.stringify(UCBSE.highlightedCourses));
+	}
+		console.log(GM_getValue("highlightArrayJSON"));
+}
+
+
 /*
  * converts spaces to +
  *
@@ -343,8 +363,58 @@ if ((typeof GM_deleteValue == 'undefined') || (typeof GM_addStyle == 'undefined'
 	}
 
 }
+JSON.stringify = JSON.stringify || function (obj) {  
+    var t = typeof (obj);  
+    if (t != "object" || obj === null) {  
+        // simple data type  
+        if (t == "string") obj = '"'+obj+'"';  
+        return String(obj);  
+    }  
+    else {  
+        // recurse array or object  
+        var n, v, json = [], arr = (obj && obj.constructor == Array);  
+        for (n in obj) {  
+            v = obj[n]; t = typeof(v);  
+            if (t == "string") v = '"'+v+'"';  
+            else if (t == "object" && v !== null) v = JSON.stringify(v);  
+            json.push((arr ? "" : '"' + n + '":') + String(v));  
+        }  
+        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
+    }  
+};  
+
+// implement JSON.parse de-serialization  
+JSON.parse = JSON.parse || function (str) {  
+	if (str === "") str = '""';  
+	eval("var p=" + str + ";");  
+	return p;  
+};  
 
 var UCBSE = UCBSE || {};
+
+if(GM_getValue("highlightArrayJSON"))
+	UCBSE.highlightedCourses = JSON.parse(GM_getValue("highlightArrayJSON"));
+else
+	UCBSE.highlightedCourses = new Array();
+
+console.log(GM_getValue("highlightArrayJSON"));
+
+UCBSE.searchCourseList = function(needle, haystack)
+{
+	haystack = haystack || this.courseList;
+
+	for(i = 0; i < haystack.length; i++)
+	{
+		var crs = haystack[i];
+		if(	needle.getCCN() == crs.ccn &&
+			needle.getCourseNum() == crs.courseNum &&
+			needle.getSecNum() == crs.secNum &&
+			needle.getClassType() == crs.classType
+		  )
+			return i;
+	}
+	return null;
+}
 
 UCBSE.Course = function()
 {
@@ -1112,7 +1182,7 @@ UCBSE.Course = function()
 /*
  * Parse all the information into an array of courses
  */
-var courseList = (function()
+UCBSE.courseList = (function()
 {
 	var entryList = document.querySelectorAll("TABLE");
 	var imgList = document.querySelectorAll('IMG[src="http://schedule.berkeley.edu/graphs/hr2.gif"]');
@@ -1158,7 +1228,6 @@ UCBSE.css = (function()
 	css += "table { empty-cells:show; }";
 	css += ".enhancedFull { width:100%; }";
 	css += ".enhanced { width:auto; }";
-
 
 	var numCol = 18;
 	// col18 = enrollment message
@@ -1228,8 +1297,8 @@ UCBSE.css = (function()
 
 	// Status, restrictions
 	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
-	css += ".statusLastChanged, .col16 { width:110px; }";
-	css += ".restrictions, .col15 { width:110px;}";
+	css += ".statusLastChanged, .col16 { min-width:110px; }";
+	css += ".restrictions, .col15 { min-width:110px;}";
 	css += ".ccn { margin:auto; text-align:center; white-space:nowrap; border-right: 1px dotted #CCC;}";
 	css += ".classType { width:30px; }";
 	css += ".secNum { width:30px; }";
@@ -1383,21 +1452,21 @@ UCBSE.table = (function(courseList)
 			tableRows += '<tr class="title">';
 			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">' + nullToEmpty(crs.getCourseNum()) + '</td>';
 			tableRows += '<td colspan="9" valign="middle">';
-			tableRows += '<span style="float:left;">';
+			tableRows += '<div style="float:left;">';
 			tableRows += '<a onclick="' + crs.getCatalogDescLink() + '" target="_blank">' + nullToEmpty(crs.getTitle()) + '</a>';
 
 			if(crs.getCourseWebsite())
 				tableRows += ' <a href="' + crs.getCourseWebsite() + '" target="_blank">(Course Website)</a>';
 
-			tableRows += '</span>';
-			tableRows += '<span style="float:right;" class="adviceLinks">';
+			tableRows += '</div>';
+			tableRows += '<div style="float:right;" class="adviceLinks">';
 		
 			deptAbrev = crs.getDepartmentAbrev();
 
 			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="blank">[K]</a> ';
 			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
 			tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="blank">[CR]</a>';
-			tableRows += '</span>';
+			tableRows += '</div>';
 			tableRows += '<div style="clear:both"></div>';
 
 			tableRows += '</td>';
@@ -1405,8 +1474,8 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td><div class="smallLabel col12"><small>Enrolled</small></div></td>';	
 			tableRows += '<td><div class="smallLabel col13"><small>Waitlist</small></div></td>';	
 			tableRows += '<td><div class="smallLabel col14"><small>Avail Seats</small></div></td>';	
-			tableRows += '<td><div class="smallLabel col15"><small>Restrictions</small></div></td>';	
-			tableRows += '<td><div class="smallLabel col16"><small>Status</small></div></td>';	
+			tableRows += '<td class="col15"><div class="smallLabel"><small>Restrictions</small></div></td>';	
+			tableRows += '<td class="col16"><div class="smallLabel"><small>Status</small></div></td>';	
 			tableRows += '<td></td>';
 			tableRows += '</td>';
 			tableRows += '</tr>';
@@ -1466,9 +1535,9 @@ UCBSE.table = (function(courseList)
 
 		if(!crs.getEnrollmentMsg())
 		{
-			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</td>';
-			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col12">' + crs.getEnrolled() + '</td>';
-			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col13">' + crs.getWaitlist() + '</td>';
+			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</div></td>';
+			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col12">' + crs.getEnrolled() + '</div></td>';
+			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col13">' + crs.getWaitlist() + '</div></td>';
 			tableRows += '<td class="enrollDataRight' + crs.needRowBorder() + '"><div class="col14">' + crs.getAvailSeats() + '</td>';
 		}
 		else
@@ -1476,9 +1545,9 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td colspan="4" class="enrollDataLeft enrollDataRight ' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
 		}
 
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col15 restrictions"><small>' + crs.getRestrictions() + '</small></div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="col16 statusLastChanged"><small>' + crs.getStatusLastChanged() + '</small></div></td>';
-		tableRows += '<td class=""><div class="col17 links">';
+		tableRows += '<td class="' + crs.needRowBorder() + ' col15"><div class="restrictions"><small>' + crs.getRestrictions() + '</small></div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + ' col16"><div class="statusLastChanged"><small>' + crs.getStatusLastChanged() + '</small></div></td>';
+		tableRows += '<td class="col17"><div class="links">';
 
 		if(crs.getEnrollmentLink())
 			tableRows += '<a onclick="' + crs.getEnrollmentLink()+ '" target="_blank" alt="Enrollment">[E]</a> ';
@@ -1513,18 +1582,50 @@ UCBSE.table = (function(courseList)
 
 			tableRows += '</td>';
 			tableRows += '<td colspan="4" class="rowBorder enrollDataLeft enrollDataRight"></td>';
-			tableRows += '<td class="rowBorder" colspan="2"></td>';
-			tableRows += '<td class="links"></td>';
+			tableRows += '<td class="rowBorder col15"></td>';
+			tableRows += '<td class="rowBorder col16"></td>';
+			tableRows += '<td class="links col17"></td>';
 			tableRows += '</tr>';
 		}
 
 		tableRows += '</tbody>';
 	}
 	
-	// render new table
+	// set HTML in table
 	table.innerHTML = tableRows;
+
+	highlightCells = table.getElementsByClassName("highlightCursor");
+
+	var secondRowParsed = false;
+	for(var courseCount = 0, highlightCount = 0, len = highlightCells.length; 
+			highlightCount < len; 
+			highlightCount++)
+	{
+		var crs = courseList[courseCount];
+
+		highlightCells[highlightCount].addEventListener("click", 
+				(function(course) {
+					return function() {
+						highlightListener(course);
+					}
+				}(crs))
+			, false);
+
+
+		if(!crs.needSecondRow())
+			courseCount++;
+		else if(secondRowParsed)
+		{
+			courseCount++;
+			secondRowParsed = false;
+		}
+		else
+			secondRowParsed = true;
+		
+	}
+
 	body.insertBefore(table, body.firstChild.nextSibling.nextSibling.nextSibling);
-}(courseList));
+}(UCBSE.courseList));
 
 UCBSE.controls = (function()
 {
