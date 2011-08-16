@@ -112,33 +112,69 @@ function popupwindow(url, name, width, height)
 
 function highlightRow(element) 
 {
-	if(element.className == 'highlight')
-		element.className = 'highlightonclick';
-	else if(element.className == 'lecture')
-		element.className = 'lecture highlightonclick';
-	else if(element.className == 'lecture highlightonclick')
-		element.className = 'lecture';
+	if(hasClass(element, "highlightonclick"))
+		removeClass(element, "highlightonclick");
 	else
-		element.className = 'highlight';
+		addClass(element, "highlightonclick");
 }
 
 function highlightListener(crs) 
 {
-	var foundIndex = UCBSE.searchCourseList(crs, UCBSE.highlightedCourses);
+	var foundIndex = UCBSE.searchHighlightedCourses(crs, UCBSE.highlightedCourses);
 
-	if(foundIndex == null)	
+	if(foundIndex)	
 	{
-		UCBSE.highlightedCourses.push(crs);
+		UCBSE.highlightedCourses.splice(foundIndex, 1);
 		GM_setValue("highlightArrayJSON", JSON.stringify(UCBSE.highlightedCourses));
-		console.log(UCBSE.highlightedCourses.length + " push " + crs.getCCN());
 	}
 	else
 	{
-		console.log(UCBSE.highlightedCourses.length + " pop " + 
-				UCBSE.highlightedCourses.pop().getCCN());
+		UCBSE.highlightedCourses.push(crs);
 		GM_setValue("highlightArrayJSON", JSON.stringify(UCBSE.highlightedCourses));
 	}
-		console.log(GM_getValue("highlightArrayJSON"));
+
+	highlightedCoursesTableCreator(UCBSE.highlightedCoursesContainer);
+}
+
+function highlightedCoursesTableCreator(container)
+{
+	var highlightedHTML = "";
+	
+	highlightedHTML += "<table>";
+	highlightedHTML += "<thead><tr>";
+	highlightedHTML += "<th>CCN</th>";
+	highlightedHTML += "<th colspan=\"3\">Course</th>";
+	highlightedHTML += "<th>Class<br>Type</th>";
+	highlightedHTML += "<th>Section<br>Number</th>";
+	highlightedHTML += "<th>Units</th>";
+	highlightedHTML += "<th>Instructor</th>";
+	highlightedHTML += "<th>Days</th>";
+	highlightedHTML += "<th>Time</th>";
+	highlightedHTML += "<th>Location</th>";
+	highlightedHTML += "</tr></thead>";
+
+	for(var i = 0, len = UCBSE.highlightedCourses.length; i < len; i++)
+	{
+		var crs = UCBSE.highlightedCourses[i];
+
+		highlightedHTML += "<tr>";
+		highlightedHTML += '<td><input type="text" onclick="select()" class="ccnInput" value="' + nullToEmpty(crs.ccn) + '" ></td>';
+		highlightedHTML += "<td>" + nullToEmpty(crs.departmentAbrev) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.courseNum) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.title) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.classType) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.secNum) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.units) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.instructor) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.days) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.time) + "</td>";
+		highlightedHTML += "<td>" + nullToEmpty(crs.room) + "</td>";
+		highlightedHTML += "</tr>";
+	}
+
+	highlightedHTML += "</table>";
+
+	container.innerHTML = highlightedHTML;
 }
 
 
@@ -235,7 +271,7 @@ function stripSpace(str)
 }
 
 /*
- * @return emtry string is str is null
+ * @return null to empty string
  */
 function nullToEmpty(str)
 {
@@ -399,7 +435,7 @@ else
 
 console.log(GM_getValue("highlightArrayJSON"));
 
-UCBSE.searchCourseList = function(needle, haystack)
+UCBSE.searchHighlightedCourses = function(needle, haystack)
 {
 	haystack = haystack || this.courseList;
 
@@ -416,181 +452,184 @@ UCBSE.searchCourseList = function(needle, haystack)
 	return null;
 }
 
+// Used for caching. Massive speed boost!
+UCBSE.prevDept = "";
+UCBSE.prevDeptAbrev = "";
+
 UCBSE.Course = function()
 {
 	// private attributes 
 	
-	var DEPARTMENTS = [
-		{ shortName: "AEROSPC", name: "AEROSPACE STUDIES" },
-		{ shortName: "AFRICAM", name: "AFRICAN AMERICAN STUDIES" },
-		{ shortName: "AGR CHM", name: "AGRICULTURAL AND ENVIRON CHEMISTRY" },
-		{ shortName: "A,RESEC", name: "AGRICULTURAL AND RESOURCE ECONOMICS" },
-		{ shortName: "AMERSTD", name: "AMERICAN STUDIES" },
-		{ shortName: "AHMA", name: "ANCIENT HISTORY AND MED. ARCH." },
-		{ shortName: "ANTHRO", name: "ANTHROPOLOGY" },
-		{ shortName: "AST", name: "APPLIED SCIENCE AND TECHNOLOGY" },
-		{ shortName: "ARABIC", name: "ARABIC" },
-		{ shortName: "ARCH", name: "ARCHITECTURE" },
-		{ shortName: "ASAMST", name: "ASIAN AMERICAN STUDIES" },
-		{ shortName: "ASIANST", name: "ASIAN STUDIES" },
-		{ shortName: "ASTRON", name: "ASTRONOMY" },
-		{ shortName: "BANGLA", name: "BENGALI" },
-		{ shortName: "BIO ENG", name: "BIOENGINEERING" },
-		{ shortName: "BIOLOGY", name: "BIOLOGY" },
-		{ shortName: "BIOPHY", name: "BIOPHYSICS" },
-		{ shortName: "BUDDHSM", name: "BUDDHISM" },
-		{ shortName: "CATALAN", name: "CATALAN" },
-		{ shortName: "CELTIC", name: "CELTIC STUDIES" },
-		{ shortName: "CHM ENG", name: "CHEMICAL & BIOMOLECULAR ENGINEERING" },
-		{ shortName: "CHEM", name: "CHEMISTRY" },
-		{ shortName: "CHICANO", name: "CHICANO STUDIES" },
-		{ shortName: "CHINESE", name: "CHINESE" },
-		{ shortName: "CY PLAN", name: "CITY AND REGIONAL PLANNING" },
-		{ shortName: "CIV ENG", name: "CIVIL AND ENVIRONMENTAL ENGINEERING" },
-		{ shortName: "CLASSIC", name: "CLASSICS" },
-		{ shortName: "COG SCI", name: "COGNITIVE SCIENCE" },
-		{ shortName: "COLWRIT", name: "COLLEGE WRITING PROGRAM" },
-		{ shortName: "COMPBIO", name: "COMPARATIVE BIOCHEMISTRY" },
-		{ shortName: "COM LIT", name: "COMPARATIVE LITERATURE" },
-		{ shortName: "CGB", name: "COMPUTATIONAL AND GENOMIC BIOLOGY" },
-		{ shortName: "COMPSCI", name: "COMPUTER SCIENCE" },
-		{ shortName: "CRIT TH", name: "CRITICAL THEORY GRADUATE GROUP" },
-		{ shortName: "CUNEIF", name: "CUNEIFORM" },
-		{ shortName: "DEMOG", name: "DEMOGRAPHY" },
-		{ shortName: "DEV STD", name: "DEVELOPMENT STUDIES" },
-		{ shortName: "DUTCH", name: "DUTCH" },
-		{ shortName: "EPS", name: "EARTH AND PLANETARY SCIENCE" },
-		{ shortName: "EA LANG", name: "EAST ASIAN LANGUAGES AND CULTURES" },
-		{ shortName: "EAEURST", name: "EAST EUROPEAN STUDIES" },
-		{ shortName: "ECON", name: "ECONOMICS" },
-		{ shortName: "EDUC", name: "EDUCATION" },
-		{ shortName: "EGYPT", name: "EGYPTIAN" },
-		{ shortName: "EL ENG", name: "ELECTRICAL ENGINEERING" },
-		{ shortName: "ENE,RES", name: "ENERGY AND RESOURCES GROUP" },
-		{ shortName: "ENGIN", name: "ENGINEERING" },
-		{ shortName: "ENGLISH", name: "ENGLISH" },
-		{ shortName: "ESPM", name: "ENVIRON SCI, POLICY, AND MANAGEMENT" },
-		{ shortName: "ENV DES", name: "ENVIRONMENTAL DESIGN" },
-		{ shortName: "ENVECON", name: "ENVIRONMENTAL ECONOMICS AND POLICY" },
-		{ shortName: "ENV SCI", name: "ENVIRONMENTAL SCIENCES" },
-		{ shortName: "ETH STD", name: "ETHNIC STUDIES" },
-		{ shortName: "ETH GRP", name: "ETHNIC STUDIES GRADUATE GROUP" },
-		{ shortName: "EURA ST", name: "EURASIAN STUDIES" },
-		{ shortName: "EWMBA", name: "EVE/WKND MASTERS IN BUS. ADM." },
-		{ shortName: "XMBA", name: "EXECUTIVE MASTERS IN BUS. ADM." },
-		{ shortName: "FILIPN", name: "FILIPINO" },
-		{ shortName: "FILM", name: "FILM AND MEDIA" },
-		{ shortName: "FOLKLOR", name: "FOLKLORE" },
-		{ shortName: "FRENCH", name: "FRENCH" },
-		{ shortName: "GWS", name: "GENDER AND WOMEN'S STUDIES" },
-		{ shortName: "GEOG", name: "GEOGRAPHY" },
-		{ shortName: "GERMAN", name: "GERMAN" },
-		{ shortName: "GMS", name: "GLOBAL METROPOLITAN STUDIES" },
-		{ shortName: "GPP", name: "GLOBAL POVERTY AND PRACTICE" },
-		{ shortName: "GSPDP", name: "GRAD STUDENT PROF DEVELOPMENT PGM" },
-		{ shortName: "GREEK", name: "GREEK" },
-		{ shortName: "BUDDSTD", name: "GROUP IN BUDDHIST STUDIES" },
-		{ shortName: "HMEDSCI", name: "HEALTH AND MEDICAL SCIENCES" },
-		{ shortName: "HEBREW", name: "HEBREW" },
-		{ shortName: "HIN-URD", name: "HINDI-URDU" },
-		{ shortName: "HISTORY", name: "HISTORY" },
-		{ shortName: "HISTART", name: "HISTORY OF ART" },
-		{ shortName: "ILA", name: "INDIGENOUS LANGUAGES OF AMERICAS" },
-		{ shortName: "IND ENG", name: "INDUSTRIAL ENGIN AND OPER RESEARCH" },
-		{ shortName: "INFO", name: "INFORMATION" },
-		{ shortName: "INFOSYS", name: "INFORMATION SYSTEMS AND MANAGEMENT" },
-		{ shortName: "INTEGBI", name: "INTEGRATIVE BIOLOGY" },
-		{ shortName: "IDS", name: "INTERDEPARTMENTAL STUDIES" },
-		{ shortName: "ISF", name: "INTERDISCIPLINARY STUDIES FIELD MAJ" },
-		{ shortName: "IAS", name: "INTERNATIONAL AND AREA STUDIES" },
-		{ shortName: "IRANIAN", name: "IRANIAN" },
-		{ shortName: "ITALIAN", name: "ITALIAN STUDIES" },
-		{ shortName: "JAPAN", name: "JAPANESE" },
-		{ shortName: "JEWISH", name: "JEWISH STUDIES" },
-		{ shortName: "JOURN", name: "JOURNALISM" },
-		{ shortName: "KHMER", name: "KHMER" },
-		{ shortName: "KOREAN", name: "KOREAN" },
-		{ shortName: "LD ARCH", name: "LANDSCAPE ARCHITECTURE" },
-		{ shortName: "LAN PRO", name: "LANGUAGE PROFICIENCY PROGRAM" },
-		{ shortName: "LANGPRO", name: "LANGUAGE PROFICIENCY PROGRAM" },
-		{ shortName: "LATIN", name: "LATIN" },
-		{ shortName: "LATAMST", name: "LATIN AMERICAN STUDIES" },
-		{ shortName: "LAW", name: "LAW" },
-		{ shortName: "LEGALST", name: "LEGAL STUDIES" },
-		{ shortName: "LGBT", name: "LESBIAN GAY BISEXUAL TRANSGENDER ST" },
-		{ shortName: "L ~ S", name: "LETTERS AND SCIENCE" },
-		{ shortName: "LINGUIS", name: "LINGUISTICS" },
-		{ shortName: "MALAY/I", name: "MALAY/INDONESIAN" },
-		{ shortName: "MASSCOM", name: "MASS COMMUNICATIONS" },
-		{ shortName: "MBA", name: "MASTERS IN BUSINESS ADMINISTRATION" },
-		{ shortName: "MFE", name: "MASTERS IN FINANCIAL ENGINEERING" },
-		{ shortName: "MAT SCI", name: "MATERIALS SCIENCE AND ENGINEERING" },
-		{ shortName: "MATH", name: "MATHEMATICS" },
-		{ shortName: "MEC ENG", name: "MECHANICAL ENGINEERING" },
-		{ shortName: "MEDIAST", name: "MEDIA STUDIES" },
-		{ shortName: "MED ST", name: "MEDIEVAL STUDIES" },
-		{ shortName: "M E STU", name: "MIDDLE EASTERN STUDIES" },
-		{ shortName: "MIL AFF", name: "MILITARY AFFAIRS" },
-		{ shortName: "MIL SCI", name: "MILITARY SCIENCE" },
-		{ shortName: "MCELLBI", name: "MOLECULAR AND CELL BIOLOGY" },
-		{ shortName: "MUSIC", name: "MUSIC" },
-		{ shortName: "NSE", name: "NANOSCALE SCIENCE AND ENGINEERING" },
-		{ shortName: "NATAMST", name: "NATIVE AMERICAN STUDIES" },
-		{ shortName: "NAT RES", name: "NATURAL RESOURCES" },
-		{ shortName: "NAV SCI", name: "NAVAL SCIENCE" },
-		{ shortName: "NE STUD", name: "NEAR EASTERN STUDIES" },
-		{ shortName: "NEUROSC", name: "NEUROSCIENCE" },
-		{ shortName: "CNM", name: "NEW MEDIA" },
-		{ shortName: "NWMEDIA", name: "NEW MEDIA" },
-		{ shortName: "NUC ENG", name: "NUCLEAR ENGINEERING" },
-		{ shortName: "NUSCTX", name: "NUTRITIONAL SCIENCES AND TOXICOLOGY" },
-		{ shortName: "OC ENG", name: "OCEAN ENGINEERING" },
-		{ shortName: "OPTOM", name: "OPTOMETRY" },
-		{ shortName: "PACS", name: "PEACE AND CONFLICT STUDIES" },
-		{ shortName: "PERSIAN", name: "PERSIAN" },
-		{ shortName: "PHDBA", name: "PH.D. IN BUSINESS ADMINISTRATION" },
-		{ shortName: "PHILOS", name: "PHILOSOPHY" },
-		{ shortName: "PHYS ED", name: "PHYSICAL EDUCATION" },
-		{ shortName: "PHYSICS", name: "PHYSICS" },
-		{ shortName: "PLANTBI", name: "PLANT AND MICROBIAL BIOLOGY" },
-		{ shortName: "POLECIS", name: "POLITICAL ECONOMY OF INDUSTRIAL SOC" },
-		{ shortName: "POL SCI", name: "POLITICAL SCIENCE" },
-		{ shortName: "PORTUG", name: "PORTUGUESE" },
-		{ shortName: "ART", name: "PRACTICE OF ART" },
-		{ shortName: "PSYCH", name: "PSYCHOLOGY" },
-		{ shortName: "PB HLTH", name: "PUBLIC HEALTH" },
-		{ shortName: "PUB POL", name: "PUBLIC POLICY" },
-		{ shortName: "PUNJABI", name: "PUNJABI" },
-		{ shortName: "RELIGST", name: "RELIGIOUS STUDIES" },
-		{ shortName: "RHETOR", name: "RHETORIC" },
-		{ shortName: "SANSKR", name: "SANSKRIT" },
-		{ shortName: "SCANDIN", name: "SCANDINAVIAN" },
-		{ shortName: "SCMATHE", name: "SCIENCE AND MATHEMATICS EDUCATION" },
-		{ shortName: "SEMITIC", name: "SEMITICS" },
-		{ shortName: "SLAVIC", name: "SLAVIC LANGUAGES AND LITERATURES" },
-		{ shortName: "SOC WEL", name: "SOCIAL WELFARE" },
-		{ shortName: "SOCIOL", name: "SOCIOLOGY" },
-		{ shortName: "S ASIAN", name: "SOUTH ASIAN" },
-		{ shortName: "S,SEASN", name: "SOUTH AND SOUTHEAST ASIAN STUDIES" },
-		{ shortName: "SEASIAN", name: "SOUTHEAST ASIAN" },
-		{ shortName: "SPANISH", name: "SPANISH" },
-		{ shortName: "STAT", name: "STATISTICS" },
-		{ shortName: "STUDIES", name: "STUDIES" },
-		{ shortName: "TAGALG", name: "TAGALOG" },
-		{ shortName: "TAMIL", name: "TAMIL" },
-		{ shortName: "TELUGU", name: "TELUGU" },
-		{ shortName: "THAI", name: "THAI" },
-		{ shortName: "THEATER", name: "THEATER, DANCE, AND PERFORMANCE ST" },
-		{ shortName: "TIBETAN", name: "TIBETAN" },
-		{ shortName: "TURKISH", name: "TURKISH" },
-		{ shortName: "UGIS", name: "UNDERGRAD INTERDISCIPLINARY STUDIES" },
-		{ shortName: "UGBA", name: "UNDERGRAD. BUSINESS ADMINISTRATION" },
-		{ shortName: "UNIVEXT", name: "UNIVERSITY EXTENSION" },
-		{ shortName: "VIETNMS", name: "VIETNAMESE" },
-		{ shortName: "VIS SCI", name: "VISION SCIENCE" },
-		{ shortName: "VIS STD", name: "VISUAL STUDIES" },
-		{ shortName: "YIDDISH", name: "YIDDISH" }
-	];
+	var DEPARTMENTS = {
+		"AFRICAN AMERICAN STUDIES" : "AFRICAM",
+		"AGRICULTURAL AND ENVIRON CHEMISTRY" : "AGR CHM",
+		"AGRICULTURAL AND RESOURCE ECONOMICS" : "A,RESEC",
+		"AMERICAN STUDIES" : "AMERSTD",
+		"ANCIENT HISTORY AND MED. ARCH." : "AHMA",
+		"ANTHROPOLOGY" : "ANTHRO",
+		"APPLIED SCIENCE AND TECHNOLOGY" : "AST",
+		"ARABIC" : "ARABIC",
+		"ARCHITECTURE" : "ARCH",
+		"ASIAN AMERICAN STUDIES" : "ASAMST",
+		"ASIAN STUDIES" : "ASIANST",
+		"ASTRONOMY" : "ASTRON",
+		"BENGALI" : "BANGLA",
+		"BIOENGINEERING" : "BIO ENG",
+		"BIOLOGY" : "BIOLOGY",
+		"BIOPHYSICS" : "BIOPHY",
+		"BUDDHISM" : "BUDDHSM",
+		"CATALAN" : "CATALAN",
+		"CELTIC STUDIES" : "CELTIC",
+		"CHEMICAL & BIOMOLECULAR ENGINEERING" : "CHM ENG",
+		"CHEMISTRY" : "CHEM",
+		"CHICANO STUDIES" : "CHICANO",
+		"CHINESE" : "CHINESE",
+		"CITY AND REGIONAL PLANNING" : "CY PLAN",
+		"CIVIL AND ENVIRONMENTAL ENGINEERING" : "CIV ENG",
+		"CLASSICS" : "CLASSIC",
+		"COGNITIVE SCIENCE" : "COG SCI",
+		"COLLEGE WRITING PROGRAM" : "COLWRIT",
+		"COMPARATIVE BIOCHEMISTRY" : "COMPBIO",
+		"COMPARATIVE LITERATURE" : "COM LIT",
+		"COMPUTATIONAL AND GENOMIC BIOLOGY" : "CGB",
+		"COMPUTER SCIENCE" : "COMPSCI",
+		"CRITICAL THEORY GRADUATE GROUP" : "CRIT TH",
+		"CUNEIFORM" : "CUNEIF",
+		"DEMOGRAPHY" : "DEMOG",
+		"DEVELOPMENT STUDIES" : "DEV STD",
+		"DUTCH" : "DUTCH",
+		"EARTH AND PLANETARY SCIENCE" : "EPS",
+		"EAST ASIAN LANGUAGES AND CULTURES" : "EA LANG",
+		"EAST EUROPEAN STUDIES" : "EAEURST",
+		"ECONOMICS" : "ECON",
+		"EDUCATION" : "EDUC",
+		"EGYPTIAN" : "EGYPT",
+		"ELECTRICAL ENGINEERING" : "EL ENG",
+		"ENERGY AND RESOURCES GROUP" : "ENE,RES",
+		"ENGINEERING" : "ENGIN",
+		"ENGLISH" : "ENGLISH",
+		"ENVIRON SCI, POLICY, AND MANAGEMENT" : "ESPM",
+		"ENVIRONMENTAL DESIGN" : "ENV DES",
+		"ENVIRONMENTAL ECONOMICS AND POLICY" : "ENVECON",
+		"ENVIRONMENTAL SCIENCES" : "ENV SCI",
+		"ETHNIC STUDIES" : "ETH STD",
+		"ETHNIC STUDIES GRADUATE GROUP" : "ETH GRP",
+		"EURASIAN STUDIES" : "EURA ST",
+		"EVE/WKND MASTERS IN BUS. ADM." : "EWMBA",
+		"EXECUTIVE MASTERS IN BUS. ADM." : "XMBA",
+		"FILIPINO" : "FILIPN",
+		"FILM AND MEDIA" : "FILM",
+		"FOLKLORE" : "FOLKLOR",
+		"FRENCH" : "FRENCH",
+		"GENDER AND WOMEN'S STUDIES" : "GWS",
+		"GEOGRAPHY" : "GEOG",
+		"GERMAN" : "GERMAN",
+		"GLOBAL METROPOLITAN STUDIES" : "GMS",
+		"GLOBAL POVERTY AND PRACTICE" : "GPP",
+		"GRAD STUDENT PROF DEVELOPMENT PGM" : "GSPDP",
+		"GREEK" : "GREEK",
+		"GROUP IN BUDDHIST STUDIES" : "BUDDSTD",
+		"HEALTH AND MEDICAL SCIENCES" : "HMEDSCI",
+		"HEBREW" : "HEBREW",
+		"HINDI-URDU" : "HIN-URD",
+		"HISTORY" : "HISTORY",
+		"HISTORY OF ART" : "HISTART",
+		"INDIGENOUS LANGUAGES OF AMERICAS" : "ILA",
+		"INDUSTRIAL ENGIN AND OPER RESEARCH" : "IND ENG",
+		"INFORMATION" : "INFO",
+		"INFORMATION SYSTEMS AND MANAGEMENT" : "INFOSYS",
+		"INTEGRATIVE BIOLOGY" : "INTEGBI",
+		"INTERDEPARTMENTAL STUDIES" : "IDS",
+		"INTERDISCIPLINARY STUDIES FIELD MAJ" : "ISF",
+		"INTERNATIONAL AND AREA STUDIES" : "IAS",
+		"IRANIAN" : "IRANIAN",
+		"ITALIAN STUDIES" : "ITALIAN",
+		"JAPANESE" : "JAPAN",
+		"JEWISH STUDIES" : "JEWISH",
+		"JOURNALISM" : "JOURN",
+		"KHMER" : "KHMER",
+		"KOREAN" : "KOREAN",
+		"LANDSCAPE ARCHITECTURE" : "LD ARCH",
+		"LANGUAGE PROFICIENCY PROGRAM" : "LAN PRO",
+		"LANGUAGE PROFICIENCY PROGRAM" : "LANGPRO",
+		"LATIN" : "LATIN",
+		"LATIN AMERICAN STUDIES" : "LATAMST",
+		"LAW" : "LAW",
+		"LEGAL STUDIES" : "LEGALST",
+		"LESBIAN GAY BISEXUAL TRANSGENDER ST" : "LGBT",
+		"LETTERS AND SCIENCE" : "L ~ S",
+		"LINGUISTICS" : "LINGUIS",
+		"MALAY/INDONESIAN" : "MALAY/I",
+		"MASS COMMUNICATIONS" : "MASSCOM",
+		"MASTERS IN BUSINESS ADMINISTRATION" : "MBA",
+		"MASTERS IN FINANCIAL ENGINEERING" : "MFE",
+		"MATERIALS SCIENCE AND ENGINEERING" : "MAT SCI",
+		"MATHEMATICS" : "MATH",
+		"MECHANICAL ENGINEERING" : "MEC ENG",
+		"MEDIA STUDIES" : "MEDIAST",
+		"MEDIEVAL STUDIES" : "MED ST",
+		"MIDDLE EASTERN STUDIES" : "M E STU",
+		"MILITARY AFFAIRS" : "MIL AFF",
+		"MILITARY SCIENCE" : "MIL SCI",
+		"MOLECULAR AND CELL BIOLOGY" : "MCELLBI",
+		"MUSIC" : "MUSIC",
+		"NANOSCALE SCIENCE AND ENGINEERING" : "NSE",
+		"NATIVE AMERICAN STUDIES" : "NATAMST",
+		"NATURAL RESOURCES" : "NAT RES",
+		"NAVAL SCIENCE" : "NAV SCI",
+		"NEAR EASTERN STUDIES" : "NE STUD",
+		"NEUROSCIENCE" : "NEUROSC",
+		"NEW MEDIA" : "CNM",
+		"NEW MEDIA" : "NWMEDIA",
+		"NUCLEAR ENGINEERING" : "NUC ENG",
+		"NUTRITIONAL SCIENCES AND TOXICOLOGY" : "NUSCTX",
+		"OCEAN ENGINEERING" : "OC ENG",
+		"OPTOMETRY" : "OPTOM",
+		"PEACE AND CONFLICT STUDIES" : "PACS",
+		"PERSIAN" : "PERSIAN",
+		"PH.D. IN BUSINESS ADMINISTRATION" : "PHDBA",
+		"PHILOSOPHY" : "PHILOS",
+		"PHYSICAL EDUCATION" : "PHYS ED",
+		"PHYSICS" : "PHYSICS",
+		"PLANT AND MICROBIAL BIOLOGY" : "PLANTBI",
+		"POLITICAL ECONOMY OF INDUSTRIAL SOC" : "POLECIS",
+		"POLITICAL SCIENCE" : "POL SCI",
+		"PORTUGUESE" : "PORTUG",
+		"PRACTICE OF ART" : "ART",
+		"PSYCHOLOGY" : "PSYCH",
+		"PUBLIC HEALTH" : "PB HLTH",
+		"PUBLIC POLICY" : "PUB POL",
+		"PUNJABI" : "PUNJABI",
+		"RELIGIOUS STUDIES" : "RELIGST",
+		"RHETORIC" : "RHETOR",
+		"SANSKRIT" : "SANSKR",
+		"SCANDINAVIAN" : "SCANDIN",
+		"SCIENCE AND MATHEMATICS EDUCATION" : "SCMATHE",
+		"SEMITICS" : "SEMITIC",
+		"SLAVIC LANGUAGES AND LITERATURES" : "SLAVIC",
+		"SOCIAL WELFARE" : "SOC WEL",
+		"SOCIOLOGY" : "SOCIOL",
+		"SOUTH ASIAN" : "S ASIAN",
+		"SOUTH AND SOUTHEAST ASIAN STUDIES" : "S,SEASN",
+		"SOUTHEAST ASIAN" : "SEASIAN",
+		"SPANISH" : "SPANISH",
+		"STATISTICS" : "STAT",
+		"STUDIES" : "STUDIES",
+		"TAGALOG" : "TAGALG",
+		"TAMIL" : "TAMIL",
+		"TELUGU" : "TELUGU",
+		"THAI" : "THAI",
+		"THEATER, DANCE, AND PERFORMANCE ST" : "THEATER",
+		"TIBETAN" : "TIBETAN",
+		"TURKISH" : "TURKISH",
+		"UNDERGRAD INTERDISCIPLINARY STUDIES" : "UGIS",
+		"UNDERGRAD. BUSINESS ADMINISTRATION" : "UGBA",
+		"UNIVERSITY EXTENSION" : "UNIVEXT",
+		"VIETNAMESE" : "VIETNMS",
+		"VISION SCIENCE" : "VIS SCI",
+		"VISUAL STUDIES" : "VIS STD",
+		"YIDDISH" : "YIDDISH"
+	};
 
 	var department = null;
 	var courseNum = null;
@@ -632,12 +671,18 @@ UCBSE.Course = function()
 	 */
 	var _getDeptAbrev = function(str)
 	{
-		for(var i = 0, len = DEPARTMENTS.length; i < len; i++)
+		/*for(var i = 0, len = DEPARTMENTS.length; i < len; i++)
 		{
-			if(str.match(DEPARTMENTS[i].name))
+			var re = new RegExp(DEPARTMENTS[i].name);
+			if(str.match(re, str))
 				return DEPARTMENTS[i].shortName;
 		}
 		return str;
+		*/
+		if(DEPARTMENTS.hasOwnProperty(str))
+			return DEPARTMENTS[str];
+		else
+			return str;
 	};
 	
 
@@ -971,8 +1016,22 @@ UCBSE.Course = function()
 				for(var i = 0; i < beginCourseIndex; i++)
 					courseName += str[i] + " ";
 
-				this.department = courseName;					// Department
-				this.departmentAbrev = _getDeptAbrev(courseName); // Department Abrev
+				this.department = stripSpace(courseName);					// Department
+				
+				if(this.department != UCBSE.prevDept)
+				{
+					UCBSE.prevDept = this.department
+					this.departmentAbrev = _getDeptAbrev(this.department); // Department Abrev
+					UCBSE.prevDeptAbrev = this.departmentAbrev;
+				}
+				else
+				{
+					this.departmentAbrev = UCBSE.prevDeptAbrev;
+					console.log('"' + this.departmentAbrev + '"');
+					console.log('"' + this.department + '"');
+				}
+
+
 				this.courseNum = str[beginCourseIndex];			// Course Number
 				this.ps = str[beginCourseIndex + 1];			// P/S (not sure what P or S means)
 				this.secNum = str[beginCourseIndex + 2];		// Section Number
@@ -1250,6 +1309,9 @@ UCBSE.css = (function()
 	// for showing and hiding controls
 	css += "div.hide900 { display:none; background-color:#000; }";
 
+	// for showing and hiding highlightedcourses
+	css += "div.hide800 { display:none; background-color:#000; }";
+
 	// links
 	css += "a {color:#336699}";
 
@@ -1297,8 +1359,8 @@ UCBSE.css = (function()
 
 	// Status, restrictions
 	css += ".statusLastChanged, .restrictions { text-align:center; font-family:arial; font-weight:normal; }";
-	css += ".statusLastChanged, .col16 { min-width:110px; }";
-	css += ".restrictions, .col15 { min-width:110px;}";
+	css += ".statusLastChanged, .col16 { width:110px; }";
+	css += ".restrictions, .col15 { width:110px;}";
 	css += ".ccn { margin:auto; text-align:center; white-space:nowrap; border-right: 1px dotted #CCC;}";
 	css += ".classType { width:30px; }";
 	css += ".secNum { width:30px; }";
@@ -1325,7 +1387,7 @@ UCBSE.css = (function()
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
 
 	// Row Highlighting
-	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#dfffa4; }";
+	css += "tbody.lecture:hover { background-color:#dfffa4; }";
 	css += "tbody.lecture { background-color:#f1f1f1; }";
 	css += "tbody.lecture tr:first-child > td { font-weight:bold; }";
 	css += "tbody.lecture .rowBorder { border-bottom:1px dotted #CCC; }";
@@ -1344,18 +1406,21 @@ UCBSE.css = (function()
 	css += "table.nobg .open, table.nobg .openButWaitlist, table.nobg .full { background-color:transparent; color:#000;}";
 
 	// controls
-	css += "#controls { float:left; background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; margin:5px; color:#666; width:150px; border:1px solid #CCC; text-align:center; opacity: .9;}";
+	css += "#controls { float:left; background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; color:#666; margin:5px 0 0 0; border:1px solid #CCC; text-align:center; opacity: .9; border-radius:5px; }";
 	css += "#controls hr { background-color:#CCC; height:1px; border:0px; float:left; width:100%;}";
 	css += "#controls input { padding:0px; margin:2px 2px 0 2px; }";
 	css += ".checkboxElement {float:left; width:150px; text-align:left;}";
 
 	// sidebar
-	css += "#sidebar {width:165px; float:right; text-align:right;z-index:100; position:fixed; right:10px; top:10px; }";
+	css += "#sidebar {width:180px; float:right; text-align:right;z-index:100; position:fixed; right:10px; top:10px; color:#666;}";
 	css += "#sidebar a {color:#9f911e;}";
 	css += "#sidebar a:hover {color:#9f911e; text-decoration: underline; background-color:transparent;}";
 
 	// configuration link
-	css += "#configLink { float:top left; text-align:right; background-color:#fffcb8; font-size:.7em; font-family:arial, tahoma, san-serif; padding:5px; border:1px solid #decc35; opacity:.8;}";
+	css += "#configContainer { float:top left; text-align:right; background-color:#fffcb8; font-size:.7em; font-family:arial, tahoma, san-serif; padding:5px; border:1px solid #decc35; opacity:.8; border-radius:5px;}";
+
+	// highlighted Courses
+	css += "#highlightedCourses {float:left; background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-family: arial, tahoma, sans-serif; font-size:.9em; color:#666; z-index:100; position:fixed; opacity:.95; border-radius:5px; }";
 
 
 
@@ -1486,10 +1551,17 @@ UCBSE.table = (function(courseList)
 		
 		tableRows += '<tbody ';
 
+		tableRows += 'class="';
+
+		// highlight lecture
 		if(crs.getClassType() == "LEC")
-			tableRows += 'class="lecture"';
-		else
-			tableRows += 'class="highlight"';
+			tableRows += 'lecture ';
+
+		// highlight the saved highlighted courses
+		if(UCBSE.searchHighlightedCourses(crs, UCBSE.highlightedCourses))
+			tableRows += 'highlightonclick';
+
+		tableRows += '"';
 
 		tableRows += '>';
 
@@ -1594,6 +1666,8 @@ UCBSE.table = (function(courseList)
 	// set HTML in table
 	table.innerHTML = tableRows;
 
+
+	// highlighted courses
 	highlightCells = table.getElementsByClassName("highlightCursor");
 
 	var secondRowParsed = false;
@@ -1715,13 +1789,25 @@ UCBSE.controls = (function()
 	createToggleColumnElement(container, 18, "Enrollment Message");
 	createToggleColumnElement(container, 200, "Second Row");
 
-	// Configuration link
+	// Configuration container 
 	var toggleControlsContainer = document.createElement("div");
-	toggleControlsContainer.setAttribute("id", "configLink");
+	toggleControlsContainer.setAttribute("id", "configContainer");
+
+	// Highlighted Courses link 
+	var toggleControls = document.createElement("a");
+	toggleControls.setAttribute("onclick", "toggleColumn('highlightedCourses', 800)");
+	toggleControls.innerHTML = "Highlighted Courses";
+	toggleControlsContainer.appendChild(toggleControls);
+
+	// Add space
+	toggleControlsContainer.innerHTML += " | ";
+
+	// Configuration link 
 	var toggleControls = document.createElement("a");
 	toggleControls.setAttribute("onclick", "toggleColumn('controls', 900)");
 	toggleControls.innerHTML = "Configuration";
 	toggleControlsContainer.appendChild(toggleControls);
+
 
 	// Sidebar container
 	var sidebarContainer = document.createElement("div");
@@ -1730,6 +1816,17 @@ UCBSE.controls = (function()
 	sidebarContainer.appendChild(toggleControlsContainer);
 	sidebarContainer.appendChild(container);
 
-	// Render Controls
+	// Add sidebar to page
 	document.body.insertBefore(sidebarContainer, document.body.firstChild);
+
+	// highlighted courses
+	UCBSE.highlightedCoursesContainer = document.createElement("div");
+	UCBSE.highlightedCoursesContainer.setAttribute("id", "highlightedCourses");
+	UCBSE.highlightedCoursesContainer.setAttribute("class", "col800 hide800");
+
+	highlightedCoursesTableCreator(UCBSE.highlightedCoursesContainer);
+
+	// Add highlighted courses to page
+	document.body.insertBefore(UCBSE.highlightedCoursesContainer, document.body.firstChild);
+
 }());
