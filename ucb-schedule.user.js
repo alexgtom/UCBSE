@@ -1507,10 +1507,10 @@ UCBSE.css = (function()
 	css += ".adviceLinks { font-size:.8em; font-weight:normal;}";
 
 	// Row Highlighting
-	css += "tbody.highlight:hover, tbody.lecture:hover { background-color:#dfffa4; }";
-	css += "tbody.lecture { background-color:#f1f1f1; }";
-	css += "tbody.lecture tr:first-child > td { font-weight:bold; }";
-	css += "tbody.lecture .rowBorder { border-bottom:1px dotted #CCC; }";
+	css += "tbody.highlight:hover, tbody.primary:hover { background-color:#dfffa4; }";
+	css += "tbody.primary { background-color:#f1f1f1; }";
+	css += "tbody.primary tr:first-child > td { font-weight:bold; }";
+	css += "tbody.primary .rowBorder { border-bottom:1px dotted #CCC; }";
 
 
 	// onclick row highlighting
@@ -1677,9 +1677,9 @@ UCBSE.table = (function(courseList)
 
 		tableRows += 'class="course highlight ';
 
-		// highlight lecture
-		if(crs.getClassType() == "LEC")
-			tableRows += 'lecture ';
+		// highlight primary
+		if(crs.getPS() == "P")
+			tableRows += 'primary ';
 
 		// highlight the saved highlighted courses
 		if(UCBSE.searchCourses(crs, UCBSE.highlightedCourses) != null)
