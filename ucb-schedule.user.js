@@ -1488,7 +1488,7 @@ UCBSE.css = (function()
 	css += ".highlightCursor, a { cursor:pointer; }";
 
 	// key
-	css += ".key { background-color:#e8f1fa; border:1px solid #336699; color:#226699; font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:left; color:#336699; padding:5px; border-radius:5px; width:600px; margin: 5px 0; }";
+	css += ".key { background-color:#e8f1fa; color:#226699; font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:left; color:#336699; padding:5px; border-radius:5px; width:600px; margin: 5px 0; }";
 	css += "table.hide300 { display:none; background-color:#000; }";
 
 	// turn of bg on ccn
