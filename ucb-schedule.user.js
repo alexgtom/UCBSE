@@ -150,6 +150,7 @@ function highlightListener(crs)
 	highlightedCoursesTableCreator(UCBSE.highlightedCoursesContainer);
 }
 
+
 function toggleClassPersistent(gmid)
 {
 	if(GM_getValue(gmid) != false)
@@ -166,22 +167,21 @@ function toggleClassPersistent(gmid)
 
 function highlightedCoursesTableCreator(container)
 {
-
-
 	var table = document.createElement("table");
+	table.setAttribute("cellspacing", "0");
 	var tableHTML = "";
 	
 	tableHTML += '<thead><tr>';
 	tableHTML += '<th></th>';
 	tableHTML += '<th>CCN</th>';
 	tableHTML += '<th colspan="3" align="left">Course</th>';
-	tableHTML += '<th>Class<br>Type</th>';
-	tableHTML += '<th>Section<br>Number</th>';
-	tableHTML += '<th>Units</th>';
-	tableHTML += '<th>Instructor</th>';
-	tableHTML += '<th>Days</th>';
-	tableHTML += '<th>Time</th>';
-	tableHTML += '<th>Location</th>';
+	tableHTML += '<th align="left">Class<br>Type</th>';
+	tableHTML += '<th align="left">Section<br>Number</th>';
+	tableHTML += '<th align="left">Units</th>';
+	tableHTML += '<th align="left">Instructor</th>';
+	tableHTML += '<th align="left">Days</th>';
+	tableHTML += '<th align="left">Time</th>';
+	tableHTML += '<th align="left">Location</th>';
 	tableHTML += '<th></th>';
 	tableHTML += '</tr></thead>';
 	table.innerHTML = tableHTML;
@@ -231,13 +231,44 @@ function highlightedCoursesTableCreator(container)
 
 		table.appendChild(row);
 	}
+	
+	var footer = document.createElement("tfoot");
+	var footerRow = document.createElement("tr");
+	var left = document.createElement("td");
+	left.setAttribute("colspan", "6");
+
+	var clearLinkContainer = document.createElement("div");
+	var clearLink = document.createElement("a");
+	clearLink.innerHTML = "clear all highlighted courses"; 
+	clearLink.addEventListener("click", function() {
+			var r = confirm("Are you sure you want to clear all highlighted courses?");
+			if(r == true)
+			{
+				UCBSE.highlightedCourses = Array();
+				GM_setValue("highlightArrayJSON", JSON.stringify(UCBSE.highlightedCourses));
+				highlightedCoursesTableCreator(container);
+			}
+		}, false);
+	clearLinkContainer.appendChild(document.createTextNode("[ "));
+	clearLinkContainer.appendChild(clearLink);
+	clearLinkContainer.appendChild(document.createTextNode(" ]"));
+	left.appendChild(clearLinkContainer);
+	footerRow.appendChild(left);
+
+	var right = document.createElement("td");
+	right.setAttribute("colspan", "7");
+	right.appendChild(closeContainer("highlightedCourses", 800, "isHigh"));
+	footerRow.appendChild(right);
+
+	footer.appendChild(footerRow);
+	table.appendChild(footer);
 
 	if(container.firstChild)
 		container.replaceChild(table, container.firstChild);
 	else
 	{
 		container.appendChild(table);
-		container.appendChild(closeContainer("highlightedCourses", 800, "isHigh"));
+//		container.appendChild(closeContainer("highlightedCourses", 800, "isHigh"));
 	}
 
 }
@@ -1372,7 +1403,7 @@ UCBSE.css = (function()
 
 	css = "";
 	css += "body { font-family:arial, tahoma, verdana; } ";
-	css += "table, tr, td { font-size: 0.9em; } ";
+	css += "table, tr, td { font-size:.9em; } ";
 	css += "table { empty-cells:show; }";
 	css += ".enhancedFull { width:100%; }";
 	css += ".enhanced { width:auto; }";
@@ -1506,11 +1537,16 @@ UCBSE.css = (function()
 	css += "#sidebar a:hover {color:#9f911e; text-decoration: underline; background-color:transparent;}";
 
 	// configuration link
-	css += "#configContainer { float:top left; text-align:center; background-color:#fffcb8; font-size:.7em; font-family:arial, tahoma, san-serif; padding:5px; border:1px solid #decc35; opacity:.8; border-radius:5px;}";
+	css += "#configContainer { float:top left; text-align:center; background-color:#fffcb8; font-size:.7em; font-family:arial, tahoma, san-serif; padding:5px; border:1px solid #decc35; opacity:.8; border-radius:5px;  }";
+	css += "#configContainer a, #configContainer { -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -o-user-select: none; user-select: none; }";
 
 	// highlighted Courses
-	css += "#highlightedCourses {float:left; background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-family: arial, tahoma, sans-serif; font-size:.9em; color:#666; z-index:100; position:fixed; opacity:.95; border-radius:5px; }";
+	css += "#highlightedCourses table {float:left; background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-family: arial, tahoma, sans-serif; font-size:10pt; color:#666; z-index:100; position:fixed; opacity:.95; border-radius:5px; }";
+	css += "#highlightedCourses tr td { padding:2px; }";
+	css += "#highlightedCourses tfoot tr > td {border-top: 1px solid #CCC;}";
+	css += "#highlightedCourses a {font-size:8pt;}";
 	css += "#close a, #close { color:#666; font-size:8pt; }"
+	css += "#highlightedCourses hr { background-color:#CCC; height:1px; border:0px; float:left; width:100%;}";
 
 	// close panel
 	css += "#close {float:right;}";
@@ -1898,9 +1934,11 @@ UCBSE.controls = (function()
 	var toggleControlsContainer = document.createElement("div");
 	toggleControlsContainer.setAttribute("id", "configContainer");
 
+
 	// Highlighted Courses link 
 
 	var toggleHighlightedCourses = document.createElement("a");
+	toggleHighlightedCourses.setAttribute("unselectable", "on");
 	toggleHighlightedCourses.addEventListener("click", function() { toggleClassPersistent("isHigh"); }, false);
 	toggleHighlightedCourses.setAttribute("onclick", "toggleColumn('highlightedCourses', 800)");
 
@@ -1919,6 +1957,7 @@ UCBSE.controls = (function()
 	// Configuration link 
 	var toggleControls = document.createElement("a");
 	toggleControls.setAttribute("onclick", "toggleColumn('controls', 900)");
+	toggleControls.setAttribute("unselectable", "on");
 	toggleControls.addEventListener("click", function() { toggleClassPersistent("isControls"); }, false);
 	toggleControls.innerHTML = "Configuration";
 	toggleControlsContainer.appendChild(toggleControls);
