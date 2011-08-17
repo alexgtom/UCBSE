@@ -1574,7 +1574,7 @@ UCBSE.key = (function()
 {
 	var table = document.createElement("table");
 	table.setAttribute("id", "key");
-	table.innerHTML = '<tr><td><div class="key"><b>Key</b><ul><li><span class="open">GREEN</span> indicates that the class is open and there are seats available.</li><li><span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist.</li><li><span class="full">RED</span> indicates that the class is full or has been cancelled.</li><li><b>Course Highlighting</b> - Courses can be highlighted in yellow by clicking on the blank space in the Course Number column.</li><li><b>[E]</b> = Enrollment</li><li><b>[B]</b> = Book</li></div></tr></td>';
+	table.innerHTML = '<tr><td><div class="key"><b>Key</b><ul><li><span class="open">GREEN</span> indicates that the class is open and there are seats available.</li><li><span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist.</li><li><span class="full">RED</span> indicates that the class is full or has been cancelled.</li><li><b>Course Highlighting</b> - Courses can be highlighted in yellow by clicking on the blank space in the Course Number column.</li><li><b>[E]</b> = Enrollment</li><li><b>[B]</b> = Book</li><li><b>[K]</b> = Koofers</li><li><b>[ME]</b> = myEdu</li><li><b>[CR]</b> = CourseRank</div></tr></td>';
 
 	document.body.insertBefore(table, document.body.firstChild.nextSibling.nextSibling);
 }());
