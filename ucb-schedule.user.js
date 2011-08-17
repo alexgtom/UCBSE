@@ -1488,7 +1488,7 @@ UCBSE.css = (function()
 	css += ".highlightCursor, a { cursor:pointer; }";
 
 	// key
-	css += ".key { font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:right; color:#666; }";
+	css += ".key { background-color:#e8f1fa; border:1px solid #336699; color:#226699; font-size:.9em; font-family:Helvetica, Arial, sans-serif; text-align:left; color:#336699; padding:5px; border-radius:5px; width:600px; margin: 5px 0; }";
 	css += "table.hide300 { display:none; background-color:#000; }";
 
 	// turn of bg on ccn
@@ -1533,23 +1533,16 @@ UCBSE.css = (function()
 
 	head.appendChild(jsElt);
 }());
-
-/*
- * Create Key
- */
 	
 UCBSE.key = (function()
 {
 	var table = document.createElement("table");
 	table.setAttribute("id", "key");
-	table.innerHTML = '<tr><td><div class="key"><span class="open">GREEN</span> indicates that the class is open and there are seats available. <span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist. <span class="full">RED</span> indicates that the class is full or has been cancelled.</div></td></tr>';
+	table.innerHTML = '<tr><td><div class="key"><b>Key</b><ul><li><span class="open">GREEN</span> indicates that the class is open and there are seats available.</li><li><span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist.</li><li><span class="full">RED</span> indicates that the class is full or has been cancelled.</li><li><b>Course Highlighting</b> - Courses can be highlighted in yellow by clicking on the blank space in the Course Number column.</li><li><b>[E]</b> = Enrollment</li><li><b>[B]</b> = Book</li></div></tr></td>';
 
 	document.body.insertBefore(table, document.body.firstChild.nextSibling.nextSibling);
 }());
 
-/*
- * Create new table
- */
 UCBSE.table = (function(courseList)
 {
 	var body = document.body;
@@ -1953,5 +1946,6 @@ UCBSE.controls = (function()
 
 	// Add highlighted courses to page
 	document.body.insertBefore(UCBSE.highlightedCoursesContainer, document.body.firstChild);
+
 
 }());
