@@ -1749,8 +1749,8 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td colspan="4" class="enrollDataLeft enrollDataRight ' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
 		}
 
-		tableRows += '<td class="' + crs.needRowBorder() + ' col15"><div class="restrictions"><small>' + crs.getRestrictions() + '</small></div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + ' col16"><div class="statusLastChanged"><small>' + crs.getStatusLastChanged() + '</small></div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + ' col15"><div class="restrictions"><small>' + nullToEmpty(crs.getRestrictions()) + '</small></div></td>';
+		tableRows += '<td class="' + crs.needRowBorder() + ' col16"><div class="statusLastChanged"><small>' + nullToEmpty(crs.getStatusLastChanged()) + '</small></div></td>';
 		tableRows += '<td class="col17"><div class="links">';
 
 		if(crs.getEnrollmentLink())
