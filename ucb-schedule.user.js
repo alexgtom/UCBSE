@@ -23,6 +23,129 @@
 //	  https://github.com/athk/UCBSE
 //
 
+// GreaseMonkey API compatibility for Chrome
+// @copyright      2009, 2010 James Campos
+// @modified		2010 Steve Sobel - added some missing gm_* functions
+// @license        cc-by-3.0; http://creativecommons.org/licenses/by/3.0/
+if ((typeof GM_deleteValue == 'undefined') || (typeof GM_addStyle == 'undefined')) {
+	GM_addStyle = function(css) {
+		var style = document.createElement('style');
+		style.textContent = css;
+		var head = document.getElementsByTagName('head')[0];
+		if (head) {
+			head.appendChild(style);
+		}
+	}
+
+	GM_deleteValue = function(name) {
+		localStorage.removeItem(name);
+	}
+
+	GM_getValue = function(name, defaultValue) {
+		var value = localStorage.getItem(name);
+		if (!value)
+			return defaultValue;
+		var type = value[0];
+		value = value.substring(1);
+		switch (type) {
+			case 'b':
+				return value == 'true';
+			case 'n':
+				return Number(value);
+			default:
+				return value;
+		}
+	}
+
+	GM_log = function(message) {
+		console.log(message);
+	}
+
+	GM_registerMenuCommand = function(name, funk) {
+	//todo
+	}
+
+	GM_setValue = function(name, value) {
+		value = (typeof value)[0] + value;
+		localStorage.setItem(name, value);
+	}
+	
+	if (typeof(safari) != 'undefined')  {
+		GM_xmlhttpRequest = function(obj) {
+			obj.requestType = 'GM_xmlhttpRequest';
+			// Safari is a bastard.  Since it doesn't provide legitimate callbacks, I have to store the onload function here
+			// in the main userscript in a queue (see xhrQueue), wait for data to come back from the background page, then call the onload. Damn this sucks.
+			// See how much easier it was up there in the Chrome statement?  Damn.
+			if (typeof(obj.onload) != 'undefined') {
+				obj.XHRID = xhrQueue.count;
+				xhrQueue.onloads[xhrQueue.count] = obj.onload;
+				safari.self.tab.dispatchMessage("GM_xmlhttpRequest", obj);
+				xhrQueue.count++;
+			}
+		}
+	} else if (typeof(opera) != 'undefined') {
+		GM_xmlhttpRequest = function(obj) {
+			obj.requestType = 'GM_xmlhttpRequest';
+			// Turns out, Opera works this way too, but I'll forgive them since their extensions are so young and they're awesome people...
+			// Really though, we need callbacks like Chrome has!  This is such a hacky way to emulate GM_xmlhttpRequest.
+
+			// oy vey... another problem. When Opera sends xmlhttpRequests from the background page, it loses the cookies etc that it'd have 
+			// had from the foreground page... so we need to write a bit of a hack here, and call different functions based on whether or 
+			// not the request is cross domain... For same-domain requests, we'll call from the foreground...
+			var crossDomain = (obj.url.indexOf(location.hostname) == -1);
+			
+			if ((typeof(obj.onload) != 'undefined') && (crossDomain)) {
+				obj.XHRID = xhrQueue.count;
+				xhrQueue.onloads[xhrQueue.count] = obj.onload;
+				opera.extension.postMessage(JSON.stringify(obj));
+				xhrQueue.count++;
+			} else {
+				var request=new XMLHttpRequest();
+				request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
+				request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
+				try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
+				if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
+				request.send(obj.data); return request;
+			}
+		}
+	} else {
+		GM_xmlhttpRequest=function(obj) {
+			var request=new XMLHttpRequest();
+			request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
+			request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
+			try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
+			if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
+			request.send(obj.data); return request;
+		}
+	}
+
+}
+JSON.stringify = JSON.stringify || function (obj) {  
+    var t = typeof (obj);  
+    if (t != "object" || obj === null) {  
+        // simple data type  
+        if (t == "string") obj = '"'+obj+'"';  
+        return String(obj);  
+    }  
+    else {  
+        // recurse array or object  
+        var n, v, json = [], arr = (obj && obj.constructor == Array);  
+        for (n in obj) {  
+            v = obj[n]; t = typeof(v);  
+            if (t == "string") v = '"'+v+'"';  
+            else if (t == "object" && v !== null) v = JSON.stringify(v);  
+            json.push((arr ? "" : '"' + n + '":') + String(v));  
+        }  
+        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
+    }  
+};  
+
+// implement JSON.parse de-serialization  
+JSON.parse = JSON.parse || function (str) {  
+	if (str === "") str = '""';  
+	eval("var p=" + str + ";");  
+	return p;  
+};  
 function post_to_url(path, params, method, target) 
 {
     method = method || "post"; // Set method to post by default, if not specified.
@@ -150,17 +273,40 @@ function highlightListener(crs)
 	highlightedCoursesTableCreator(UCBSE.highlightedCoursesContainer);
 }
 
+function ninjacoursesListener(crs)
+{
+	try
+	{
+		GM_xmlhttpRequest({method: 'GET', 
+			url: 'http://ninjacourses.com/explore/department/' + crs.getNinjacoursesId() + '/courses.json', 
+			onload: function(response) {
+				var my_data = JSON.parse(response.responseText);
+				for(var i = 0, len = my_data.courses.length; i < len; i++)
+				{
+					if(my_data.courses[i].identifier == crs.getCourseNum())
+					{
+						window.open('http://ninjacourses.com/explore/course/' + my_data.courses[i].id + '/');
+						break;
+					}	
+				}
+			}
+		 })
+	}
+	catch(err)
+	{
+		alert("It looks like your browser dosent support GM_xmlhttpRequest. Please use a different browser such as Firefox or Chrome");
+	}
+}
+
 
 function toggleClassPersistent(gmid)
 {
 	if(GM_getValue(gmid) != false)
 	{
-		console.log("true");
 		GM_setValue(gmid, false);
 	}
 	else
 	{
-		console.log("false");
 		GM_setValue(gmid, true);
 	}
 }
@@ -192,7 +338,7 @@ function highlightedCoursesTableCreator(container)
 		var crs = UCBSE.highlightedCourses[i];
 		var rowHTML = "";
 	
-		rowHTML += '<td>[ <a name="delete">X</a> ]</td>';
+		rowHTML += '<td style="white-space:nowrap;">[ <a>X</a> ]</td>';
 		rowHTML += '<td><input type="text" onclick="select()" class="ccnInput" value="' + nullToEmpty(crs.ccn) + '" ></td>';
 		rowHTML += "<td>" + nullToEmpty(crs.departmentAbrev) + "</td>";
 		rowHTML += "<td>" + nullToEmpty(crs.courseNum) + "</td>";
@@ -268,7 +414,6 @@ function highlightedCoursesTableCreator(container)
 	else
 	{
 		container.appendChild(table);
-//		container.appendChild(closeContainer("highlightedCourses", 800, "isHigh"));
 	}
 
 }
@@ -399,149 +544,6 @@ function nullToEmpty(str)
 }
 
 
-// GreaseMonkey API compatibility for Chrome
-// @copyright      2009, 2010 James Campos
-// @modified		2010 Steve Sobel - added some missing gm_* functions
-// @license        cc-by-3.0; http://creativecommons.org/licenses/by/3.0/
-if ((typeof GM_deleteValue == 'undefined') || (typeof GM_addStyle == 'undefined')) {
-	GM_addStyle = function(css) {
-		var style = document.createElement('style');
-		style.textContent = css;
-		var head = document.getElementsByTagName('head')[0];
-		if (head) {
-			head.appendChild(style);
-		}
-	}
-
-	GM_deleteValue = function(name) {
-		localStorage.removeItem(name);
-	}
-
-	GM_getValue = function(name, defaultValue) {
-		var value = localStorage.getItem(name);
-		if (!value)
-			return defaultValue;
-		var type = value[0];
-		value = value.substring(1);
-		switch (type) {
-			case 'b':
-				return value == 'true';
-			case 'n':
-				return Number(value);
-			default:
-				return value;
-		}
-	}
-
-	GM_log = function(message) {
-		console.log(message);
-	}
-
-	GM_registerMenuCommand = function(name, funk) {
-	//todo
-	}
-
-	GM_setValue = function(name, value) {
-		value = (typeof value)[0] + value;
-		localStorage.setItem(name, value);
-	}
-	
-	if (typeof(chrome) != 'undefined') {
-		GM_xmlhttpRequest = function(obj) {
-			var crossDomain = (obj.url.indexOf(location.hostname) == -1);
-			
-			if ((typeof(obj.onload) != 'undefined') && (crossDomain)) {
-				obj.requestType = 'GM_xmlhttpRequest';
-				if (typeof(obj.onload) != 'undefined') {
-					chrome.extension.sendRequest(obj, function(response) {
-						obj.onload(response);
-					});
-				}
-			} else {
-				var request=new XMLHttpRequest();
-				request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
-				request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
-				try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
-				if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
-				request.send(obj.data); return request;
-			}
-		}
-	} else if (typeof(safari) != 'undefined')  {
-		GM_xmlhttpRequest = function(obj) {
-			obj.requestType = 'GM_xmlhttpRequest';
-			// Safari is a bastard.  Since it doesn't provide legitimate callbacks, I have to store the onload function here
-			// in the main userscript in a queue (see xhrQueue), wait for data to come back from the background page, then call the onload. Damn this sucks.
-			// See how much easier it was up there in the Chrome statement?  Damn.
-			if (typeof(obj.onload) != 'undefined') {
-				obj.XHRID = xhrQueue.count;
-				xhrQueue.onloads[xhrQueue.count] = obj.onload;
-				safari.self.tab.dispatchMessage("GM_xmlhttpRequest", obj);
-				xhrQueue.count++;
-			}
-		}
-	} else if (typeof(opera) != 'undefined') {
-		GM_xmlhttpRequest = function(obj) {
-			obj.requestType = 'GM_xmlhttpRequest';
-			// Turns out, Opera works this way too, but I'll forgive them since their extensions are so young and they're awesome people...
-			// Really though, we need callbacks like Chrome has!  This is such a hacky way to emulate GM_xmlhttpRequest.
-
-			// oy vey... another problem. When Opera sends xmlhttpRequests from the background page, it loses the cookies etc that it'd have 
-			// had from the foreground page... so we need to write a bit of a hack here, and call different functions based on whether or 
-			// not the request is cross domain... For same-domain requests, we'll call from the foreground...
-			var crossDomain = (obj.url.indexOf(location.hostname) == -1);
-			
-			if ((typeof(obj.onload) != 'undefined') && (crossDomain)) {
-				obj.XHRID = xhrQueue.count;
-				xhrQueue.onloads[xhrQueue.count] = obj.onload;
-				opera.extension.postMessage(JSON.stringify(obj));
-				xhrQueue.count++;
-			} else {
-				var request=new XMLHttpRequest();
-				request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
-				request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
-				try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
-				if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
-				request.send(obj.data); return request;
-			}
-		}
-	} else {
-		GM_xmlhttpRequest=function(obj) {
-			var request=new XMLHttpRequest();
-			request.onreadystatechange=function() { if(obj.onreadystatechange) { obj.onreadystatechange(request); }; if(request.readyState==4 && obj.onload) { obj.onload(request); } }
-			request.onerror=function() { if(obj.onerror) { obj.onerror(request); } }
-			try { request.open(obj.method,obj.url,true); } catch(e) { if(obj.onerror) { obj.onerror( {readyState:4,responseHeaders:'',responseText:'',responseXML:'',status:403,statusText:'Forbidden'} ); }; return; }
-			if(obj.headers) { for(name in obj.headers) { request.setRequestHeader(name,obj.headers[name]); } }
-			request.send(obj.data); return request;
-		}
-	}
-
-}
-JSON.stringify = JSON.stringify || function (obj) {  
-    var t = typeof (obj);  
-    if (t != "object" || obj === null) {  
-        // simple data type  
-        if (t == "string") obj = '"'+obj+'"';  
-        return String(obj);  
-    }  
-    else {  
-        // recurse array or object  
-        var n, v, json = [], arr = (obj && obj.constructor == Array);  
-        for (n in obj) {  
-            v = obj[n]; t = typeof(v);  
-            if (t == "string") v = '"'+v+'"';  
-            else if (t == "object" && v !== null) v = JSON.stringify(v);  
-            json.push((arr ? "" : '"' + n + '":') + String(v));  
-        }  
-        return (arr ? "[" : "{") + String(json) + (arr ? "]" : "}");  
-    }  
-};  
-
-// implement JSON.parse de-serialization  
-JSON.parse = JSON.parse || function (str) {  
-	if (str === "") str = '""';  
-	eval("var p=" + str + ";");  
-	return p;  
-};  
 
 var UCBSE = UCBSE || {};
 
@@ -583,174 +585,176 @@ UCBSE.Course = function()
 	// private attributes 
 	
 	var DEPARTMENTS = {
-		"AFRICAN AMERICAN STUDIES" : "AFRICAM",
-		"AGRICULTURAL AND ENVIRON CHEMISTRY" : "AGR CHM",
-		"AGRICULTURAL AND RESOURCE ECONOMICS" : "A,RESEC",
-		"AMERICAN STUDIES" : "AMERSTD",
-		"ANCIENT HISTORY AND MED. ARCH." : "AHMA",
-		"ANTHROPOLOGY" : "ANTHRO",
-		"APPLIED SCIENCE AND TECHNOLOGY" : "AST",
-		"ARABIC" : "ARABIC",
-		"ARCHITECTURE" : "ARCH",
-		"ASIAN AMERICAN STUDIES" : "ASAMST",
-		"ASIAN STUDIES" : "ASIANST",
-		"ASTRONOMY" : "ASTRON",
-		"BENGALI" : "BANGLA",
-		"BIOENGINEERING" : "BIO ENG",
-		"BIOLOGY" : "BIOLOGY",
-		"BIOPHYSICS" : "BIOPHY",
-		"BUDDHISM" : "BUDDHSM",
-		"CATALAN" : "CATALAN",
-		"CELTIC STUDIES" : "CELTIC",
-		"CHEMICAL & BIOMOLECULAR ENGINEERING" : "CHM ENG",
-		"CHEMISTRY" : "CHEM",
-		"CHICANO STUDIES" : "CHICANO",
-		"CHINESE" : "CHINESE",
-		"CITY AND REGIONAL PLANNING" : "CY PLAN",
-		"CIVIL AND ENVIRONMENTAL ENGINEERING" : "CIV ENG",
-		"CLASSICS" : "CLASSIC",
-		"COGNITIVE SCIENCE" : "COG SCI",
-		"COLLEGE WRITING PROGRAM" : "COLWRIT",
-		"COMPARATIVE BIOCHEMISTRY" : "COMPBIO",
-		"COMPARATIVE LITERATURE" : "COM LIT",
-		"COMPUTATIONAL AND GENOMIC BIOLOGY" : "CGB",
-		"COMPUTER SCIENCE" : "COMPSCI",
-		"CRITICAL THEORY GRADUATE GROUP" : "CRIT TH",
-		"CUNEIFORM" : "CUNEIF",
-		"DEMOGRAPHY" : "DEMOG",
-		"DEVELOPMENT STUDIES" : "DEV STD",
-		"DUTCH" : "DUTCH",
-		"EARTH AND PLANETARY SCIENCE" : "EPS",
-		"EAST ASIAN LANGUAGES AND CULTURES" : "EA LANG",
-		"EAST EUROPEAN STUDIES" : "EAEURST",
-		"ECONOMICS" : "ECON",
-		"EDUCATION" : "EDUC",
-		"EGYPTIAN" : "EGYPT",
-		"ELECTRICAL ENGINEERING" : "EL ENG",
-		"ENERGY AND RESOURCES GROUP" : "ENE,RES",
-		"ENGINEERING" : "ENGIN",
-		"ENGLISH" : "ENGLISH",
-		"ENVIRON SCI, POLICY, AND MANAGEMENT" : "ESPM",
-		"ENVIRONMENTAL DESIGN" : "ENV DES",
-		"ENVIRONMENTAL ECONOMICS AND POLICY" : "ENVECON",
-		"ENVIRONMENTAL SCIENCES" : "ENV SCI",
-		"ETHNIC STUDIES" : "ETH STD",
-		"ETHNIC STUDIES GRADUATE GROUP" : "ETH GRP",
-		"EURASIAN STUDIES" : "EURA ST",
-		"EVE/WKND MASTERS IN BUS. ADM." : "EWMBA",
-		"EXECUTIVE MASTERS IN BUS. ADM." : "XMBA",
-		"FILIPINO" : "FILIPN",
-		"FILM AND MEDIA" : "FILM",
-		"FOLKLORE" : "FOLKLOR",
-		"FRENCH" : "FRENCH",
-		"GENDER AND WOMEN'S STUDIES" : "GWS",
-		"GEOGRAPHY" : "GEOG",
-		"GERMAN" : "GERMAN",
-		"GLOBAL METROPOLITAN STUDIES" : "GMS",
-		"GLOBAL POVERTY AND PRACTICE" : "GPP",
-		"GRAD STUDENT PROF DEVELOPMENT PGM" : "GSPDP",
-		"GREEK" : "GREEK",
-		"GROUP IN BUDDHIST STUDIES" : "BUDDSTD",
-		"HEALTH AND MEDICAL SCIENCES" : "HMEDSCI",
-		"HEBREW" : "HEBREW",
-		"HINDI-URDU" : "HIN-URD",
-		"HISTORY" : "HISTORY",
-		"HISTORY OF ART" : "HISTART",
-		"INDIGENOUS LANGUAGES OF AMERICAS" : "ILA",
-		"INDUSTRIAL ENGIN AND OPER RESEARCH" : "IND ENG",
-		"INFORMATION" : "INFO",
-		"INFORMATION SYSTEMS AND MANAGEMENT" : "INFOSYS",
-		"INTEGRATIVE BIOLOGY" : "INTEGBI",
-		"INTERDEPARTMENTAL STUDIES" : "IDS",
-		"INTERDISCIPLINARY STUDIES FIELD MAJ" : "ISF",
-		"INTERNATIONAL AND AREA STUDIES" : "IAS",
-		"IRANIAN" : "IRANIAN",
-		"ITALIAN STUDIES" : "ITALIAN",
-		"JAPANESE" : "JAPAN",
-		"JEWISH STUDIES" : "JEWISH",
-		"JOURNALISM" : "JOURN",
-		"KHMER" : "KHMER",
-		"KOREAN" : "KOREAN",
-		"LANDSCAPE ARCHITECTURE" : "LD ARCH",
-		"LANGUAGE PROFICIENCY PROGRAM" : "LAN PRO",
-		"LANGUAGE PROFICIENCY PROGRAM" : "LANGPRO",
-		"LATIN" : "LATIN",
-		"LATIN AMERICAN STUDIES" : "LATAMST",
-		"LAW" : "LAW",
-		"LEGAL STUDIES" : "LEGALST",
-		"LESBIAN GAY BISEXUAL TRANSGENDER ST" : "LGBT",
-		"LETTERS AND SCIENCE" : "L ~ S",
-		"LINGUISTICS" : "LINGUIS",
-		"MALAY/INDONESIAN" : "MALAY/I",
-		"MASS COMMUNICATIONS" : "MASSCOM",
-		"MASTERS IN BUSINESS ADMINISTRATION" : "MBA",
-		"MASTERS IN FINANCIAL ENGINEERING" : "MFE",
-		"MATERIALS SCIENCE AND ENGINEERING" : "MAT SCI",
-		"MATHEMATICS" : "MATH",
-		"MECHANICAL ENGINEERING" : "MEC ENG",
-		"MEDIA STUDIES" : "MEDIAST",
-		"MEDIEVAL STUDIES" : "MED ST",
-		"MIDDLE EASTERN STUDIES" : "M E STU",
-		"MILITARY AFFAIRS" : "MIL AFF",
-		"MILITARY SCIENCE" : "MIL SCI",
-		"MOLECULAR AND CELL BIOLOGY" : "MCELLBI",
-		"MUSIC" : "MUSIC",
-		"NANOSCALE SCIENCE AND ENGINEERING" : "NSE",
-		"NATIVE AMERICAN STUDIES" : "NATAMST",
-		"NATURAL RESOURCES" : "NAT RES",
-		"NAVAL SCIENCE" : "NAV SCI",
-		"NEAR EASTERN STUDIES" : "NE STUD",
-		"NEUROSCIENCE" : "NEUROSC",
-		"NEW MEDIA" : "CNM",
-		"NEW MEDIA" : "NWMEDIA",
-		"NUCLEAR ENGINEERING" : "NUC ENG",
-		"NUTRITIONAL SCIENCES AND TOXICOLOGY" : "NUSCTX",
-		"OCEAN ENGINEERING" : "OC ENG",
-		"OPTOMETRY" : "OPTOM",
-		"PEACE AND CONFLICT STUDIES" : "PACS",
-		"PERSIAN" : "PERSIAN",
-		"PH.D. IN BUSINESS ADMINISTRATION" : "PHDBA",
-		"PHILOSOPHY" : "PHILOS",
-		"PHYSICAL EDUCATION" : "PHYS ED",
-		"PHYSICS" : "PHYSICS",
-		"PLANT AND MICROBIAL BIOLOGY" : "PLANTBI",
-		"POLITICAL ECONOMY OF INDUSTRIAL SOC" : "POLECIS",
-		"POLITICAL SCIENCE" : "POL SCI",
-		"PORTUGUESE" : "PORTUG",
-		"PRACTICE OF ART" : "ART",
-		"PSYCHOLOGY" : "PSYCH",
-		"PUBLIC HEALTH" : "PB HLTH",
-		"PUBLIC POLICY" : "PUB POL",
-		"PUNJABI" : "PUNJABI",
-		"RELIGIOUS STUDIES" : "RELIGST",
-		"RHETORIC" : "RHETOR",
-		"SANSKRIT" : "SANSKR",
-		"SCANDINAVIAN" : "SCANDIN",
-		"SCIENCE AND MATHEMATICS EDUCATION" : "SCMATHE",
-		"SEMITICS" : "SEMITIC",
-		"SLAVIC LANGUAGES AND LITERATURES" : "SLAVIC",
-		"SOCIAL WELFARE" : "SOC WEL",
-		"SOCIOLOGY" : "SOCIOL",
-		"SOUTH ASIAN" : "S ASIAN",
-		"SOUTH AND SOUTHEAST ASIAN STUDIES" : "S,SEASN",
-		"SOUTHEAST ASIAN" : "SEASIAN",
-		"SPANISH" : "SPANISH",
-		"STATISTICS" : "STAT",
-		"STUDIES" : "STUDIES",
-		"TAGALOG" : "TAGALG",
-		"TAMIL" : "TAMIL",
-		"TELUGU" : "TELUGU",
-		"THAI" : "THAI",
-		"THEATER, DANCE, AND PERFORMANCE ST" : "THEATER",
-		"TIBETAN" : "TIBETAN",
-		"TURKISH" : "TURKISH",
-		"UNDERGRAD INTERDISCIPLINARY STUDIES" : "UGIS",
-		"UNDERGRAD. BUSINESS ADMINISTRATION" : "UGBA",
-		"UNIVERSITY EXTENSION" : "UNIVEXT",
-		"VIETNAMESE" : "VIETNMS",
-		"VISION SCIENCE" : "VIS SCI",
-		"VISUAL STUDIES" : "VIS STD",
-		"YIDDISH" : "YIDDISH"
+		"AEROSPACE STUDIES" : { abrev: "AEROSPC", ninjacoursesId: 97 },
+		"AFRICAN AMERICAN STUDIES" : { abrev: "AFRICAM", ninjacoursesId: 1 },
+		"AGRICULTURAL AND ENVIRON CHEMISTRY" : { abrev: "AGR CHM", ninjacoursesId: 2 },
+		"ANCIENT HISTORY AND MED. ARCH." : { abrev: "AHMA", ninjacoursesId: 6 },
+		"AMERICAN STUDIES" : { abrev: "AMERSTD", ninjacoursesId: 5 },
+		"ANTHROPOLOGY" : { abrev: "ANTHRO", ninjacoursesId: 7 },
+		"ARABIC" : { abrev: "ARABIC", ninjacoursesId: 106 },
+		"ARCHITECTURE" : { abrev: "ARCH", ninjacoursesId: 9 },
+		"AGRICULTURAL AND RESOURCE ECONOMICS" : { abrev: "A,RESEC", ninjacoursesId: 4 },
+		"PRACTICE OF ART" : { abrev: "ART", ninjacoursesId: 11 },
+		"ASIAN AMERICAN STUDIES" : { abrev: "ASAMST", ninjacoursesId: 13 },
+		"ASIAN STUDIES" : { abrev: "ASIANST", ninjacoursesId: 14 },
+		"APPLIED SCIENCE AND TECHNOLOGY" : { abrev: "AST", ninjacoursesId: 8 },
+		"ASTRONOMY" : { abrev: "ASTRON", ninjacoursesId: 15 },
+		"BENGALI" : { abrev: "BANGLA", ninjacoursesId: 142 },
+		"BIOENGINEERING" : { abrev: "BIO ENG", ninjacoursesId: 16 },
+		"BIOLOGY" : { abrev: "BIOLOGY", ninjacoursesId: 159 },
+		"BIOPHYSICS" : { abrev: "BIOPHY", ninjacoursesId: 17 },
+		"BUDDHISM" : { abrev: "BUDDHSM" },
+		"GROUP IN BUDDHIST STUDIES" : { abrev: "BUDDSTD", ninjacoursesId: 18 },
+		"CATALAN" : { abrev: "CATALAN", ninjacoursesId: 154 },
+		"CELTIC STUDIES" : { abrev: "CELTIC", ninjacoursesId: 26 },
+		"COMPUTATIONAL AND GENOMIC BIOLOGY" : { abrev: "CGB", ninjacoursesId: 39 },
+		"CHEMISTRY" : { abrev: "CHEM", ninjacoursesId: 28 },
+		"CHICANO STUDIES" : { abrev: "CHICANO", ninjacoursesId: 29 },
+		"CHINESE" : { abrev: "CHINESE", ninjacoursesId: 45 },
+		"CHEMICAL & BIOMOLECULAR ENGINEERING" : { abrev: "CHM ENG", ninjacoursesId: 27 },
+		"CIVIL AND ENVIRONMENTAL ENGINEERING" : { abrev: "CIV ENG", ninjacoursesId: 31 },
+		"CLASSICS" : { abrev: "CLASSIC", ninjacoursesId: 32 },
+		"NEW MEDIA" : { abrev: "CNM", ninjacoursesId: 115 },
+		"COGNITIVE SCIENCE" : { abrev: "COG SCI", ninjacoursesId: 35 },
+		"COLLEGE WRITING PROGRAM" : { abrev: "COLWRIT", ninjacoursesId: 36 },
+		"COMPARATIVE LITERATURE" : { abrev: "COM LIT", ninjacoursesId: 38 },
+		"COMPARATIVE BIOCHEMISTRY" : { abrev: "COMPBIO", ninjacoursesId: 37 },
+		"COMPUTER SCIENCE" : { abrev: "COMPSCI", ninjacoursesId: 53 },
+		"CRITICAL THEORY GRADUATE GROUP" : { abrev: "CRIT TH", ninjacoursesId: 40 },
+		"CUNEIFORM" : { abrev: "CUNEIF", ninjacoursesId: 107 },
+		"CITY AND REGIONAL PLANNING" : { abrev: "CY PLAN", ninjacoursesId: 30 },
+		"DEMOGRAPHY" : { abrev: "DEMOG", ninjacoursesId: 41 },
+		"DEVELOPMENT STUDIES" : { abrev: "DEV STD", ninjacoursesId: 42 },
+		"DUTCH" : { abrev: "DUTCH", ninjacoursesId: 70 },
+		"EAST EUROPEAN STUDIES" : { abrev: "EAEURST", ninjacoursesId: 135 },
+		"EAST ASIAN LANGUAGES AND CULTURES" : { abrev: "EA LANG", ninjacoursesId: 44 },
+		"ECONOMICS" : { abrev: "ECON", ninjacoursesId: 50 },
+		"EDUCATION" : { abrev: "EDUC", ninjacoursesId: 51 },
+		"EGYPTIAN" : { abrev: "EGYPT", ninjacoursesId: 108 },
+		"ELECTRICAL ENGINEERING" : { abrev: "EL ENG", ninjacoursesId: 52 },
+		"ENERGY AND RESOURCES GROUP" : { abrev: "ENE,RES", ninjacoursesId: 54 },
+		"ENGINEERING" : { abrev: "ENGIN", ninjacoursesId: 55 },
+		"ENGLISH" : { abrev: "ENGLISH", ninjacoursesId: 56 },
+		"ENVIRONMENTAL DESIGN" : { abrev: "ENV DES", ninjacoursesId: 57 },
+		"ENVIRONMENTAL ECONOMICS AND POLICY" : { abrev: "ENVECON", ninjacoursesId: 3 },
+		"ENVIRONMENTAL SCIENCES" : { abrev: "ENV SCI", ninjacoursesId: 59 },
+		"EARTH AND PLANETARY SCIENCE" : { abrev: "EPS", ninjacoursesId: 43 },
+		"ENVIRON SCI POLICY, AND MANAGEMENT" : { abrev: "ESPM", ninjacoursesId: 58 },
+		"ETHNIC STUDIES GRADUATE GROUP" : { abrev: "ETH GRP", ninjacoursesId: 61 },
+		"ETHNIC STUDIES" : { abrev: "ETH STD", ninjacoursesId: 60 },
+		"EURASIAN STUDIES" : { abrev: "EURA ST", ninjacoursesId: 136 },
+		"EVE/WKND MASTERS IN BUS. ADM." : { abrev: "EWMBA", ninjacoursesId: 22 },
+		"FILIPINO" : { abrev: "FILIPN", ninjacoursesId: 162 },
+		"FILM AND MEDIA" : { abrev: "FILM", ninjacoursesId: 62 },
+		"FOLKLORE" : { abrev: "FOLKLOR", ninjacoursesId: 63 },
+		"FRENCH" : { abrev: "FRENCH", ninjacoursesId: 64 },
+		"GEOGRAPHY" : { abrev: "GEOG", ninjacoursesId: 67 },
+		"GERMAN" : { abrev: "GERMAN", ninjacoursesId: 68 },
+		"GLOBAL METROPOLITAN STUDIES" : { abrev: "GMS", ninjacoursesId: 1170 },
+		"GLOBAL POVERTY AND PRACTICE" : { abrev: "GPP", ninjacoursesId: 204 },
+		"GREEK" : { abrev: "GREEK", ninjacoursesId: 33 },
+		"GRAD STUDENT PROF DEVELOPMENT PGM" : { abrev: "GSPDP", ninjacoursesId: 72 },
+		"GENDER AND WOMEN'S STUDIES" : { abrev: "GWS", ninjacoursesId: 65 },
+		"HEBREW" : { abrev: "HEBREW", ninjacoursesId: 109 },
+		"HINDI-URDU" : { abrev: "HIN-URD", ninjacoursesId: 143 },
+		"HISTORY OF ART" : { abrev: "HISTART", ninjacoursesId: 12 },
+		"HISTORY" : { abrev: "HISTORY", ninjacoursesId: 75 },
+		"HEALTH AND MEDICAL SCIENCES" : { abrev: "HMEDSCI", ninjacoursesId: 74 },
+		"INTERNATIONAL AND AREA STUDIES" : { abrev: "IAS", ninjacoursesId: 80 },
+		"INTERDEPARTMENTAL STUDIES" : { abrev: "IDS"},
+		"INDIGENOUS LANGUAGES OF AMERICAS" : { abrev: "ILA", ninjacoursesId: 155 },
+		"INDUSTRIAL ENGIN AND OPER RESEARCH" : { abrev: "IND ENG", ninjacoursesId: 76 },
+		"INFORMATION" : { abrev: "INFO", ninjacoursesId: 77 },
+		"INFORMATION SYSTEMS AND MANAGEMENT" : { abrev: "INFOSYS"},
+		"INTEGRATIVE BIOLOGY" : { abrev: "INTEGBI", ninjacoursesId: 78 },
+		"IRANIAN" : { abrev: "IRANIAN", ninjacoursesId: 111 },
+		"INTERDISCIPLINARY STUDIES FIELD MAJ" : { abrev: "ISF", ninjacoursesId: 79 },
+		"ITALIAN STUDIES" : { abrev: "ITALIAN", ninjacoursesId: 81 },
+		"JAPANESE" : { abrev: "JAPAN", ninjacoursesId: 46 },
+		"JEWISH STUDIES" : { abrev: "JEWISH", ninjacoursesId: 82 },
+		"JOURNALISM" : { abrev: "JOURN", ninjacoursesId: 83 },
+		"KHMER" : { abrev: "KHMER", ninjacoursesId: 144 },
+		"KOREAN" : { abrev: "KOREAN", ninjacoursesId: 48 },
+		"LANGUAGE PROFICIENCY PROGRAM" : { abrev: "LAN PRO", ninjacoursesId: 73 },
+		"LANGUAGE PROFICIENCY PROGRAM" : { abrev: "LANGPRO"},
+		"LATIN AMERICAN STUDIES" : { abrev: "LATAMST", ninjacoursesId: 85 },
+		"LATIN" : { abrev: "LATIN", ninjacoursesId: 34 },
+		"LAW" : { abrev: "LAW", ninjacoursesId: 86 },
+		"LANDSCAPE ARCHITECTURE" : { abrev: "LD ARCH", ninjacoursesId: 84 },
+		"LEGAL STUDIES" : { abrev: "LEGALST", ninjacoursesId: 87 },
+		"LESBIAN GAY BISEXUAL TRANSGENDER ST" : { abrev: "LGBT", ninjacoursesId: 66 },
+		"LINGUISTICS" : { abrev: "LINGUIS", ninjacoursesId: 89 },
+		"LETTERS AND SCIENCE" : { abrev: "L ~ S", ninjacoursesId: 88 },
+		"MALAY/INDONESIAN" : { abrev: "MALAY/I", ninjacoursesId: 145 },
+		"MASS COMMUNICATIONS" : { abrev: "MASSCOM", ninjacoursesId: 90 },
+		"MATHEMATICS" : { abrev: "MATH", ninjacoursesId: 92 },
+		"MATERIALS SCIENCE AND ENGINEERING" : { abrev: "MAT SCI", ninjacoursesId: 91 },
+		"MASTERS IN BUSINESS ADMINISTRATION" : { abrev: "MBA", ninjacoursesId: 21 },
+		"MOLECULAR AND CELL BIOLOGY" : { abrev: "MCELLBI", ninjacoursesId: 100 },
+		"MECHANICAL ENGINEERING" : { abrev: "MEC ENG", ninjacoursesId: 93 },
+		"MEDIA STUDIES" : { abrev: "MEDIAST", ninjacoursesId: 160 },
+		"MEDIEVAL STUDIES" : { abrev: "MED ST", ninjacoursesId: 94 },
+		"MIDDLE EASTERN STUDIES" : { abrev: "M E STU", ninjacoursesId: 95 },
+		"MASTERS IN FINANCIAL ENGINEERING" : { abrev: "MFE", ninjacoursesId: 24 },
+		"MILITARY AFFAIRS" : { abrev: "MIL AFF", ninjacoursesId: 96 },
+		"MILITARY SCIENCE" : { abrev: "MIL SCI", ninjacoursesId: 98 },
+		"MUSIC" : { abrev: "MUSIC", ninjacoursesId: 101 },
+		"NATIVE AMERICAN STUDIES" : { abrev: "NATAMST", ninjacoursesId: 103 },
+		"NATURAL RESOURCES" : { abrev: "NAT RES", ninjacoursesId: 104 },
+		"NAVAL SCIENCE" : { abrev: "NAV SCI", ninjacoursesId: 99 },
+		"NEAR EASTERN STUDIES" : { abrev: "NE STUD", ninjacoursesId: 105 },
+		"NEUROSCIENCE" : { abrev: "NEUROSC", ninjacoursesId: 114 },
+		"NANOSCALE SCIENCE AND ENGINEERING" : { abrev: "NSE", ninjacoursesId: 102 },
+		"NUCLEAR ENGINEERING" : { abrev: "NUC ENG", ninjacoursesId: 116 },
+		"NUTRITIONAL SCIENCES AND TOXICOLOGY" : { abrev: "NUSCTX", ninjacoursesId: 117 },
+		"NEW MEDIA" : { abrev: "NWMEDIA", ninjacoursesId: 115 },
+		"OCEAN ENGINEERING" : { abrev: "OC ENG", }, 
+		"OPTOMETRY" : { abrev: "OPTOM", ninjacoursesId: 118 },
+		"PEACE AND CONFLICT STUDIES" : { abrev: "PACS", ninjacoursesId: 120 },
+		"PUBLIC HEALTH" : { abrev: "PB HLTH", ninjacoursesId: 128 },
+		"PERSIAN" : { abrev: "PERSIAN", ninjacoursesId: 110 },
+		"PH.D. IN BUSINESS ADMINISTRATION" : { abrev: "PHDBA", ninjacoursesId: 25 },
+		"PHILOSOPHY" : { abrev: "PHILOS", ninjacoursesId: 121 },
+		"PHYSICAL EDUCATION" : { abrev: "PHYS ED", ninjacoursesId: 122 },
+		"PHYSICS" : { abrev: "PHYSICS", ninjacoursesId: 123 },
+		"PLANT AND MICROBIAL BIOLOGY" : { abrev: "PLANTBI", ninjacoursesId: 124 },
+		"POLITICAL ECONOMY OF INDUSTRIAL SOC" : { abrev: "POLECIS", ninjacoursesId: 125 },
+		"POLITICAL SCIENCE" : { abrev: "POL SCI", ninjacoursesId: 126 },
+		"PORTUGUESE" : { abrev: "PORTUG", ninjacoursesId: 153 },
+		"PSYCHOLOGY" : { abrev: "PSYCH", ninjacoursesId: 127 },
+		"PUBLIC POLICY" : { abrev: "PUB POL", ninjacoursesId: 129 },
+		"PUNJABI" : { abrev: "PUNJABI", ninjacoursesId: 146 },
+		"RELIGIOUS STUDIES" : { abrev: "RELIGST", ninjacoursesId: 130 },
+		"RHETORIC" : { abrev: "RHETOR", ninjacoursesId: 131 },
+		"SANSKRIT" : { abrev: "SANSKR", ninjacoursesId: 147 },
+		"SOUTH ASIAN" : { abrev: "S ASIAN", ninjacoursesId: 140 },
+		"SCANDINAVIAN" : { abrev: "SCANDIN", ninjacoursesId: 132 },
+		"SCIENCE AND MATHEMATICS EDUCATION" : { abrev: "SCMATHE", ninjacoursesId: 133 },
+		"SOUTHEAST ASIAN" : { abrev: "SEASIAN", ninjacoursesId: 141 },
+		"SEMITICS" : { abrev: "SEMITIC", ninjacoursesId: 112 },
+		"SLAVIC LANGUAGES AND LITERATURES" : { abrev: "SLAVIC", ninjacoursesId: 134 },
+		"SOCIOLOGY" : { abrev: "SOCIOL", ninjacoursesId: 138 },
+		"SOCIAL WELFARE" : { abrev: "SOC WEL", ninjacoursesId: 137 },
+		"SPANISH" : { abrev: "SPANISH", ninjacoursesId: 152 },
+		"SOUTH AND SOUTHEAST ASIAN STUDIES" : { abrev: "S,SEASN", ninjacoursesId: 139 },
+		"STATISTICS" : { abrev: "STAT", ninjacoursesId: 156 },
+		"STUDIES" : { abrev: "STUDIES"},
+		"TAGALOG" : { abrev: "TAGALG", ninjacoursesId: 148 },
+		"TAMIL" : { abrev: "TAMIL", ninjacoursesId: 149 },
+		"TELUGU" : { abrev: "TELUGU", ninjacoursesId: 161 },
+		"THAI" : { abrev: "THAI", ninjacoursesId: 150 },
+		"THEATER DANCE, AND PERFORMANCE ST" : { abrev: "THEATER", ninjacoursesId: 157 },
+		"TIBETAN" : { abrev: "TIBETAN", ninjacoursesId: 49 },
+		"TURKISH" : { abrev: "TURKISH", ninjacoursesId: 113 },
+		"UNDERGRAD. BUSINESS ADMINISTRATION" : { abrev: "UGBA", ninjacoursesId: 20 },
+		"UNDERGRAD INTERDISCIPLINARY STUDIES" : { abrev: "UGIS", ninjacoursesId: 158 },
+		"UNIVERSITY EXTENSION" : { abrev: "UNIVEXT"},
+		"VIETNAMESE" : { abrev: "VIETNMS", ninjacoursesId: 151 },
+		"VISION SCIENCE" : { abrev: "VIS SCI", ninjacoursesId: 119 },
+		"VISUAL STUDIES" : { abrev: "VIS STD", ninjacoursesId: 10 },
+		"EXECUTIVE MASTERS IN BUS. ADM." : { abrev: "XMBA", ninjacoursesId: 23 },
+		"YIDDISH" : { abrev: "YIDDISH", NINJACOURSESID: 69 },
+
 	};
 
 	var department = null;
@@ -793,25 +797,26 @@ UCBSE.Course = function()
 	 */
 	var _getDeptAbrev = function(str)
 	{
-		/*for(var i = 0, len = DEPARTMENTS.length; i < len; i++)
-		{
-			var re = new RegExp(DEPARTMENTS[i].name);
-			if(str.match(re, str))
-				return DEPARTMENTS[i].shortName;
-		}
-		return str;
-		*/
 		if(DEPARTMENTS.hasOwnProperty(str))
-			return DEPARTMENTS[str];
+			return DEPARTMENTS[str].abrev;
 		else
 			return str;
 	};
-	
+
 
 	return {
 		// public attributes	
 
 		// public methods
+		getNinjacoursesId: function()
+		{
+			var str = this.department;
+			if(DEPARTMENTS.hasOwnProperty(str) && DEPARTMENTS[str].hasOwnProperty('ninjacoursesId'))
+				return DEPARTMENTS[str].ninjacoursesId;
+			else
+				return null;
+		},
+	
 		getDepartment: 			function(){ return this.department; },
 		getDepartmentAbrev: 	function(){ return this.departmentAbrev; },
 		getCourseNum: 			function(){ return this.courseNum; },
@@ -1541,7 +1546,8 @@ UCBSE.css = (function()
 	css += "#configContainer a, #configContainer { -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -o-user-select: none; user-select: none; }";
 
 	// highlighted Courses
-	css += "#highlightedCourses table {float:left; background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-family: arial, tahoma, sans-serif; font-size:10pt; color:#666; z-index:100; position:fixed; opacity:.95; border-radius:5px; }";
+	css += "#highlightedCourses {float:left; position:fixed; z-index:100;}";
+	css += "#highlightedCourses table { background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-family: arial, tahoma, sans-serif; font-size:10pt; color:#666; opacity:.95; border-radius:5px; }";
 	css += "#highlightedCourses tr td { padding:2px; }";
 	css += "#highlightedCourses tfoot tr > td {border-top: 1px solid #CCC;}";
 	css += "#highlightedCourses a {font-size:8pt;}";
@@ -1598,6 +1604,7 @@ UCBSE.table = (function(courseList)
 	var tableRows = "";
 	var prevCourseNum = "";
 	var prevDepartment = "";
+	var prevDepartmentAbrevForCourseTitle = "";
 
 
 	for(var i = 0, len = courseList.length; i < len; i++)
@@ -1633,9 +1640,10 @@ UCBSE.table = (function(courseList)
 		}
 		
 		// Course Title
-		if(prevCourseNum !== crs.getCourseNum())
+		if(prevCourseNum !== crs.getCourseNum() || prevDepartmentAbrevForCourseTitle !== crs.getDepartmentAbrev())
 		{
 			prevCourseNum = crs.getCourseNum();
+			prevDepartmentAbrevForCourseTitle = crs.getDepartmentAbrev();
 
 			tableRows += '<tr class="courseTopPadding"><td colspan="18"></td></tr>';
 			tableRows += '<tr class="title">';
@@ -1654,6 +1662,7 @@ UCBSE.table = (function(courseList)
 
 			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="blank">[K]</a> ';
 			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
+			tableRows += '<a class="ninjacourses" target="blank">[NC]</a> ';
 			tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="blank">[CR]</a>';
 			tableRows += '</div>';
 			tableRows += '<div style="clear:both"></div>';
@@ -1684,13 +1693,7 @@ UCBSE.table = (function(courseList)
 		// highlight the saved highlighted courses
 		if(UCBSE.searchCourses(crs, UCBSE.highlightedCourses) != null)
 		{
-
 			tableRows += 'highlightonclick';
-			console.log("true");
-		}
-		else
-		{
-			console.log("false");
 		}
 
 		tableRows += '"';
@@ -1800,7 +1803,7 @@ UCBSE.table = (function(courseList)
 
 
 	// highlighted courses
-	highlightCells = table.getElementsByClassName("highlightCursor");
+	var highlightCells = table.getElementsByClassName("highlightCursor");
 
 	var secondRowParsed = false;
 	for(var courseCount = 0, highlightCount = 0, len = highlightCells.length; 
@@ -1827,9 +1830,34 @@ UCBSE.table = (function(courseList)
 		}
 		else
 			secondRowParsed = true;
-		
 	}
 
+	// ninjacourses
+	var prevCourse = { courseNum: "", departmentAbrev: ""};
+	var ninjacoursesLinks = table.getElementsByClassName("ninjacourses");
+	var uniqueCourseCount = 0;
+	for(var courseCount = 0, len = courseList.length; courseCount < len; courseCount++)
+	{
+		var crs = courseList[ courseCount ];
+		if(crs.getCourseNum() != prevCourse.courseNum || crs.getDepartmentAbrev() != prevCourse.departmentAbrev)
+		{
+			prevCourse.courseNum = crs.getCourseNum();
+			prevCourse.departmentAbrev = crs.getDepartmentAbrev();
+
+			var link = ninjacoursesLinks[ uniqueCourseCount ];
+			link.addEventListener("click",
+				(function(course)
+				{
+					return function() {
+						ninjacoursesListener(course);
+					}
+				}(crs))
+				,false);
+
+
+			uniqueCourseCount++;
+		}
+	}
 
 	body.insertBefore(table, body.firstChild.nextSibling.nextSibling.nextSibling);
 	return table;
