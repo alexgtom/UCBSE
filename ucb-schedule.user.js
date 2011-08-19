@@ -1353,7 +1353,7 @@ UCBSE.Course = function()
 
 		isFinalExamGroup: function()
 		{
-			if(this.finalExamGroup)
+			if(this.finalExamGroup == "")
 				return false;
 			else 
 				return true;
@@ -1718,7 +1718,7 @@ UCBSE.table = (function(courseList)
 
 		if(!crs.getLocn())
 		{
-			if(crs.isFinalExamGroup() != null)
+			if(crs.isFinalExamGroup())
 				numCol = 1;
 			else
 				numCol = 2;
@@ -1737,7 +1737,7 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="locn col9">' + nullToEmpty(crs.getLocn()) + '</div></td>';
 		}
 		
-		if(crs.isFinalExamGroup() != null)
+		if(crs.isFinalExamGroup())
 			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="finalExamGroup col10">' + nullToEmpty(crs.getFinalExamGroup()) + '</div></td>';
 
 		if(!crs.getEnrollmentMsg())
