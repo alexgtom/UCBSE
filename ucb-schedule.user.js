@@ -1462,7 +1462,7 @@ UCBSE.css = (function()
 
 	// Enrollment Data 
 	css += ".enrollmentMsg { /*background-color:#d4d4d4;*/ text-align:center; }";
-	css += ".col18 { margin:0 auto; }";
+	css += ".col18 { margin:0 auto; display:inline; }";
 	css += ".enrollData, .enrollDataLeft, .enrollDataRight { text-align:center;}";
 	css += ".enrollDataLeft { border-left:1px dotted #CCC;}";
 	css += ".enrollDataRight { border-right:1px dotted #CCC;}";
