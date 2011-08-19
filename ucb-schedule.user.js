@@ -1457,12 +1457,12 @@ UCBSE.css = (function()
 	css += ".courseBottomPadding > td { padding-top:1px; }";
 	
 	// Small label: limit, enrolled, waitlisted, avail seats, etc.
-	css += ".smallLabel { text-align: center; font-weight:normal; color:#6e96be;}";
-	css += ".col11, .col12, .col13, .col14 { width:40px; text-align:center; }";
+	css += ".smallLabel { font-weight:normal; color:#6e96be; text-align:center;}";
+	css += ".col11, .col12, .col13, .col14 { display:inline; margin:0 auto; text-align:center; }";
 
 	// Enrollment Data 
 	css += ".enrollmentMsg { /*background-color:#d4d4d4;*/ text-align:center; }";
-	css += ".col18 { width:160px; }";
+	css += ".col18 { margin:0 auto; }";
 	css += ".enrollData, .enrollDataLeft, .enrollDataRight { text-align:center;}";
 	css += ".enrollDataLeft { border-left:1px dotted #CCC;}";
 	css += ".enrollDataRight { border-right:1px dotted #CCC;}";
@@ -1626,7 +1626,7 @@ UCBSE.table = (function(courseList)
 			tableRows += '</tr>';
 			tableRows += '<tr class="topRow">';
 			tableRows += '<td class="col1" align="right">Course<br>Number</td>';	
-			tableRows += '<td><div class="col2">CCN</div></td>';	
+			tableRows += '<td align="center"><div class="col2">CCN</div></td>';	
 			tableRows += '<td><div class="col3">Class<br>Type</div></td>';	
 			tableRows += '<td><div class="col4">Section<br>Number</div></td>';	
 			tableRows += '<td><div class="col5">Units</div></td>';	
@@ -1668,10 +1668,10 @@ UCBSE.table = (function(courseList)
 			tableRows += '<div style="clear:both"></div>';
 
 			tableRows += '</td>';
-			tableRows += '<td><div class="smallLabel col11"><small>Limit</small></div></td>';	
-			tableRows += '<td><div class="smallLabel col12"><small>Enrolled</small></div></td>';	
-			tableRows += '<td><div class="smallLabel col13"><small>Waitlist</small></div></td>';	
-			tableRows += '<td><div class="smallLabel col14"><small>Avail Seats</small></div></td>';	
+			tableRows += '<td align="center"><div class="smallLabel col11"><small>Limit</small></div></td>';	
+			tableRows += '<td align="center"><div class="smallLabel col12"><small>Enrolled</small></div></td>';	
+			tableRows += '<td align="center"><div class="smallLabel col13"><small>Waitlist</small></div></td>';	
+			tableRows += '<td align="center"><div class="smallLabel col14"><small>Avail Seats</small></div></td>';	
 			tableRows += '<td class="col15"><div class="smallLabel"><small>Restrictions</small></div></td>';	
 			tableRows += '<td class="col16"><div class="smallLabel"><small>Status</small></div></td>';	
 			tableRows += '<td></td>';
