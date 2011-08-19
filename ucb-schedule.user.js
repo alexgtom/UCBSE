@@ -1671,7 +1671,7 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td align="center"><div class="smallLabel col11"><small>Limit</small></div></td>';	
 			tableRows += '<td align="center"><div class="smallLabel col12"><small>Enrolled</small></div></td>';	
 			tableRows += '<td align="center"><div class="smallLabel col13"><small>Waitlist</small></div></td>';	
-			tableRows += '<td align="center"><div class="smallLabel col14"><small>Avail Seats</small></div></td>';	
+			tableRows += '<td align="center"><div class="smallLabel col14"><small>Avail<br>Seats</small></div></td>';	
 			tableRows += '<td class="col15"><div class="smallLabel"><small>Restrictions</small></div></td>';	
 			tableRows += '<td class="col16"><div class="smallLabel"><small>Status</small></div></td>';	
 			tableRows += '<td></td>';
@@ -1718,7 +1718,7 @@ UCBSE.table = (function(courseList)
 
 		if(!crs.getLocn())
 		{
-			if(crs.isFinalExamGroup())
+			if(crs.isFinalExamGroup() != null)
 				numCol = 1;
 			else
 				numCol = 2;
@@ -1737,7 +1737,7 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="locn col9">' + nullToEmpty(crs.getLocn()) + '</div></td>';
 		}
 		
-		if(crs.isFinalExamGroup())
+		if(crs.isFinalExamGroup() != null)
 			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="finalExamGroup col10">' + nullToEmpty(crs.getFinalExamGroup()) + '</div></td>';
 
 		if(!crs.getEnrollmentMsg())
