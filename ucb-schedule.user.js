@@ -294,7 +294,7 @@ function ninjacoursesListener(crs)
 	}
 	catch(err)
 	{
-		alert("It looks like your browser dosent support GM_xmlhttpRequest. Please use a different browser such as Firefox or Chrome.");
+		alert("It looks like your browser dosent support GM_xmlhttpRequest. The ninjacourses link cannot work without it. Please use a different browser such as Firefox or Chrome.");
 	}
 }
 
