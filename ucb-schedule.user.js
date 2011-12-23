@@ -182,6 +182,21 @@ function associativeArrayToString(arr)
 	str += "}";
 	return str;
 }
+/*
+ * splits a string up into tokens based on word boundaries
+ *
+ * For example. "how    are you doin." is transformed into
+ * "how" "are" "you" "doin."
+ *
+ * @return array of strings 
+ */
+
+function tokenize(str)
+{
+	str = str.match(/[A-Za-z0-9.-]+/g) + "";
+	return str.split(',');
+}
+
 
 function toggleColumn(element, n) {
     var object = document.getElementById(element);
@@ -273,19 +288,19 @@ function highlightListener(crs)
 	highlightedCoursesTableCreator(UCBSE.highlightedCoursesContainer);
 }
 
-function ninjacoursesListener(crs)
+function schedulebuilderListener(crs)
 {
 	try
 	{
 		GM_xmlhttpRequest({method: 'GET', 
-			url: 'http://ninjacourses.com/explore/department/' + crs.getNinjacoursesId() + '/courses.json', 
+			url: 'http://schedulebuilder.berkeley.edu/explore/department/' + crs.getSchedulebuilderId() + '/' + UCBSE.term + '/' + UCBSE.year + '/courses.json', 
 			onload: function(response) {
 				var my_data = JSON.parse(response.responseText);
 				for(var i = 0, len = my_data.courses.length; i < len; i++)
 				{
 					if(my_data.courses[i].identifier == crs.getCourseNum())
 					{
-						window.open('http://ninjacourses.com/explore/course/' + my_data.courses[i].id + '/');
+						window.open('http://schedulebuilder.berkeley.edu/explore/course/' + my_data.courses[i].id + '/');
 						break;
 					}	
 				}
@@ -294,7 +309,7 @@ function ninjacoursesListener(crs)
 	}
 	catch(err)
 	{
-		alert("It looks like your browser dosent support GM_xmlhttpRequest. The ninjacourses link cannot work without it. Please use a different browser such as Firefox or Chrome.");
+		alert("It looks like your browser dosent support GM_xmlhttpRequest. The schedulebuilder link cannot work without it. Please use a different browser such as Firefox or Chrome.");
 	}
 }
 
@@ -544,7 +559,6 @@ function nullToEmpty(str)
 }
 
 
-
 var UCBSE = UCBSE || {};
 
 if(GM_getValue("highlightArrayJSON"))
@@ -552,6 +566,10 @@ if(GM_getValue("highlightArrayJSON"))
 else
 	UCBSE.highlightedCourses = new Array();
 
+var temp = tokenize(strip((document.body.innerHTML.match(/request for .+:/) + "").replace("request for ", "").replace(":",  "")));
+
+UCBSE.term = temp[0]
+UCBSE.year = temp[1]
 
 UCBSE.searchCourses = function(needle, haystack)
 {
@@ -574,185 +592,189 @@ UCBSE.searchCourses = function(needle, haystack)
 	return null;
 }
 
+
+
 // -- cache --
 // Used for caching. Massive speed boost!
 UCBSE.prevDept = "";
 UCBSE.prevDeptAbrev = "";
 UCBSE.tbodyCoursesHTML;
 
+
+
 UCBSE.Course = function()
 {
 	// private attributes 
 	
 	var DEPARTMENTS = {
-		"AEROSPACE STUDIES" : { abrev: "AEROSPC", ninjacoursesId: 97 },
-		"AFRICAN AMERICAN STUDIES" : { abrev: "AFRICAM", ninjacoursesId: 1 },
-		"AGRICULTURAL AND ENVIRON CHEMISTRY" : { abrev: "AGR CHM", ninjacoursesId: 2 },
-		"ANCIENT HISTORY AND MED. ARCH." : { abrev: "AHMA", ninjacoursesId: 6 },
-		"AMERICAN STUDIES" : { abrev: "AMERSTD", ninjacoursesId: 5 },
-		"ANTHROPOLOGY" : { abrev: "ANTHRO", ninjacoursesId: 7 },
-		"ARABIC" : { abrev: "ARABIC", ninjacoursesId: 106 },
-		"ARCHITECTURE" : { abrev: "ARCH", ninjacoursesId: 9 },
-		"AGRICULTURAL AND RESOURCE ECONOMICS" : { abrev: "A,RESEC", ninjacoursesId: 4 },
-		"PRACTICE OF ART" : { abrev: "ART", ninjacoursesId: 11 },
-		"ASIAN AMERICAN STUDIES" : { abrev: "ASAMST", ninjacoursesId: 13 },
-		"ASIAN STUDIES" : { abrev: "ASIANST", ninjacoursesId: 14 },
-		"APPLIED SCIENCE AND TECHNOLOGY" : { abrev: "AST", ninjacoursesId: 8 },
-		"ASTRONOMY" : { abrev: "ASTRON", ninjacoursesId: 15 },
-		"BENGALI" : { abrev: "BANGLA", ninjacoursesId: 142 },
-		"BIOENGINEERING" : { abrev: "BIO ENG", ninjacoursesId: 16 },
-		"BIOLOGY" : { abrev: "BIOLOGY", ninjacoursesId: 159 },
-		"BIOPHYSICS" : { abrev: "BIOPHY", ninjacoursesId: 17 },
+		"AEROSPACE STUDIES" : { abrev: "AEROSPC", schedulebuilderId: 97 },
+		"AFRICAN AMERICAN STUDIES" : { abrev: "AFRICAM", schedulebuilderId: 1 },
+		"AGRICULTURAL AND ENVIRON CHEMISTRY" : { abrev: "AGR CHM", schedulebuilderId: 2 },
+		"ANCIENT HISTORY AND MED. ARCH." : { abrev: "AHMA", schedulebuilderId: 6 },
+		"AMERICAN STUDIES" : { abrev: "AMERSTD", schedulebuilderId: 5 },
+		"ANTHROPOLOGY" : { abrev: "ANTHRO", schedulebuilderId: 7 },
+		"ARABIC" : { abrev: "ARABIC", schedulebuilderId: 106 },
+		"ARCHITECTURE" : { abrev: "ARCH", schedulebuilderId: 9 },
+		"AGRICULTURAL AND RESOURCE ECONOMICS" : { abrev: "A,RESEC", schedulebuilderId: 4 },
+		"PRACTICE OF ART" : { abrev: "ART", schedulebuilderId: 11 },
+		"ASIAN AMERICAN STUDIES" : { abrev: "ASAMST", schedulebuilderId: 13 },
+		"ASIAN STUDIES" : { abrev: "ASIANST", schedulebuilderId: 14 },
+		"APPLIED SCIENCE AND TECHNOLOGY" : { abrev: "AST", schedulebuilderId: 8 },
+		"ASTRONOMY" : { abrev: "ASTRON", schedulebuilderId: 15 },
+		"BENGALI" : { abrev: "BANGLA", schedulebuilderId: 142 },
+		"BIOENGINEERING" : { abrev: "BIO ENG", schedulebuilderId: 16 },
+		"BIOLOGY" : { abrev: "BIOLOGY", schedulebuilderId: 159 },
+		"BIOPHYSICS" : { abrev: "BIOPHY", schedulebuilderId: 17 },
 		"BUDDHISM" : { abrev: "BUDDHSM" },
-		"GROUP IN BUDDHIST STUDIES" : { abrev: "BUDDSTD", ninjacoursesId: 18 },
-		"CATALAN" : { abrev: "CATALAN", ninjacoursesId: 154 },
-		"CELTIC STUDIES" : { abrev: "CELTIC", ninjacoursesId: 26 },
-		"COMPUTATIONAL AND GENOMIC BIOLOGY" : { abrev: "CGB", ninjacoursesId: 39 },
-		"CHEMISTRY" : { abrev: "CHEM", ninjacoursesId: 28 },
-		"CHICANO STUDIES" : { abrev: "CHICANO", ninjacoursesId: 29 },
-		"CHINESE" : { abrev: "CHINESE", ninjacoursesId: 45 },
-		"CHEMICAL & BIOMOLECULAR ENGINEERING" : { abrev: "CHM ENG", ninjacoursesId: 27 },
-		"CIVIL AND ENVIRONMENTAL ENGINEERING" : { abrev: "CIV ENG", ninjacoursesId: 31 },
-		"CLASSICS" : { abrev: "CLASSIC", ninjacoursesId: 32 },
-		"NEW MEDIA" : { abrev: "CNM", ninjacoursesId: 115 },
-		"COGNITIVE SCIENCE" : { abrev: "COG SCI", ninjacoursesId: 35 },
-		"COLLEGE WRITING PROGRAM" : { abrev: "COLWRIT", ninjacoursesId: 36 },
-		"COMPARATIVE LITERATURE" : { abrev: "COM LIT", ninjacoursesId: 38 },
-		"COMPARATIVE BIOCHEMISTRY" : { abrev: "COMPBIO", ninjacoursesId: 37 },
-		"COMPUTER SCIENCE" : { abrev: "COMPSCI", ninjacoursesId: 53 },
-		"CRITICAL THEORY GRADUATE GROUP" : { abrev: "CRIT TH", ninjacoursesId: 40 },
-		"CUNEIFORM" : { abrev: "CUNEIF", ninjacoursesId: 107 },
-		"CITY AND REGIONAL PLANNING" : { abrev: "CY PLAN", ninjacoursesId: 30 },
-		"DEMOGRAPHY" : { abrev: "DEMOG", ninjacoursesId: 41 },
-		"DEVELOPMENT STUDIES" : { abrev: "DEV STD", ninjacoursesId: 42 },
-		"DUTCH" : { abrev: "DUTCH", ninjacoursesId: 70 },
-		"EAST EUROPEAN STUDIES" : { abrev: "EAEURST", ninjacoursesId: 135 },
-		"EAST ASIAN LANGUAGES AND CULTURES" : { abrev: "EA LANG", ninjacoursesId: 44 },
-		"ECONOMICS" : { abrev: "ECON", ninjacoursesId: 50 },
-		"EDUCATION" : { abrev: "EDUC", ninjacoursesId: 51 },
-		"EGYPTIAN" : { abrev: "EGYPT", ninjacoursesId: 108 },
-		"ELECTRICAL ENGINEERING" : { abrev: "EL ENG", ninjacoursesId: 52 },
-		"ENERGY AND RESOURCES GROUP" : { abrev: "ENE,RES", ninjacoursesId: 54 },
-		"ENGINEERING" : { abrev: "ENGIN", ninjacoursesId: 55 },
-		"ENGLISH" : { abrev: "ENGLISH", ninjacoursesId: 56 },
-		"ENVIRONMENTAL DESIGN" : { abrev: "ENV DES", ninjacoursesId: 57 },
-		"ENVIRONMENTAL ECONOMICS AND POLICY" : { abrev: "ENVECON", ninjacoursesId: 3 },
-		"ENVIRONMENTAL SCIENCES" : { abrev: "ENV SCI", ninjacoursesId: 59 },
-		"EARTH AND PLANETARY SCIENCE" : { abrev: "EPS", ninjacoursesId: 43 },
-		"ENVIRON SCI POLICY, AND MANAGEMENT" : { abrev: "ESPM", ninjacoursesId: 58 },
-		"ETHNIC STUDIES GRADUATE GROUP" : { abrev: "ETH GRP", ninjacoursesId: 61 },
-		"ETHNIC STUDIES" : { abrev: "ETH STD", ninjacoursesId: 60 },
-		"EURASIAN STUDIES" : { abrev: "EURA ST", ninjacoursesId: 136 },
-		"EVE/WKND MASTERS IN BUS. ADM." : { abrev: "EWMBA", ninjacoursesId: 22 },
-		"FILIPINO" : { abrev: "FILIPN", ninjacoursesId: 162 },
-		"FILM AND MEDIA" : { abrev: "FILM", ninjacoursesId: 62 },
-		"FOLKLORE" : { abrev: "FOLKLOR", ninjacoursesId: 63 },
-		"FRENCH" : { abrev: "FRENCH", ninjacoursesId: 64 },
-		"GEOGRAPHY" : { abrev: "GEOG", ninjacoursesId: 67 },
-		"GERMAN" : { abrev: "GERMAN", ninjacoursesId: 68 },
-		"GLOBAL METROPOLITAN STUDIES" : { abrev: "GMS", ninjacoursesId: 1170 },
-		"GLOBAL POVERTY AND PRACTICE" : { abrev: "GPP", ninjacoursesId: 204 },
-		"GREEK" : { abrev: "GREEK", ninjacoursesId: 33 },
-		"GRAD STUDENT PROF DEVELOPMENT PGM" : { abrev: "GSPDP", ninjacoursesId: 72 },
-		"GENDER AND WOMEN'S STUDIES" : { abrev: "GWS", ninjacoursesId: 65 },
-		"HEBREW" : { abrev: "HEBREW", ninjacoursesId: 109 },
-		"HINDI-URDU" : { abrev: "HIN-URD", ninjacoursesId: 143 },
-		"HISTORY OF ART" : { abrev: "HISTART", ninjacoursesId: 12 },
-		"HISTORY" : { abrev: "HISTORY", ninjacoursesId: 75 },
-		"HEALTH AND MEDICAL SCIENCES" : { abrev: "HMEDSCI", ninjacoursesId: 74 },
-		"INTERNATIONAL AND AREA STUDIES" : { abrev: "IAS", ninjacoursesId: 80 },
+		"GROUP IN BUDDHIST STUDIES" : { abrev: "BUDDSTD", schedulebuilderId: 18 },
+		"CATALAN" : { abrev: "CATALAN", schedulebuilderId: 154 },
+		"CELTIC STUDIES" : { abrev: "CELTIC", schedulebuilderId: 26 },
+		"COMPUTATIONAL AND GENOMIC BIOLOGY" : { abrev: "CGB", schedulebuilderId: 39 },
+		"CHEMISTRY" : { abrev: "CHEM", schedulebuilderId: 28 },
+		"CHICANO STUDIES" : { abrev: "CHICANO", schedulebuilderId: 29 },
+		"CHINESE" : { abrev: "CHINESE", schedulebuilderId: 45 },
+		"CHEMICAL & BIOMOLECULAR ENGINEERING" : { abrev: "CHM ENG", schedulebuilderId: 27 },
+		"CIVIL AND ENVIRONMENTAL ENGINEERING" : { abrev: "CIV ENG", schedulebuilderId: 31 },
+		"CLASSICS" : { abrev: "CLASSIC", schedulebuilderId: 32 },
+		"NEW MEDIA" : { abrev: "CNM", schedulebuilderId: 115 },
+		"COGNITIVE SCIENCE" : { abrev: "COG SCI", schedulebuilderId: 35 },
+		"COLLEGE WRITING PROGRAM" : { abrev: "COLWRIT", schedulebuilderId: 36 },
+		"COMPARATIVE LITERATURE" : { abrev: "COM LIT", schedulebuilderId: 38 },
+		"COMPARATIVE BIOCHEMISTRY" : { abrev: "COMPBIO", schedulebuilderId: 37 },
+		"COMPUTER SCIENCE" : { abrev: "COMPSCI", schedulebuilderId: 53 },
+		"CRITICAL THEORY GRADUATE GROUP" : { abrev: "CRIT TH", schedulebuilderId: 40 },
+		"CUNEIFORM" : { abrev: "CUNEIF", schedulebuilderId: 107 },
+		"CITY AND REGIONAL PLANNING" : { abrev: "CY PLAN", schedulebuilderId: 30 },
+		"DEMOGRAPHY" : { abrev: "DEMOG", schedulebuilderId: 41 },
+		"DEVELOPMENT STUDIES" : { abrev: "DEV STD", schedulebuilderId: 42 },
+		"DUTCH" : { abrev: "DUTCH", schedulebuilderId: 70 },
+		"EAST EUROPEAN STUDIES" : { abrev: "EAEURST", schedulebuilderId: 135 },
+		"EAST ASIAN LANGUAGES AND CULTURES" : { abrev: "EA LANG", schedulebuilderId: 44 },
+		"ECONOMICS" : { abrev: "ECON", schedulebuilderId: 50 },
+		"EDUCATION" : { abrev: "EDUC", schedulebuilderId: 51 },
+		"EGYPTIAN" : { abrev: "EGYPT", schedulebuilderId: 108 },
+		"ELECTRICAL ENGINEERING" : { abrev: "EL ENG", schedulebuilderId: 52 },
+		"ENERGY AND RESOURCES GROUP" : { abrev: "ENE,RES", schedulebuilderId: 54 },
+		"ENGINEERING" : { abrev: "ENGIN", schedulebuilderId: 55 },
+		"ENGLISH" : { abrev: "ENGLISH", schedulebuilderId: 56 },
+		"ENVIRONMENTAL DESIGN" : { abrev: "ENV DES", schedulebuilderId: 57 },
+		"ENVIRONMENTAL ECONOMICS AND POLICY" : { abrev: "ENVECON", schedulebuilderId: 3 },
+		"ENVIRONMENTAL SCIENCES" : { abrev: "ENV SCI", schedulebuilderId: 59 },
+		"EARTH AND PLANETARY SCIENCE" : { abrev: "EPS", schedulebuilderId: 43 },
+		"ENVIRON SCI POLICY, AND MANAGEMENT" : { abrev: "ESPM", schedulebuilderId: 58 },
+		"ETHNIC STUDIES GRADUATE GROUP" : { abrev: "ETH GRP", schedulebuilderId: 61 },
+		"ETHNIC STUDIES" : { abrev: "ETH STD", schedulebuilderId: 60 },
+		"EURASIAN STUDIES" : { abrev: "EURA ST", schedulebuilderId: 136 },
+		"EVE/WKND MASTERS IN BUS. ADM." : { abrev: "EWMBA", schedulebuilderId: 22 },
+		"FILIPINO" : { abrev: "FILIPN", schedulebuilderId: 162 },
+		"FILM AND MEDIA" : { abrev: "FILM", schedulebuilderId: 62 },
+		"FOLKLORE" : { abrev: "FOLKLOR", schedulebuilderId: 63 },
+		"FRENCH" : { abrev: "FRENCH", schedulebuilderId: 64 },
+		"GEOGRAPHY" : { abrev: "GEOG", schedulebuilderId: 67 },
+		"GERMAN" : { abrev: "GERMAN", schedulebuilderId: 68 },
+		"GLOBAL METROPOLITAN STUDIES" : { abrev: "GMS", schedulebuilderId: 1170 },
+		"GLOBAL POVERTY AND PRACTICE" : { abrev: "GPP", schedulebuilderId: 204 },
+		"GREEK" : { abrev: "GREEK", schedulebuilderId: 33 },
+		"GRAD STUDENT PROF DEVELOPMENT PGM" : { abrev: "GSPDP", schedulebuilderId: 72 },
+		"GENDER AND WOMEN'S STUDIES" : { abrev: "GWS", schedulebuilderId: 65 },
+		"HEBREW" : { abrev: "HEBREW", schedulebuilderId: 109 },
+		"HINDI-URDU" : { abrev: "HIN-URD", schedulebuilderId: 143 },
+		"HISTORY OF ART" : { abrev: "HISTART", schedulebuilderId: 12 },
+		"HISTORY" : { abrev: "HISTORY", schedulebuilderId: 75 },
+		"HEALTH AND MEDICAL SCIENCES" : { abrev: "HMEDSCI", schedulebuilderId: 74 },
+		"INTERNATIONAL AND AREA STUDIES" : { abrev: "IAS", schedulebuilderId: 80 },
 		"INTERDEPARTMENTAL STUDIES" : { abrev: "IDS"},
-		"INDIGENOUS LANGUAGES OF AMERICAS" : { abrev: "ILA", ninjacoursesId: 155 },
-		"INDUSTRIAL ENGIN AND OPER RESEARCH" : { abrev: "IND ENG", ninjacoursesId: 76 },
-		"INFORMATION" : { abrev: "INFO", ninjacoursesId: 77 },
+		"INDIGENOUS LANGUAGES OF AMERICAS" : { abrev: "ILA", schedulebuilderId: 155 },
+		"INDUSTRIAL ENGIN AND OPER RESEARCH" : { abrev: "IND ENG", schedulebuilderId: 76 },
+		"INFORMATION" : { abrev: "INFO", schedulebuilderId: 77 },
 		"INFORMATION SYSTEMS AND MANAGEMENT" : { abrev: "INFOSYS"},
-		"INTEGRATIVE BIOLOGY" : { abrev: "INTEGBI", ninjacoursesId: 78 },
-		"IRANIAN" : { abrev: "IRANIAN", ninjacoursesId: 111 },
-		"INTERDISCIPLINARY STUDIES FIELD MAJ" : { abrev: "ISF", ninjacoursesId: 79 },
-		"ITALIAN STUDIES" : { abrev: "ITALIAN", ninjacoursesId: 81 },
-		"JAPANESE" : { abrev: "JAPAN", ninjacoursesId: 46 },
-		"JEWISH STUDIES" : { abrev: "JEWISH", ninjacoursesId: 82 },
-		"JOURNALISM" : { abrev: "JOURN", ninjacoursesId: 83 },
-		"KHMER" : { abrev: "KHMER", ninjacoursesId: 144 },
-		"KOREAN" : { abrev: "KOREAN", ninjacoursesId: 48 },
-		"LANGUAGE PROFICIENCY PROGRAM" : { abrev: "LAN PRO", ninjacoursesId: 73 },
+		"INTEGRATIVE BIOLOGY" : { abrev: "INTEGBI", schedulebuilderId: 78 },
+		"IRANIAN" : { abrev: "IRANIAN", schedulebuilderId: 111 },
+		"INTERDISCIPLINARY STUDIES FIELD MAJ" : { abrev: "ISF", schedulebuilderId: 79 },
+		"ITALIAN STUDIES" : { abrev: "ITALIAN", schedulebuilderId: 81 },
+		"JAPANESE" : { abrev: "JAPAN", schedulebuilderId: 46 },
+		"JEWISH STUDIES" : { abrev: "JEWISH", schedulebuilderId: 82 },
+		"JOURNALISM" : { abrev: "JOURN", schedulebuilderId: 83 },
+		"KHMER" : { abrev: "KHMER", schedulebuilderId: 144 },
+		"KOREAN" : { abrev: "KOREAN", schedulebuilderId: 48 },
+		"LANGUAGE PROFICIENCY PROGRAM" : { abrev: "LAN PRO", schedulebuilderId: 73 },
 		"LANGUAGE PROFICIENCY PROGRAM" : { abrev: "LANGPRO"},
-		"LATIN AMERICAN STUDIES" : { abrev: "LATAMST", ninjacoursesId: 85 },
-		"LATIN" : { abrev: "LATIN", ninjacoursesId: 34 },
-		"LAW" : { abrev: "LAW", ninjacoursesId: 86 },
-		"LANDSCAPE ARCHITECTURE" : { abrev: "LD ARCH", ninjacoursesId: 84 },
-		"LEGAL STUDIES" : { abrev: "LEGALST", ninjacoursesId: 87 },
-		"LESBIAN GAY BISEXUAL TRANSGENDER ST" : { abrev: "LGBT", ninjacoursesId: 66 },
-		"LINGUISTICS" : { abrev: "LINGUIS", ninjacoursesId: 89 },
-		"LETTERS AND SCIENCE" : { abrev: "L ~ S", ninjacoursesId: 88 },
-		"MALAY/INDONESIAN" : { abrev: "MALAY/I", ninjacoursesId: 145 },
-		"MASS COMMUNICATIONS" : { abrev: "MASSCOM", ninjacoursesId: 90 },
-		"MATHEMATICS" : { abrev: "MATH", ninjacoursesId: 92 },
-		"MATERIALS SCIENCE AND ENGINEERING" : { abrev: "MAT SCI", ninjacoursesId: 91 },
-		"MASTERS IN BUSINESS ADMINISTRATION" : { abrev: "MBA", ninjacoursesId: 21 },
-		"MOLECULAR AND CELL BIOLOGY" : { abrev: "MCELLBI", ninjacoursesId: 100 },
-		"MECHANICAL ENGINEERING" : { abrev: "MEC ENG", ninjacoursesId: 93 },
-		"MEDIA STUDIES" : { abrev: "MEDIAST", ninjacoursesId: 160 },
-		"MEDIEVAL STUDIES" : { abrev: "MED ST", ninjacoursesId: 94 },
-		"MIDDLE EASTERN STUDIES" : { abrev: "M E STU", ninjacoursesId: 95 },
-		"MASTERS IN FINANCIAL ENGINEERING" : { abrev: "MFE", ninjacoursesId: 24 },
-		"MILITARY AFFAIRS" : { abrev: "MIL AFF", ninjacoursesId: 96 },
-		"MILITARY SCIENCE" : { abrev: "MIL SCI", ninjacoursesId: 98 },
-		"MUSIC" : { abrev: "MUSIC", ninjacoursesId: 101 },
-		"NATIVE AMERICAN STUDIES" : { abrev: "NATAMST", ninjacoursesId: 103 },
-		"NATURAL RESOURCES" : { abrev: "NAT RES", ninjacoursesId: 104 },
-		"NAVAL SCIENCE" : { abrev: "NAV SCI", ninjacoursesId: 99 },
-		"NEAR EASTERN STUDIES" : { abrev: "NE STUD", ninjacoursesId: 105 },
-		"NEUROSCIENCE" : { abrev: "NEUROSC", ninjacoursesId: 114 },
-		"NANOSCALE SCIENCE AND ENGINEERING" : { abrev: "NSE", ninjacoursesId: 102 },
-		"NUCLEAR ENGINEERING" : { abrev: "NUC ENG", ninjacoursesId: 116 },
-		"NUTRITIONAL SCIENCES AND TOXICOLOGY" : { abrev: "NUSCTX", ninjacoursesId: 117 },
-		"NEW MEDIA" : { abrev: "NWMEDIA", ninjacoursesId: 115 },
+		"LATIN AMERICAN STUDIES" : { abrev: "LATAMST", schedulebuilderId: 85 },
+		"LATIN" : { abrev: "LATIN", schedulebuilderId: 34 },
+		"LAW" : { abrev: "LAW", schedulebuilderId: 86 },
+		"LANDSCAPE ARCHITECTURE" : { abrev: "LD ARCH", schedulebuilderId: 84 },
+		"LEGAL STUDIES" : { abrev: "LEGALST", schedulebuilderId: 87 },
+		"LESBIAN GAY BISEXUAL TRANSGENDER ST" : { abrev: "LGBT", schedulebuilderId: 66 },
+		"LINGUISTICS" : { abrev: "LINGUIS", schedulebuilderId: 89 },
+		"LETTERS AND SCIENCE" : { abrev: "L ~ S", schedulebuilderId: 88 },
+		"MALAY/INDONESIAN" : { abrev: "MALAY/I", schedulebuilderId: 145 },
+		"MASS COMMUNICATIONS" : { abrev: "MASSCOM", schedulebuilderId: 90 },
+		"MATHEMATICS" : { abrev: "MATH", schedulebuilderId: 92 },
+		"MATERIALS SCIENCE AND ENGINEERING" : { abrev: "MAT SCI", schedulebuilderId: 91 },
+		"MASTERS IN BUSINESS ADMINISTRATION" : { abrev: "MBA", schedulebuilderId: 21 },
+		"MOLECULAR AND CELL BIOLOGY" : { abrev: "MCELLBI", schedulebuilderId: 100 },
+		"MECHANICAL ENGINEERING" : { abrev: "MEC ENG", schedulebuilderId: 93 },
+		"MEDIA STUDIES" : { abrev: "MEDIAST", schedulebuilderId: 160 },
+		"MEDIEVAL STUDIES" : { abrev: "MED ST", schedulebuilderId: 94 },
+		"MIDDLE EASTERN STUDIES" : { abrev: "M E STU", schedulebuilderId: 95 },
+		"MASTERS IN FINANCIAL ENGINEERING" : { abrev: "MFE", schedulebuilderId: 24 },
+		"MILITARY AFFAIRS" : { abrev: "MIL AFF", schedulebuilderId: 96 },
+		"MILITARY SCIENCE" : { abrev: "MIL SCI", schedulebuilderId: 98 },
+		"MUSIC" : { abrev: "MUSIC", schedulebuilderId: 101 },
+		"NATIVE AMERICAN STUDIES" : { abrev: "NATAMST", schedulebuilderId: 103 },
+		"NATURAL RESOURCES" : { abrev: "NAT RES", schedulebuilderId: 104 },
+		"NAVAL SCIENCE" : { abrev: "NAV SCI", schedulebuilderId: 99 },
+		"NEAR EASTERN STUDIES" : { abrev: "NE STUD", schedulebuilderId: 105 },
+		"NEUROSCIENCE" : { abrev: "NEUROSC", schedulebuilderId: 114 },
+		"NANOSCALE SCIENCE AND ENGINEERING" : { abrev: "NSE", schedulebuilderId: 102 },
+		"NUCLEAR ENGINEERING" : { abrev: "NUC ENG", schedulebuilderId: 116 },
+		"NUTRITIONAL SCIENCES AND TOXICOLOGY" : { abrev: "NUSCTX", schedulebuilderId: 117 },
+		"NEW MEDIA" : { abrev: "NWMEDIA", schedulebuilderId: 115 },
 		"OCEAN ENGINEERING" : { abrev: "OC ENG", }, 
-		"OPTOMETRY" : { abrev: "OPTOM", ninjacoursesId: 118 },
-		"PEACE AND CONFLICT STUDIES" : { abrev: "PACS", ninjacoursesId: 120 },
-		"PUBLIC HEALTH" : { abrev: "PB HLTH", ninjacoursesId: 128 },
-		"PERSIAN" : { abrev: "PERSIAN", ninjacoursesId: 110 },
-		"PH.D. IN BUSINESS ADMINISTRATION" : { abrev: "PHDBA", ninjacoursesId: 25 },
-		"PHILOSOPHY" : { abrev: "PHILOS", ninjacoursesId: 121 },
-		"PHYSICAL EDUCATION" : { abrev: "PHYS ED", ninjacoursesId: 122 },
-		"PHYSICS" : { abrev: "PHYSICS", ninjacoursesId: 123 },
-		"PLANT AND MICROBIAL BIOLOGY" : { abrev: "PLANTBI", ninjacoursesId: 124 },
-		"POLITICAL ECONOMY OF INDUSTRIAL SOC" : { abrev: "POLECIS", ninjacoursesId: 125 },
-		"POLITICAL SCIENCE" : { abrev: "POL SCI", ninjacoursesId: 126 },
-		"PORTUGUESE" : { abrev: "PORTUG", ninjacoursesId: 153 },
-		"PSYCHOLOGY" : { abrev: "PSYCH", ninjacoursesId: 127 },
-		"PUBLIC POLICY" : { abrev: "PUB POL", ninjacoursesId: 129 },
-		"PUNJABI" : { abrev: "PUNJABI", ninjacoursesId: 146 },
-		"RELIGIOUS STUDIES" : { abrev: "RELIGST", ninjacoursesId: 130 },
-		"RHETORIC" : { abrev: "RHETOR", ninjacoursesId: 131 },
-		"SANSKRIT" : { abrev: "SANSKR", ninjacoursesId: 147 },
-		"SOUTH ASIAN" : { abrev: "S ASIAN", ninjacoursesId: 140 },
-		"SCANDINAVIAN" : { abrev: "SCANDIN", ninjacoursesId: 132 },
-		"SCIENCE AND MATHEMATICS EDUCATION" : { abrev: "SCMATHE", ninjacoursesId: 133 },
-		"SOUTHEAST ASIAN" : { abrev: "SEASIAN", ninjacoursesId: 141 },
-		"SEMITICS" : { abrev: "SEMITIC", ninjacoursesId: 112 },
-		"SLAVIC LANGUAGES AND LITERATURES" : { abrev: "SLAVIC", ninjacoursesId: 134 },
-		"SOCIOLOGY" : { abrev: "SOCIOL", ninjacoursesId: 138 },
-		"SOCIAL WELFARE" : { abrev: "SOC WEL", ninjacoursesId: 137 },
-		"SPANISH" : { abrev: "SPANISH", ninjacoursesId: 152 },
-		"SOUTH AND SOUTHEAST ASIAN STUDIES" : { abrev: "S,SEASN", ninjacoursesId: 139 },
-		"STATISTICS" : { abrev: "STAT", ninjacoursesId: 156 },
+		"OPTOMETRY" : { abrev: "OPTOM", schedulebuilderId: 118 },
+		"PEACE AND CONFLICT STUDIES" : { abrev: "PACS", schedulebuilderId: 120 },
+		"PUBLIC HEALTH" : { abrev: "PB HLTH", schedulebuilderId: 128 },
+		"PERSIAN" : { abrev: "PERSIAN", schedulebuilderId: 110 },
+		"PH.D. IN BUSINESS ADMINISTRATION" : { abrev: "PHDBA", schedulebuilderId: 25 },
+		"PHILOSOPHY" : { abrev: "PHILOS", schedulebuilderId: 121 },
+		"PHYSICAL EDUCATION" : { abrev: "PHYS ED", schedulebuilderId: 122 },
+		"PHYSICS" : { abrev: "PHYSICS", schedulebuilderId: 123 },
+		"PLANT AND MICROBIAL BIOLOGY" : { abrev: "PLANTBI", schedulebuilderId: 124 },
+		"POLITICAL ECONOMY OF INDUSTRIAL SOC" : { abrev: "POLECIS", schedulebuilderId: 125 },
+		"POLITICAL SCIENCE" : { abrev: "POL SCI", schedulebuilderId: 126 },
+		"PORTUGUESE" : { abrev: "PORTUG", schedulebuilderId: 153 },
+		"PSYCHOLOGY" : { abrev: "PSYCH", schedulebuilderId: 127 },
+		"PUBLIC POLICY" : { abrev: "PUB POL", schedulebuilderId: 129 },
+		"PUNJABI" : { abrev: "PUNJABI", schedulebuilderId: 146 },
+		"RELIGIOUS STUDIES" : { abrev: "RELIGST", schedulebuilderId: 130 },
+		"RHETORIC" : { abrev: "RHETOR", schedulebuilderId: 131 },
+		"SANSKRIT" : { abrev: "SANSKR", schedulebuilderId: 147 },
+		"SOUTH ASIAN" : { abrev: "S ASIAN", schedulebuilderId: 140 },
+		"SCANDINAVIAN" : { abrev: "SCANDIN", schedulebuilderId: 132 },
+		"SCIENCE AND MATHEMATICS EDUCATION" : { abrev: "SCMATHE", schedulebuilderId: 133 },
+		"SOUTHEAST ASIAN" : { abrev: "SEASIAN", schedulebuilderId: 141 },
+		"SEMITICS" : { abrev: "SEMITIC", schedulebuilderId: 112 },
+		"SLAVIC LANGUAGES AND LITERATURES" : { abrev: "SLAVIC", schedulebuilderId: 134 },
+		"SOCIOLOGY" : { abrev: "SOCIOL", schedulebuilderId: 138 },
+		"SOCIAL WELFARE" : { abrev: "SOC WEL", schedulebuilderId: 137 },
+		"SPANISH" : { abrev: "SPANISH", schedulebuilderId: 152 },
+		"SOUTH AND SOUTHEAST ASIAN STUDIES" : { abrev: "S,SEASN", schedulebuilderId: 139 },
+		"STATISTICS" : { abrev: "STAT", schedulebuilderId: 156 },
 		"STUDIES" : { abrev: "STUDIES"},
-		"TAGALOG" : { abrev: "TAGALG", ninjacoursesId: 148 },
-		"TAMIL" : { abrev: "TAMIL", ninjacoursesId: 149 },
-		"TELUGU" : { abrev: "TELUGU", ninjacoursesId: 161 },
-		"THAI" : { abrev: "THAI", ninjacoursesId: 150 },
-		"THEATER DANCE, AND PERFORMANCE ST" : { abrev: "THEATER", ninjacoursesId: 157 },
-		"TIBETAN" : { abrev: "TIBETAN", ninjacoursesId: 49 },
-		"TURKISH" : { abrev: "TURKISH", ninjacoursesId: 113 },
-		"UNDERGRAD. BUSINESS ADMINISTRATION" : { abrev: "UGBA", ninjacoursesId: 20 },
-		"UNDERGRAD INTERDISCIPLINARY STUDIES" : { abrev: "UGIS", ninjacoursesId: 158 },
+		"TAGALOG" : { abrev: "TAGALG", schedulebuilderId: 148 },
+		"TAMIL" : { abrev: "TAMIL", schedulebuilderId: 149 },
+		"TELUGU" : { abrev: "TELUGU", schedulebuilderId: 161 },
+		"THAI" : { abrev: "THAI", schedulebuilderId: 150 },
+		"THEATER DANCE, AND PERFORMANCE ST" : { abrev: "THEATER", schedulebuilderId: 157 },
+		"TIBETAN" : { abrev: "TIBETAN", schedulebuilderId: 49 },
+		"TURKISH" : { abrev: "TURKISH", schedulebuilderId: 113 },
+		"UNDERGRAD. BUSINESS ADMINISTRATION" : { abrev: "UGBA", schedulebuilderId: 20 },
+		"UNDERGRAD INTERDISCIPLINARY STUDIES" : { abrev: "UGIS", schedulebuilderId: 158 },
 		"UNIVERSITY EXTENSION" : { abrev: "UNIVEXT"},
-		"VIETNAMESE" : { abrev: "VIETNMS", ninjacoursesId: 151 },
-		"VISION SCIENCE" : { abrev: "VIS SCI", ninjacoursesId: 119 },
-		"VISUAL STUDIES" : { abrev: "VIS STD", ninjacoursesId: 10 },
-		"EXECUTIVE MASTERS IN BUS. ADM." : { abrev: "XMBA", ninjacoursesId: 23 },
+		"VIETNAMESE" : { abrev: "VIETNMS", schedulebuilderId: 151 },
+		"VISION SCIENCE" : { abrev: "VIS SCI", schedulebuilderId: 119 },
+		"VISUAL STUDIES" : { abrev: "VIS STD", schedulebuilderId: 10 },
+		"EXECUTIVE MASTERS IN BUS. ADM." : { abrev: "XMBA", schedulebuilderId: 23 },
 		"YIDDISH" : { abrev: "YIDDISH", NINJACOURSESID: 69 },
 
 	};
@@ -808,11 +830,11 @@ UCBSE.Course = function()
 		// public attributes	
 
 		// public methods
-		getNinjacoursesId: function()
+		getSchedulebuilderId: function()
 		{
 			var str = this.department;
-			if(DEPARTMENTS.hasOwnProperty(str) && DEPARTMENTS[str].hasOwnProperty('ninjacoursesId'))
-				return DEPARTMENTS[str].ninjacoursesId;
+			if(DEPARTMENTS.hasOwnProperty(str) && DEPARTMENTS[str].hasOwnProperty('schedulebuilderId'))
+				return DEPARTMENTS[str].schedulebuilderId;
 			else
 				return null;
 		},
@@ -936,21 +958,6 @@ UCBSE.Course = function()
 			str = str.replace(/\"$/,'');
 
 			return str;
-		},
-
-		/*
-		 * splits a string up into tokens based on word boundaries
-		 *
-		 * For example. "how    are you doin." is transformed into
-		 * "how" "are" "you" "doin."
-		 *
-		 * @return array of strings 
-		 */
-
-		tokenize: function(str)
-		{
-			str = str.match(/[A-Za-z0-9.-]+/g) + "";
-			return str.split(',');
 		},
 
 		/**
@@ -1135,7 +1142,7 @@ UCBSE.Course = function()
 
 			if(str)
 			{
-				str = this.tokenize(str);
+				str = tokenize(str);
 
 				var beginCourseIndex = str.length - 4;
 				var courseName = "";
@@ -1662,7 +1669,7 @@ UCBSE.table = (function(courseList)
 
 			tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="blank">[K]</a> ';
 			tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="blank">[ME]</a> ';
-			tableRows += '<a class="ninjacourses" target="blank">[NC]</a> ';
+			tableRows += '<a class="schedulebuilder" target="blank">[SB]</a> ';
 			tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="blank">[CR]</a>';
 			tableRows += '</div>';
 			tableRows += '<div style="clear:both"></div>';
@@ -1832,9 +1839,9 @@ UCBSE.table = (function(courseList)
 			secondRowParsed = true;
 	}
 
-	// ninjacourses
+	// schedulebuilder
 	var prevCourse = { courseNum: "", departmentAbrev: ""};
-	var ninjacoursesLinks = table.getElementsByClassName("ninjacourses");
+	var schedulebuilderLinks = table.getElementsByClassName("schedulebuilder");
 	var uniqueCourseCount = 0;
 	for(var courseCount = 0, len = courseList.length; courseCount < len; courseCount++)
 	{
@@ -1844,12 +1851,12 @@ UCBSE.table = (function(courseList)
 			prevCourse.courseNum = crs.getCourseNum();
 			prevCourse.departmentAbrev = crs.getDepartmentAbrev();
 
-			var link = ninjacoursesLinks[ uniqueCourseCount ];
+			var link = schedulebuilderLinks[ uniqueCourseCount ];
 			link.addEventListener("click",
 				(function(course)
 				{
 					return function() {
-						ninjacoursesListener(course);
+						schedulebuilderListener(course);
 					}
 				}(crs))
 				,false);
