@@ -1414,7 +1414,7 @@ UCBSE.css = (function()
 	var styleElt = document.createElement("style");
 
 	css = "";
-	css += "body { font-family:arial, tahoma, verdana; } ";
+	css += "body { font-family:arial, tahoma, verdana; font-size:1em; } ";
 	css += "table, tr, td { font-size:.9em; } ";
 	css += "table { empty-cells:show; }";
 	css += ".enhancedFull { width:100%; }";
@@ -1553,8 +1553,9 @@ UCBSE.css = (function()
 	css += "#configContainer a, #configContainer { -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -o-user-select: none; user-select: none; }";
 
 	// highlighted Courses
+	css += "#highlightedCourses * {font-family: arial, tahoma, sans-serif;}";
 	css += "#highlightedCourses {float:left; position:fixed; z-index:100;}";
-	css += "#highlightedCourses table { background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-family: arial, tahoma, sans-serif; font-size:10pt; color:#666; opacity:.95; border-radius:5px; }";
+	css += "#highlightedCourses table { background-color:#f3f3f3; border:1px solid #CCC; padding:5px; font-size:10pt; color:#666; opacity:.95; border-radius:5px; }";
 	css += "#highlightedCourses tr td { padding:2px; }";
 	css += "#highlightedCourses tfoot tr > td {border-top: 1px solid #CCC;}";
 	css += "#highlightedCourses a {font-size:8pt;}";
