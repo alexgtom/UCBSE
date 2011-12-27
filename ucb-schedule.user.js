@@ -1085,11 +1085,14 @@ UCBSE.Course = function()
 					catalogDescParams['p_title'] = "";
 					catalogDescParams['p_number'] = this.courseNum;
 
+					/*
 					catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_search_sends_request', ";
 					catalogDescLink += associativeArrayToString(catalogDescParams);
 					catalogDescLink += ",'post','_blank');";
 
 					this.catalogDescLink = catalogDescLink;
+					*/
+					this.catalogDescLink = "http://osoc.berkeley.edu/catalog/gcc_search_sends_request?p_dept_cd=" + catalogDescParams['p_dept_cd'] + "&p_title=&p_number=" + catalogDescParams['p_number'];
 				}
 				else if(temp.match(/Click here for current enrollment/) != null)
 				{
@@ -1658,7 +1661,7 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">' + nullToEmpty(crs.getCourseNum()) + '</td>';
 			tableRows += '<td colspan="9" valign="middle">';
 			tableRows += '<div style="float:left;">';
-			tableRows += '<a onclick="' + crs.getCatalogDescLink() + '" target="_blank">' + nullToEmpty(crs.getTitle()) + '</a>';
+			tableRows += '<a href="' + crs.getCatalogDescLink() + '" target="_blank">' + nullToEmpty(crs.getTitle()) + '</a>';
 
 			if(crs.getCourseWebsite())
 				tableRows += ' <a href="' + crs.getCourseWebsite() + '" target="_blank">(Course Website)</a>';
