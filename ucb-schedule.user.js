@@ -366,8 +366,8 @@ function highlightedCoursesTableCreator(container)
 		rowHTML += "<td>" + nullToEmpty(crs.time) + "</td>";
 		rowHTML += "<td>" + nullToEmpty(crs.room) + "</td>";
 		rowHTML += "<td>";
-			if(crs.enrollmentLink)
-				rowHTML += '<a onclick="' + crs.enrollmentLink + '" target="_blank" alt="Enrollment">[E]</a> ';
+			if(crs.enrollmentLink == true)
+				rowHTML += '<a href="http://infobears.berkeley.edu:3400/osc/?_InField1=RESTRIC&_InField2=' + crs.ccn + '&_InField3=12B4" target="_blank" alt="Enrollment">[E]</a> ';
 			if(crs.bookLink)
 				rowHTML += '<a onclick="' + crs.bookLink + '" target="_blank" alt="Books">[B]</a>';
 		rowHTML += "</td>";
@@ -1085,28 +1085,11 @@ UCBSE.Course = function()
 					catalogDescParams['p_title'] = "";
 					catalogDescParams['p_number'] = this.courseNum;
 
-					/*
-					catalogDescLink = "javascript:post_to_url('http://osoc.berkeley.edu/catalog/gcc_search_sends_request', ";
-					catalogDescLink += associativeArrayToString(catalogDescParams);
-					catalogDescLink += ",'post','_blank');";
-
-					this.catalogDescLink = catalogDescLink;
-					*/
 					this.catalogDescLink = "http://osoc.berkeley.edu/catalog/gcc_search_sends_request?p_dept_cd=" + catalogDescParams['p_dept_cd'] + "&p_title=&p_number=" + catalogDescParams['p_number'];
 				}
 				else if(temp.match(/Click here for current enrollment/) != null)
 				{
-					var enrollmentParams = new Array();
-					
-					enrollmentParams['_InField1'] = getValue(input, "_InField1");
-					enrollmentParams['_InField2'] = getValue(input, "_InField2");
-					enrollmentParams['_InField3'] = getValue(input, "_InField3");
-
-					enrollmentLink = "javascript:post_to_url('http://infobears.berkeley.edu:3400/osc', ";
-					enrollmentLink += associativeArrayToString(enrollmentParams);
-					enrollmentLink += ",'post','_blank');";
-
-					this.enrollmentLink = enrollmentLink;
+					this.enrollmentLink = true
 				}
 				else if(temp.match(/View Books/) != null)
 				{
@@ -1591,7 +1574,7 @@ UCBSE.key = (function()
 {
 	var table = document.createElement("table");
 	table.setAttribute("id", "key");
-	table.innerHTML = '<tr><td><div class="key"><b>Key</b><ul><li><span class="open">GREEN</span> indicates that the class is open and there are seats available.</li><li><span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist.</li><li><span class="full">RED</span> indicates that the class is full or has been cancelled.</li><li><b>Course Highlighting</b> - Courses can be highlighted in yellow by clicking on the blank space in the Course Number column.</li><li><b>[E]</b> = Enrollment</li><li><b>[B]</b> = Book</li><li><b>[K]</b> = Koofers</li><li><b>[ME]</b> = myEdu</li><li><b>[CR]</b> = CourseRank</li><li><b>[NC]</b> = Ninja Courses</li></div></tr></td>';
+	table.innerHTML = '<tr><td><div class="key"><b>Key</b><ul><li><span class="open">GREEN</span> indicates that the class is open and there are seats available.</li><li><span class="openButWaitlist">ORANGE</span> indicates there are seats are available, but there is a waitlist.</li><li><span class="full">RED</span> indicates that the class is full or has been cancelled.</li><li><b>Course Highlighting</b> - Courses can be highlighted in yellow by clicking on the blank space in the Course Number column.</li><li><b>[E]</b> = Enrollment</li><li><b>[B]</b> = Book</li><li><b>[K]</b> = Koofers</li><li><b>[ME]</b> = myEdu</li><li><b>[CR]</b> = CourseRank</li><li><b>[NC]</b> = Ninja Courses</li><li><b>[SB]</b> = ScheduleBuilder</li></div></tr></td>';
 
 	document.body.insertBefore(table, document.body.firstChild.nextSibling.nextSibling);
 }());
@@ -1768,8 +1751,8 @@ UCBSE.table = (function(courseList)
 		tableRows += '<td class="' + crs.needRowBorder() + ' col16"><div class="statusLastChanged"><small>' + nullToEmpty(crs.getStatusLastChanged()) + '</small></div></td>';
 		tableRows += '<td class="col17"><div class="links">';
 
-		if(crs.getEnrollmentLink())
-			tableRows += '<a onclick="' + crs.getEnrollmentLink()+ '" target="_blank" alt="Enrollment">[E]</a> ';
+		if(crs.getEnrollmentLink() == true)
+			tableRows += '<a href="http://infobears.berkeley.edu:3400/osc/?_InField1=RESTRIC&_InField2=' + crs.getCCN() + '&_InField3=12B4" target="_blank" alt="Enrollment">[E]</a> ';
 		if(crs.getBookLink())
 			tableRows += '<a onclick="' + crs.getBookLink() + '" target="_blank" alt="Books">[B]</a>';
 
