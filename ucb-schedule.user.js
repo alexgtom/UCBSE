@@ -369,7 +369,7 @@ function highlightedCoursesTableCreator(container)
 			if(crs.enrollmentLink == true)
 				rowHTML += '<a href="http://infobears.berkeley.edu:3400/osc/?_InField1=RESTRIC&_InField2=' + crs.ccn + '&_InField3=12B4" target="_blank" alt="Enrollment">[E]</a> ';
 			if(crs.bookLink)
-				rowHTML += '<a onclick="' + crs.bookLink + '" target="_blank" alt="Books">[B]</a>';
+				rowHTML += '<a href="' + crs.bookLink + '" target="_blank" alt="Books">[B]</a>';
 		rowHTML += "</td>";
 		row.innerHTML = rowHTML;
 
@@ -1100,11 +1100,7 @@ UCBSE.Course = function()
 					bookParams['div-1'] = getValue(input, "div-1");
 					bookParams['crn-1'] = this.ccn;
 
-					bookLink = "javascript:post_to_url('http://www.bkstr.com/webapp/wcs/stores/servlet/booklookServlet', ";
-					bookLink += associativeArrayToString(bookParams);
-					bookLink += ",'post','_blank');";
-
-					this.bookLink = bookLink;
+					this.bookLink = "http://www.bkstr.com/webapp/wcs/stores/servlet/booklookServlet?bookstore_id-1=" + bookParams['bookstore_id-1'] + "&term_id-1=" + bookParams['term_id-1'] + "&crn-1=" + this.ccn;
 				}
 			}
 		},
@@ -1754,7 +1750,7 @@ UCBSE.table = (function(courseList)
 		if(crs.getEnrollmentLink() == true)
 			tableRows += '<a href="http://infobears.berkeley.edu:3400/osc/?_InField1=RESTRIC&_InField2=' + crs.getCCN() + '&_InField3=12B4" target="_blank" alt="Enrollment">[E]</a> ';
 		if(crs.getBookLink())
-			tableRows += '<a onclick="' + crs.getBookLink() + '" target="_blank" alt="Books">[B]</a>';
+			tableRows += '<a href="' + crs.getBookLink() + '" target="_blank" alt="Books">[B]</a>';
 
 		tableRows += '</div></td>';
 		tableRows += '</tr>';
