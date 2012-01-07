@@ -706,7 +706,7 @@ UCBSE.Course = function()
 		"LEGAL STUDIES" : { abrev: "LEGALST", schedulebuilderId: 87 },
 		"LESBIAN GAY BISEXUAL TRANSGENDER ST" : { abrev: "LGBT", schedulebuilderId: 66 },
 		"LINGUISTICS" : { abrev: "LINGUIS", schedulebuilderId: 89 },
-		"LETTERS AND SCIENCE" : { abrev: "L ~ S", schedulebuilderId: 88 },
+		"LETTERS AND SCIENCE" : { abrev: "LNS", schedulebuilderId: 88 },
 		"MALAY/INDONESIAN" : { abrev: "MALAY/I", schedulebuilderId: 145 },
 		"MASS COMMUNICATIONS" : { abrev: "MASSCOM", schedulebuilderId: 90 },
 		"MATHEMATICS" : { abrev: "MATH", schedulebuilderId: 92 },
@@ -1650,7 +1650,7 @@ UCBSE.table = (function(courseList)
 		
 			deptAbrev = crs.getDepartmentAbrev();
 
-			if(deptAbrev != 'L ~ S')
+			if(deptAbrev != 'LNS')
 			{
 				tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="_blank">[K]</a> ';
 				tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
@@ -1664,7 +1664,7 @@ UCBSE.table = (function(courseList)
 				tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
 				tableRows += '<a class="schedulebuilder" target="_blank">[SB]</a> ';
 				tableRows += '<a href="' + 'http://www.ninjacourses.com/explore/1/course/' + 'L & S' + '/' + crs.getCourseNum() + '/" target="_blank">[NC]</a> ';
-				tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
+				tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI('L ~ S' + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
 
 			}
 
