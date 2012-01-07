@@ -1654,11 +1654,11 @@ UCBSE.table = (function(courseList)
 
 			if(deptAbrev != 'LNS')
 			{
-				tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="_blank">[K]</a> ';
-				tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
-				tableRows += '<a class="schedulebuilder" target="_blank">[SB]</a> ';
-				tableRows += '<a href="' + 'http://www.ninjacourses.com/explore/1/course/' + deptAbrev + '/' + crs.getCourseNum() + '/" target="_blank">[NC]</a> ';
-				tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
+				tableRows += '<a class="col19" href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="_blank">[K]</a> ';
+				tableRows += '<a class="col20" href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
+				tableRows += '<a class="schedulebuilder col21" target="_blank">[SB]</a> ';
+				tableRows += '<a class="col22" href="' + 'http://www.ninjacourses.com/explore/1/course/' + deptAbrev + '/' + crs.getCourseNum() + '/" target="_blank">[NC]</a> ';
+				tableRows += '<a class="col23" href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
 			}
 			else
 			{
