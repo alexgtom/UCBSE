@@ -1402,8 +1402,8 @@ UCBSE.css = (function()
 	css += ".enhancedFull { width:100%; }";
 	css += ".enhanced { width:auto; }";
 
-	var numCol = 18;
-	// col18 = enrollment message
+	var numCol = 23;
+	// col23 = courserank link
 
 	for(var i = 1; i <= numCol - 1; i++)
 		css += "table.hide" + i + " .col" + i + ",";
@@ -1416,6 +1416,8 @@ UCBSE.css = (function()
 	css += ".col" + i;
 
 	css += "{ display: table-cell; }";
+
+	css += ".col23, .col22, .col21, .col20, .col19 { padding:0 2px; }"
 
 	// for showing and hiding second row
 	css += "table.hide200 .col200 { display:none; }";
@@ -1660,11 +1662,11 @@ UCBSE.table = (function(courseList)
 			}
 			else
 			{
-				tableRows += '<a href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="_blank">[K]</a> ';
-				tableRows += '<a href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
-				tableRows += '<a class="schedulebuilder" target="_blank">[SB]</a> ';
-				tableRows += '<a href="' + 'http://www.ninjacourses.com/explore/1/course/' + 'L & S' + '/' + crs.getCourseNum() + '/" target="_blank">[NC]</a> ';
-				tableRows += '<a href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI('L ~ S' + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
+				tableRows += '<a class="col19" href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="_blank">[K]</a>';
+				tableRows += '<a class="col20" href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
+				tableRows += '<a class="schedulebuilder col21" target="_blank">[SB]</a> ';
+				tableRows += '<a class="col22" href="' + 'http://www.ninjacourses.com/explore/1/course/' + 'L & S' + '/' + crs.getCourseNum() + '/" target="_blank">[NC]</a> ';
+				tableRows += '<a class="col23" href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI('L ~ S' + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
 
 			}
 
@@ -1958,6 +1960,12 @@ UCBSE.controls = (function()
 	container.appendChild(document.createElement("hr"));
 	createToggleColumnElement(container, 18, "Enrollment Message");
 	createToggleColumnElement(container, 200, "Second Row");
+	container.appendChild(document.createElement("hr"));
+	createToggleColumnElement(container, 19, "Koofers Link");
+	createToggleColumnElement(container, 20, "MyEdu Link");
+	createToggleColumnElement(container, 21, "ScheduleBuilder Link");
+	createToggleColumnElement(container, 22, "NinjaCourses Link");
+	createToggleColumnElement(container, 23, "CourseRank Link");
 	container.appendChild(document.createElement("hr"));
 
 	container.appendChild(closeContainer("controls", 900, "isControls"));
