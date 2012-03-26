@@ -809,6 +809,7 @@ UCBSE.Course = function()
 	var days = null;
 	var room = null;
 	var time = null;
+	var inField3 = null;
 
 	// private methods
 	
@@ -869,6 +870,7 @@ UCBSE.Course = function()
 		getDays: 				function(){ return this.days; },
 		getRoom: 				function(){ return this.room; },
 		getTime: 				function(){ return this.time; },
+		getInField3: 			function(){ return this.inField3; },
 
 		setDepartment: 			function(str){ this.department = str; },
 		setDepartmentAbrev: 	function(str){ this.departmentAbrev = str; },
@@ -1089,7 +1091,8 @@ UCBSE.Course = function()
 				}
 				else if(temp.match(/Click here for current enrollment/) != null)
 				{
-					this.enrollmentLink = true
+					this.enrollmentLink = true;
+					this.inField3 = getValue(input, "_InField3");
 				}
 				else if(temp.match(/View Books/) != null)
 				{
@@ -1763,7 +1766,7 @@ UCBSE.table = (function(courseList)
 		tableRows += '<td class="col17"><div class="links">';
 
 		if(crs.getEnrollmentLink() == true)
-			tableRows += '<a href="http://infobears.berkeley.edu:3400/osc/?_InField1=RESTRIC&_InField2=' + crs.getCCN() + '&_InField3=12B4" target="_blank" alt="Enrollment">[E]</a> ';
+			tableRows += '<a href="http://infobears.berkeley.edu:3400/osc/?_InField1=RESTRIC&_InField2=' + crs.getCCN() + '&_InField3=' + crs.getInField3() + '" target="_blank" alt="Enrollment">[E]</a> ';
 		if(crs.getBookLink())
 			tableRows += '<a href="' + crs.getBookLink() + '" target="_blank" alt="Books">[B]</a>';
 
