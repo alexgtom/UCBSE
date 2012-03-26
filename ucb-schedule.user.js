@@ -1524,16 +1524,18 @@ UCBSE.css = (function()
 	// turn of bg on ccn
 	css += "table.nobg .open, table.nobg .openButWaitlist, table.nobg .full { background-color:transparent; color:#000;}";
 
+	// sidebar
+	css += "#sidebar {width:330px; float:right; text-align:center;z-index:100; position:fixed; right:10px; top:10px; color:#666;}";
+	css += "#sidebar a {color:#9f911e;}";
+	css += "#sidebar a:hover {color:#9f911e; text-decoration: underline; background-color:transparent;}";
+
 	// controls
 	css += "#controls { float:left; background-color:#f3f3f3; font-size:.7em; font-family: arial, tahoma, verdana; padding:5px; color:#666; margin:5px 0 0 0; border:1px solid #CCC; text-align:center; opacity: .9; border-radius:5px; }";
 	css += "#controls hr { background-color:#CCC; height:1px; border:0px; float:left; width:100%;}";
 	css += "#controls input { padding:0px; margin:2px 2px 0 2px; }";
 	css += ".checkboxElement {float:left; width:150px; text-align:left;}";
-
-	// sidebar
-	css += "#sidebar {width:220px; float:right; text-align:center;z-index:100; position:fixed; right:10px; top:10px; color:#666;}";
-	css += "#sidebar a {color:#9f911e;}";
-	css += "#sidebar a:hover {color:#9f911e; text-decoration: underline; background-color:transparent;}";
+	css += "#controls a {color:#666666;}";
+	css += "#controls a:hover {color:#9f911e; text-decoration: underline; background-color:transparent;}";
 
 	// configuration link
 	css += "#configContainer { float:top left; text-align:center; background-color:#fffcb8; font-size:.7em; font-family:arial, tahoma, san-serif; padding:5px; border:1px solid #decc35; opacity:.8; border-radius:5px;  }";
@@ -1878,13 +1880,31 @@ UCBSE.controls = (function()
 	var container = document.createElement("div");
 	container.setAttribute("id", "controls");
 
+
 	if(GM_getValue("isControls"))
 		container.setAttribute("class", "col900");
 	else
 		container.setAttribute("class", "col900 hide900");
 
-	var controlLabelContainer = document.createElement("div");
-	controlLabelContainer.setAttribute("class", "checkboxElement");
+	// Links
+	var containerLinks = document.createElement("div");
+	var reportBugLink = document.createElement("a");
+	reportBugLink.innerHTML = "Report Bug";
+	reportBugLink.setAttribute("href", "http://goo.gl/aJgTR");
+	reportBugLink.setAttribute("target", "_blank");
+
+	var homepageLink = document.createElement("a");
+	homepageLink.innerHTML = "Homepage";
+	homepageLink.setAttribute("href", "http://userscripts.org/scripts/show/105611");
+	homepageLink.setAttribute("target", "_blank");
+
+	containerLinks.appendChild(reportBugLink);
+	containerLinks.appendChild(document.createTextNode(" | "));
+	containerLinks.appendChild(homepageLink);
+
+	container.appendChild(containerLinks);
+
+	container.appendChild(document.createElement("hr"));
 
 	// Maximize Toggle
 	var toggleMaximizeContainer = document.createElement("div");
@@ -1936,10 +1956,13 @@ UCBSE.controls = (function()
 	// Key toggle
 	createToggleColumnElement(container, 300, "Key", "key");
 
+
 	// hr
 	container.appendChild(document.createElement("hr"));
 
 	// Column controls
+	
+
 	createToggleColumnElement(container, 1, "Course Number");
 	createToggleColumnElement(container, 2, "CCN");
 	createToggleColumnElement(container, 3, "Class Type");
