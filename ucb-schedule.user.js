@@ -1898,9 +1898,16 @@ UCBSE.controls = (function()
 	homepageLink.setAttribute("href", "http://userscripts.org/scripts/show/105611");
 	homepageLink.setAttribute("target", "_blank");
 
+	var facebookLink = document.createElement("a");
+	facebookLink.innerHTML = "Facebook";
+	facebookLink.setAttribute("href", "http://www.facebook.com/ucbse");
+	facebookLink.setAttribute("target", "_blank");
+
 	containerLinks.appendChild(reportBugLink);
 	containerLinks.appendChild(document.createTextNode(" | "));
 	containerLinks.appendChild(homepageLink);
+	containerLinks.appendChild(document.createTextNode(" | "));
+	containerLinks.appendChild(facebookLink);
 
 	container.appendChild(containerLinks);
 
