@@ -1753,7 +1753,10 @@ UCBSE.table = (function(courseList)
 
 		if(!crs.getEnrollmentMsg())
 		{
-			tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</div></td>';
+			if(crs.getPS() == "P")
+				tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11"><a href="http://telebearsoracle.com/?' + crs.getCCN() + '" target="_blank">' + crs.getLimit() + '</a></div></td>';
+			else
+				tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</div></td>';
 			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col12">' + crs.getEnrolled() + '</div></td>';
 			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col13">' + crs.getWaitlist() + '</div></td>';
 			tableRows += '<td class="enrollDataRight' + crs.needRowBorder() + '"><div class="col14">' + crs.getAvailSeats() + '</td>';
