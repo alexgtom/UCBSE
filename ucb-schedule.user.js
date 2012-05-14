@@ -1503,6 +1503,7 @@ UCBSE.css = (function()
 	css += ".secNum { width:30px; }";
 	css += ".units { width:40px; text-align:center; }";
 	css += ".instructor { text-align:left; }";
+	css += ".instructor small { font-weight:normal; }";
 	css += ".locn { text-align:left; }";
 	css += ".finalExamGroup { max-width:30px; text-align:center; }";
 	css += ".col10 { width:30px; text-align:center; }";
@@ -1627,13 +1628,13 @@ UCBSE.table = (function(courseList)
 		var crs = courseList[i];
 		
 		// Department Title
-		if(prevDepartment !== crs.getDepartment())
+		if(prevDepartment !== crs.getDepartmentAbrev())
 		{
 			// if this condition is true, that means this is the first department
 			if(prevDepartment != "")
 				tableRows += '<tr class="departmentTopPadding"><td colspan="18"></td></tr>';
 
-			prevDepartment = crs.getDepartment();
+			prevDepartment = crs.getDepartmentAbrev();
 
 
 			tableRows += '<tr>';
@@ -1729,17 +1730,28 @@ UCBSE.table = (function(courseList)
 
 		tableRows += '<td class="col1 highlightCursor" onclick="javascript:highlightRow(this.parentNode.parentNode);"></td>'
 		tableRows += crs.fancyCourseControlNumber(crs.getCCN());
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="classType col3">' + nullToEmpty(crs.getClassType()) + '</div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="secNum col4">' + nullToEmpty(crs.getSecNum()) + '</div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="units col5">' + nullToEmpty(crs.getUnits()) + '</div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + '"><div class="instructor col6">';
 
-		if(crs.getInstructor() && crs.getInstructor().match(/THE STAFF/))
+		needRowBorder = crs.needRowBorder();
+
+		tableRows += '<td class="' + needRowBorder + '"><div class="classType col3">' + nullToEmpty(crs.getClassType()) + '</div></td>';
+		tableRows += '<td class="' + needRowBorder + '"><div class="secNum col4">' + nullToEmpty(crs.getSecNum()) + '</div></td>';
+		tableRows += '<td class="' + needRowBorder + '"><div class="units col5">' + nullToEmpty(crs.getUnits()) + '</div></td>';
+		tableRows += '<td class="' + needRowBorder + '"><div class="instructor col6">';
+
+		console.log(crs.getDepartmentAbrev());
+
+		instructor = crs.getInstructor();
+
+		if(instructor && instructor.match(/THE STAFF/))
 		{
-			tableRows += crs.getInstructor().match(/THE STAFF/);
+			tableRows += instructor.match(/THE STAFF/);
 		}
-		else if(crs.getInstructor())
-			tableRows += '<a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.getLastName() + '" target="_blank">' + crs.getInstructor() + '</a>';
+		else if(instructor && prevDepartment == "COMPSCI")
+			tableRows += '<a href="https://hkn.eecs.berkeley.edu/coursesurveys/course/CS/' + crs.getCourseNum() + '" target="_blank">' + instructor + '</a> <small>[HKN]</small>';
+		else if(instructor && prevDepartment == "EL ENG")
+			tableRows += '<a href="https://hkn.eecs.berkeley.edu/coursesurveys/course/EE/' + crs.getCourseNum() + '" target="_blank">' + instructor + '</a> <small>[HKN]</small>';
+		else if(instructor)
+			tableRows += '<a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.getLastName() + '" target="_blank">' + instructor + '</a>';
 
 		tableRows += '</div></td>';
 
@@ -1750,9 +1762,9 @@ UCBSE.table = (function(courseList)
 			else
 				numCol = 2;
 
-			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="days col7">' + crs.fancyDays(crs.getDays()) +'</div></td>';
-			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="time col8">' + nullToEmpty(crs.getTime()) + '</div></td>';
-			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="room col9">' + nullToEmpty(crs.getRoom()) + '</div></td>';
+			tableRows += '<td class="' + needRowBorder + '"><div class="days col7">' + crs.fancyDays(crs.getDays()) +'</div></td>';
+			tableRows += '<td class="' + needRowBorder + '"><div class="time col8">' + nullToEmpty(crs.getTime()) + '</div></td>';
+			tableRows += '<td colspan="' + numCol + '" class="' + needRowBorder + '"><div class="room col9">' + nullToEmpty(crs.getRoom()) + '</div></td>';
 		}
 		else
 		{
@@ -1761,29 +1773,29 @@ UCBSE.table = (function(courseList)
 			else
 				numCol = 4;
 
-			tableRows += '<td colspan="' + numCol + '" class="' + crs.needRowBorder() + '"><div class="locn col9">' + nullToEmpty(crs.getLocn()) + '</div></td>';
+			tableRows += '<td colspan="' + numCol + '" class="' + needRowBorder + '"><div class="locn col9">' + nullToEmpty(crs.getLocn()) + '</div></td>';
 		}
 		
 		if(crs.isFinalExamGroup())
-			tableRows += '<td class="' + crs.needRowBorder() + '"><div class="finalExamGroup col10">' + nullToEmpty(crs.getFinalExamGroup()) + '</div></td>';
+			tableRows += '<td class="' + needRowBorder + '"><div class="finalExamGroup col10">' + nullToEmpty(crs.getFinalExamGroup()) + '</div></td>';
 
 		if(!crs.getEnrollmentMsg())
 		{
 			if(crs.getPS() == "P")
-				tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</div></td>';
+				tableRows += '<td class="enrollDataLeft' + needRowBorder + '"><div class="col11">' + crs.getLimit() + '</div></td>';
 			else
-				tableRows += '<td class="enrollDataLeft' + crs.needRowBorder() + '"><div class="col11">' + crs.getLimit() + '</div></td>';
-			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col12">' + crs.getEnrolled() + '</div></td>';
-			tableRows += '<td class="enrollData' + crs.needRowBorder() + '"><div class="col13">' + crs.getWaitlist() + '</div></td>';
-			tableRows += '<td class="enrollDataRight' + crs.needRowBorder() + '"><div class="col14">' + crs.getAvailSeats() + '</td>';
+				tableRows += '<td class="enrollDataLeft' + needRowBorder + '"><div class="col11">' + crs.getLimit() + '</div></td>';
+			tableRows += '<td class="enrollData' + needRowBorder + '"><div class="col12">' + crs.getEnrolled() + '</div></td>';
+			tableRows += '<td class="enrollData' + needRowBorder + '"><div class="col13">' + crs.getWaitlist() + '</div></td>';
+			tableRows += '<td class="enrollDataRight' + needRowBorder + '"><div class="col14">' + crs.getAvailSeats() + '</td>';
 		}
 		else
 		{
-			tableRows += '<td colspan="4" class="enrollDataLeft enrollDataRight ' + crs.needRowBorder() + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
+			tableRows += '<td colspan="4" class="enrollDataLeft enrollDataRight ' + needRowBorder + '"><div class="enrollmentMsg col18">' + crs.getEnrollmentMsg() + '</div></td>';
 		}
 
-		tableRows += '<td class="' + crs.needRowBorder() + ' col15"><div class="restrictions"><small>' + nullToEmpty(crs.getRestrictions()) + '</small></div></td>';
-		tableRows += '<td class="' + crs.needRowBorder() + ' col16"><div class="statusLastChanged"><small>' + nullToEmpty(crs.getStatusLastChanged()) + '</small></div></td>';
+		tableRows += '<td class="' + needRowBorder + ' col15"><div class="restrictions"><small>' + nullToEmpty(crs.getRestrictions()) + '</small></div></td>';
+		tableRows += '<td class="' + needRowBorder + ' col16"><div class="statusLastChanged"><small>' + nullToEmpty(crs.getStatusLastChanged()) + '</small></div></td>';
 		tableRows += '<td class="col17"><div class="links">';
 
 		if(crs.getEnrollmentLink() == true)
