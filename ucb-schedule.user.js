@@ -1,3 +1,27 @@
+// ==UserScript==
+// @name	   UC Berkeley Schedule Enhancer (UCBSE)
+// @description    Enhances the look and feel of the UC Berkeley schedule making it easier to read and search for classes.
+// @namespace	   http://osoc.berkeley.edu/OSOC/
+// @include	   http://osoc.berkeley.edu/OSOC/*
+// ==/UserScript==
+//
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+//
+//    You should have received a copy of the GNU General Public License
+//    along with this program.	If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//	  Want to make this script better? Fork us on github!
+//	  https://github.com/athk/UCBSE
+//
 if("undefined"==typeof GM_deleteValue||"undefined"==typeof GM_addStyle)GM_addStyle=function(b){var c=document.createElement("style");c.textContent=b;(b=document.getElementsByTagName("head")[0])&&b.appendChild(c)},GM_deleteValue=function(b){localStorage.removeItem(b)},GM_getValue=function(b,c){var d=localStorage.getItem(b);if(!d)return c;var a=d[0],d=d.substring(1);switch(a){case "b":return"true"==d;case "n":return Number(d);default:return d}},GM_log=function(b){console.log(b)},GM_registerMenuCommand=
 function(){},GM_setValue=function(b,c){c=(typeof c)[0]+c;localStorage.setItem(b,c)},GM_xmlhttpRequest="undefined"!=typeof safari?function(b){b.requestType="GM_xmlhttpRequest";"undefined"!=typeof b.onload&&(b.XHRID=xhrQueue.count,xhrQueue.onloads[xhrQueue.count]=b.onload,safari.self.tab.dispatchMessage("GM_xmlhttpRequest",b),xhrQueue.count++)}:"undefined"!=typeof opera?function(b){b.requestType="GM_xmlhttpRequest";var c=-1==b.url.indexOf(location.hostname);if("undefined"!=typeof b.onload&&c)b.XHRID=
 xhrQueue.count,xhrQueue.onloads[xhrQueue.count]=b.onload,opera.extension.postMessage(JSON.stringify(b)),xhrQueue.count++;else{var d=new XMLHttpRequest;d.onreadystatechange=function(){if(b.onreadystatechange)b.onreadystatechange(d);if(4==d.readyState&&b.onload)b.onload(d)};d.onerror=function(){if(b.onerror)b.onerror(d)};try{d.open(b.method,b.url,!0)}catch(a){if(b.onerror)b.onerror({readyState:4,responseHeaders:"",responseText:"",responseXML:"",status:403,statusText:"Forbidden"});return}if(b.headers)for(name in b.headers)d.setRequestHeader(name,
