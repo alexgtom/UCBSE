@@ -1656,12 +1656,23 @@ UCBSE.table = (function(courseList)
 		// Course Title
 		if(prevCourseNum !== crs.getCourseNum() || prevDepartmentAbrevForCourseTitle !== crs.getDepartmentAbrev())
 		{
-			prevCourseNum = crs.getCourseNum();
+			prevCourseNum = nullToEmpty(crs.getCourseNum());
 			prevDepartmentAbrevForCourseTitle = crs.getDepartmentAbrev();
 
 			tableRows += '<tr class="courseTopPadding"><td colspan="18"></td></tr>';
 			tableRows += '<tr class="title">';
-			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">' + nullToEmpty(crs.getCourseNum()) + '</td>';
+			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">';
+
+			console.log(prevCourseNum);
+			
+			if(prevDepartment == "COMPSCI")
+				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~cs' + prevCourseNum.toLowerCase() + '/" target="_blank">' + prevCourseNum + '</a>';
+			else if(prevDepartment == "EL ENG")
+				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~ee' + prevCourseNum.toLowerCase() + '/" target="_blank">' + prevCourseNum + '</a>';
+			else
+				tableRows += prevCourseNum;
+
+			tableRows += '</td>';
 			tableRows += '<td colspan="9" valign="middle">';
 			tableRows += '<div style="float:left;">';
 			tableRows += '<a href="' + crs.getCatalogDescLink() + '" target="_blank">' + nullToEmpty(crs.getTitle()) + '</a>';
@@ -1674,18 +1685,18 @@ UCBSE.table = (function(courseList)
 		
 			deptAbrev = crs.getDepartmentAbrev();
 
-			tableRows += '<a class="col19" href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '" target="_blank">[K]</a>';
-			tableRows += '<a class="col20" href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
+			tableRows += '<a class="col19" href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + prevCourseNum) + '" target="_blank">[K]</a>';
+			tableRows += '<a class="col20" href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + prevCourseNum) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
 			tableRows += '<a class="schedulebuilder col21" target="_blank">[SB]</a> ';
-			tableRows += '<a class="col22" href="' + 'http://www.ninjacourses.com/explore/1/course/' + 'L & S' + '/' + crs.getCourseNum() + '/" target="_blank">[NC]</a> ';
+			tableRows += '<a class="col22" href="' + 'http://www.ninjacourses.com/explore/1/course/' + 'L & S' + '/' + prevCourseNum + '/" target="_blank">[NC]</a> ';
 
 			if(deptAbrev != 'LNS')
 			{
-				tableRows += '<a class="col23" href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
+				tableRows += '<a class="col23" href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI(deptAbrev + ' ' + prevCourseNum) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
 			}
 			else
 			{
-				tableRows += '<a class="col23" href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI('L ~ S' + ' ' + crs.getCourseNum()) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
+				tableRows += '<a class="col23" href="' + 'https://www.courserank.com/berkeley/search#query=' + encodeURI('L ~ S' + ' ' + prevCourseNum) + '&filter_term_currentYear=on' + '" target="_blank">[CR]</a>';
 			}
 			//tableRows += '<a class="schedulebuilder col21" target="_blank">[SB]</a> ';
 			tableRows += '<a class="col24" href="http://www.telebearsoracle.com/#' + crs.ccn + ',semester:' + UCBSE.termTelebearsOracle + '" target="_blank">[TO]</a>';
@@ -1744,9 +1755,9 @@ UCBSE.table = (function(courseList)
 			tableRows += instructor.match(/THE STAFF/);
 		}
 		else if(instructor && prevDepartment == "COMPSCI")
-			tableRows += '<a href="https://hkn.eecs.berkeley.edu/coursesurveys/course/CS/' + crs.getCourseNum() + '" target="_blank">' + instructor + '</a> <small>[HKN]</small>';
+			tableRows += '<a href="https://hkn.eecs.berkeley.edu/coursesurveys/course/CS/' + prevCourseNum + '" target="_blank">' + instructor + '</a> <small>[HKN]</small>';
 		else if(instructor && prevDepartment == "EL ENG")
-			tableRows += '<a href="https://hkn.eecs.berkeley.edu/coursesurveys/course/EE/' + crs.getCourseNum() + '" target="_blank">' + instructor + '</a> <small>[HKN]</small>';
+			tableRows += '<a href="https://hkn.eecs.berkeley.edu/coursesurveys/course/EE/' + prevCourseNum + '" target="_blank">' + instructor + '</a> <small>[HKN]</small>';
 		else if(instructor)
 			tableRows += '<a href="http://www.ratemyprofessors.com/SelectTeacher.jsp?the_dept=All&sid=1072&orderby=TLName&letter=' + crs.getLastName() + '" target="_blank">' + instructor + '</a>';
 
@@ -1878,9 +1889,9 @@ UCBSE.table = (function(courseList)
 	for(var courseCount = 0, len = courseList.length; courseCount < len; courseCount++)
 	{
 		var crs = courseList[ courseCount ];
-		if(crs.getCourseNum() != prevCourse.courseNum || crs.getDepartmentAbrev() != prevCourse.departmentAbrev)
+		if(prevCourseNum != prevCourse.courseNum || crs.getDepartmentAbrev() != prevCourse.departmentAbrev)
 		{
-			prevCourse.courseNum = crs.getCourseNum();
+			prevCourse.courseNum = prevCourseNum;
 			prevCourse.departmentAbrev = crs.getDepartmentAbrev();
 
 			var link = schedulebuilderLinks[ uniqueCourseCount ];
