@@ -1881,15 +1881,16 @@ UCBSE.table = (function(courseList)
 	}
 
 	// schedulebuilder
-	var prevCourse = { courseNum: '', departmentAbrev: ''};
+	var prevCourse = { courseNum: null, departmentAbrev: null};
 	var schedulebuilderLinks = table.getElementsByClassName('schedulebuilder');
 	var uniqueCourseCount = 0;
+	prevCourseNum = '';
 	for (var courseCount = 0, len = courseList.length; courseCount < len; courseCount++)
 	{
 		var crs = courseList[courseCount];
-		if (prevCourseNum != prevCourse.courseNum || crs.getDepartmentAbrev() != prevCourse.departmentAbrev)
+		if (crs.getCourseNum() != prevCourse.courseNum || crs.getDepartmentAbrev() != prevCourse.departmentAbrev)
 		{
-			prevCourse.courseNum = prevCourseNum;
+			prevCourse.courseNum = crs.getCourseNum();
 			prevCourse.departmentAbrev = crs.getDepartmentAbrev();
 
 			var link = schedulebuilderLinks[uniqueCourseCount];
