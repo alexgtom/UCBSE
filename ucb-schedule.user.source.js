@@ -1686,7 +1686,7 @@ UCBSE.table = (function(courseList)
 			tableRows += '<a class="col19" href="' + 'http://www.koofers.com/search?q=' + encodeURI(deptAbrev + ' ' + prevCourseNum) + '" target="_blank">[K]</a>';
 			tableRows += '<a class="col20" href="' + 'http://www.myedu.com/search?q=' + encodeURI(deptAbrev + ' ' + prevCourseNum) + '&doctype=course&facets=school-name:University+of+California%2C+Berkeley|dept-abbrev:' + encodeURI(deptAbrev) + '&search_school=University+of+California%2C+Berkeley&config=' + '" target="_blank">[ME]</a> ';
 			tableRows += '<a class="schedulebuilder col21" target="_blank">[SB]</a> ';
-			tableRows += '<a class="col22" href="' + 'http://www.ninjacourses.com/explore/1/course/' + 'L & S' + '/' + prevCourseNum + '/" target="_blank">[NC]</a> ';
+			tableRows += '<a class="col22" href="' + 'http://www.ninjacourses.com/explore/1/course/' + deptAbrev + '/' + prevCourseNum + '/" target="_blank">[NC]</a> ';
 
 			if (deptAbrev != 'LNS')
 			{
