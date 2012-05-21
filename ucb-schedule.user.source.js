@@ -1663,8 +1663,6 @@ UCBSE.table = (function(courseList)
 			tableRows += '<tr class="title">';
 			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">';
 
-			console.log(prevCourseNum);
-
 			if (prevDepartment == 'COMPSCI')
 				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~cs' + prevCourseNum.toLowerCase() + '/" target="_blank">' + prevCourseNum + '</a>';
 			else if (prevDepartment == 'EL ENG')
