@@ -292,15 +292,23 @@ function schedulebuilderListener(crs)
 {
 	try
 	{
+		term = UCBSE.term;
+		termAbrev = UCBSE.termAbrev;
+		if(term == "Summer")
+			term = "Spring";
+
+		if(term == "Summer")
+			termAbrev = "SP";
+			
 		GM_xmlhttpRequest({method: 'GET',
-			url: 'http://schedulebuilder.berkeley.edu/explore/department/' + UCBSE.term + '/' + UCBSE.year + '/' + crs.getSchedulebuilderId() + '/courses.json',
+			url: 'http://schedulebuilder.berkeley.edu/explore/department/' + term + '/' + UCBSE.year + '/' + crs.getSchedulebuilderId() + '/courses.json',
 			onload: function(response) {
 				var my_data = JSON.parse(response.responseText);
 				for (var i = 0, len = my_data.courses.length; i < len; i++)
 				{
 					if (my_data.courses[i].identifier == crs.getCourseNum())
 					{
-						window.open('http://schedulebuilder.berkeley.edu/explore/courses/' + UCBSE.termAbrev + '/' + UCBSE.year + '/' + my_data.courses[i].id + '/');
+						window.open('http://schedulebuilder.berkeley.edu/explore/courses/' + termAbrev + '/' + UCBSE.year + '/' + my_data.courses[i].id + '/');
 						break;
 					}
 				}
