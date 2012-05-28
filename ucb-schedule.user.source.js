@@ -1672,9 +1672,9 @@ UCBSE.table = (function(courseList)
 			tableRows += '<td align="right" valign="middle" class="titleLeftBorder col1">';
 
 			if (prevDepartment == 'COMPSCI')
-				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~cs' + prevCourseNum.toLowerCase() + '/" target="_blank">' + prevCourseNum + '</a>';
+				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~cs' + prevCourseNum.toLowerCase().match(/[0-9]+.*/) + '/" target="_blank">' + prevCourseNum + '</a>';
 			else if (prevDepartment == 'EL ENG')
-				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~ee' + prevCourseNum.toLowerCase() + '/" target="_blank">' + prevCourseNum + '</a>';
+				tableRows += '<a href="http://www-inst.eecs.berkeley.edu/~ee' + prevCourseNum.toLowerCase().match(/[0-9]+.*/) + '/" target="_blank">' + prevCourseNum + '</a>';
 			else
 				tableRows += prevCourseNum;
 
